@@ -1,7 +1,5 @@
 ### Description
 
-This repository 
-
 You can find the report and the code for the thesis project under `report` and
 `code` directories respectively.
 
