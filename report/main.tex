@@ -1,0 +1,82 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[toc,page]{appendix} 
+\usepackage[colorlinks]{hyperref}
+\usepackage[printonlyused,withpage]{acronym}
+\usepackage{geometry}
+\usepackage{scrlayer} % Needed for left blank page
+
+\DeclareNewLayer[
+    foreground,
+    %textarea,% use only the textarea
+    contents={%
+      \parbox[b][\layerheight][c]{\layerwidth}
+        {\centering  This page intentionally left blank.}%
+    }
+  ]{blankpage.fg}
+\DeclarePageStyleByLayers{blank}{blankpage.fg}
+
+ \geometry{
+ a4paper,
+ left=1in,
+ right=1in, 
+ top=1.44in,
+ bottom=1.44in
+ }
+
+\usepackage{biblatex}
+\addbibresource{bibliography.bib}
+ 
+\begin{document}
+ \pagenumbering{roman}
+
+\thispagestyle{empty}
+\section*{Title page}
+
+\textsc{\large Thesis title }
+
+\textsc{\large Yaser Kaddoura}
+
+Note: When reviewer/examiner decides that the report is close to be finished,
+contact coordinator for a report number and instructions to produce a title and
+abstract page.
+
+\newpage\null\thispagestyle{blank}\newpage
+
+\thispagestyle{empty}
+\input{sections/abstract}
+
+\newpage\null\thispagestyle{blank}\newpage
+
+\tableofcontents
+
+\newpage
+
+\listoffigures
+
+\newpage
+
+\listoftables
+\newpage
+
+\input{sections/acronyms.tex}
+
+
+\newpage
+\newpage\null(Might be needed to make introduction starts at odd page number)
+\thispagestyle{blank}\newpage
+
+
+\pagenumbering{arabic}
+
+\input{sections/introduction}
+
+\newpage
+
+\printbibliography[heading=bibintoc, title={References}]
+
+\newpage
+
+\input{sections/appendix}
+
+
+\end{document}
