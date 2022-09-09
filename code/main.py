@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 from dotenv import load_dotenv
 from datetime import datetime
 import tweepy
@@ -21,11 +21,6 @@ tweet_fields_available = ["attachments", "author_id", "context_annotations",
 
 tweet_fields_extracted = ["id", "text", "public_metrics", "referenced_tweets",
         "author_id", "entities", "context_annotations", "attachments", "geo", "source"]
-
-
-def print_tweets(tweets):
-    for tweet in tweets:
-        print(tweet['text'])
 
 tweets_response = api.search_all_tweets(query="(floods OR flood OR"
         " översvämning OR översvämningar) place_country:SE has:geo", 
