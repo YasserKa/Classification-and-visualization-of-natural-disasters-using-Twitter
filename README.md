@@ -1,5 +1,8 @@
 ### Description
 
+The project focuses on extracting context related to flooding events from tweets
+using Natural Language Processing and mainly on events in Sweden
+
 You can find the report and the code for the thesis project under `report` and
 `code` directories respectively.
 

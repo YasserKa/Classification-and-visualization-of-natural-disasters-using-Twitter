@@ -1,0 +1,380 @@
+{
+    "1428092790114820106": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 16,
+            "quote_count": 0
+        },
+        "id": "1428092790114820106",
+        "source": "Twitter for iPhone",
+        "text": "Med alla \u00f6versv\u00e4mningar d\u00e4r uppe - \u00e4r Dragon Gate ok?",
+        "created_at": "2021-08-18T20:33:48.000Z",
+        "author_id": "23345995",
+        "place": {
+            "id": "d65c6985a4c9aef6",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    17.9636591,
+                    59.3400441,
+                    18.058415,
+                    59.3998046
+                ],
+                "properties": {}
+            },
+            "name": "Solna",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Solna, Sverige"
+        },
+        "tweet_url": "https://twitter.com/23345995/status/1428092790114820106"
+    },
+    "1428090806657814537": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 1,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1428045479791800328"
+            }
+        ],
+        "id": "1428090806657814537",
+        "source": "Twitter for iPhone",
+        "text": "@BengtHojer Asfalterar man halva Sverige, struntar i effektiv dr\u00e4nering eller l\u00e4gger billiga smala r\u00f6r i marken\u2026 s\u00e5 blir det \u00f6versv\u00e4mning i k\u00e4llaren. Det \u00e4r liksom enkel vetenskap\u2026 fast Greta tycker s\u00e4kert annat\u2026 \ud83e\udd2e",
+        "created_at": "2021-08-18T20:25:55.000Z",
+        "author_id": "845032431723954177",
+        "place": {
+            "id": "d1321d539a0a18ff",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    18.106542,
+                    59.2313692,
+                    18.3887452,
+                    59.3693737
+                ],
+                "properties": {}
+            },
+            "name": "Nacka",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Nacka, Sverige"
+        },
+        "tweet_url": "https://twitter.com/845032431723954177/status/1428090806657814537"
+    },
+    "1428087293815017477": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 1,
+            "like_count": 1,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1428073337645895683"
+            }
+        ],
+        "id": "1428087293815017477",
+        "source": "Twitter for iPhone",
+        "text": "@mickeritar 20 min extra enkel. S\u00e5 1 tim o 20 min enkel till jobbet. Det var lite v\u00e4l sp\u00e4nnande med pl\u00f6tsliga \u00f6versv\u00e4mningar \u00f6ver v\u00e4gen. Ot\u00e4ckt med slukh\u00e5len som d\u00f6k upp!",
+        "created_at": "2021-08-18T20:11:58.000Z",
+        "author_id": "1467379292",
+        "place": {
+            "id": "c094b3f42dea6eae",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    15.2543547,
+                    60.452529,
+                    16.3866268,
+                    61.0543413
+                ],
+                "properties": {}
+            },
+            "name": "Falun",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Falun, Sverige"
+        },
+        "tweet_url": "https://twitter.com/1467379292/status/1428087293815017477"
+    },
+    "1428082266572566529": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1428076222307868677"
+            }
+        ],
+        "id": "1428082266572566529",
+        "source": "Twitter for iPhone",
+        "text": "@levain99 Mycket regn men inga \u00f6versv\u00e4mningar just h\u00e4r\u2026",
+        "created_at": "2021-08-18T19:51:59.000Z",
+        "author_id": "2321670950",
+        "place": {
+            "id": "8419d3cd224212b2",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    14.3636059,
+                    60.5420008,
+                    15.6376178,
+                    60.9431104
+                ],
+                "properties": {}
+            },
+            "name": "Leksand",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Leksand, Sverige"
+        },
+        "tweet_url": "https://twitter.com/2321670950/status/1428082266572566529"
+    },
+    "1428079391612063747": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 1,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1428078238677483530"
+            }
+        ],
+        "id": "1428079391612063747",
+        "source": "Twitter for iPhone",
+        "text": "@Cisyfos Ja hu d\u00e5! G\u00e4vle har f\u00e5tt sin besk\u00e4rda del ocks\u00e5 kan man s\u00e4ga. Illa med alla \u00f6versv\u00e4mningar. \ud83d\ude1e",
+        "created_at": "2021-08-18T19:40:34.000Z",
+        "author_id": "1467379292",
+        "place": {
+            "id": "c094b3f42dea6eae",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    15.2543547,
+                    60.452529,
+                    16.3866268,
+                    61.0543413
+                ],
+                "properties": {}
+            },
+            "name": "Falun",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Falun, Sverige"
+        },
+        "tweet_url": "https://twitter.com/1467379292/status/1428079391612063747"
+    },
+    "1428043608616226823": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1427933624951787522"
+            }
+        ],
+        "id": "1428043608616226823",
+        "source": "Tweetbot for i\u039fS",
+        "text": "@peterrawet \u00c4r du f\u00f6rv\u00e5nad?\ud83d\ude02 Tror att m\u00e5nga av taliban-experterna ocks\u00e5 \u00e4r v\u00e4ldigt kunniga inom kategorin skyfall/\u00f6versv\u00e4mningar\u2026",
+        "created_at": "2021-08-18T17:18:22.000Z",
+        "author_id": "147667824",
+        "place": {
+            "id": "b85f49f2dd49f8d6",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    14.7687167,
+                    62.5592609,
+                    16.4942745,
+                    63.1483428
+                ],
+                "properties": {}
+            },
+            "name": "Br\u00e4cke",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Br\u00e4cke, Sverige"
+        },
+        "tweet_url": "https://twitter.com/147667824/status/1428043608616226823"
+    },
+    "1428037067636891652": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1428011133873659904"
+            }
+        ],
+        "id": "1428037067636891652",
+        "source": "Twitter for Android",
+        "text": "@TolnaiReka Litar du inte p\u00e5 internet g\u00e5 till bibban och f\u00f6rkovra dig i \u00e4mnet \u00f6versv\u00e4mningar i historien. \ud83d\ude03",
+        "created_at": "2021-08-18T16:52:23.000Z",
+        "author_id": "989386813902147584",
+        "place": {
+            "id": "53e060d6652640f4",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    11.226313,
+                    57.496298,
+                    12.2417273,
+                    57.8659142
+                ],
+                "properties": {}
+            },
+            "name": "G\u00f6teborg",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "G\u00f6teborg, Sverige"
+        },
+        "tweet_url": "https://twitter.com/989386813902147584/status/1428037067636891652"
+    },
+    "1428019762840363009": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "id": "1428019762840363009",
+        "source": "Twitter for iPhone",
+        "text": "Bra om \u00f6versv\u00e4mning \u2013 S\u00e5 skyddar du dig med tips och r\u00e5d https://t.co/XudVrv0oIR via @Villalivet",
+        "created_at": "2021-08-18T15:43:37.000Z",
+        "author_id": "21509278",
+        "place": {
+            "id": "6233b1ec1b129510",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    17.9814686,
+                    59.4123677,
+                    18.1503183,
+                    59.5112579
+                ],
+                "properties": {}
+            },
+            "name": "T\u00e4by",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "T\u00e4by, Sverige"
+        },
+        "tweet_url": "https://twitter.com/21509278/status/1428019762840363009"
+    },
+    "1427984428463177733": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "quoted",
+                "id": "1427970593127796739"
+            }
+        ],
+        "id": "1427984428463177733",
+        "source": "Twitter for Android",
+        "text": "Bristen p\u00e5 \u00f6versv\u00e4mningar beror p\u00e5 klimatet!! https://t.co/Wp2nSVdhKt",
+        "created_at": "2021-08-18T13:23:13.000Z",
+        "author_id": "114766044",
+        "place": {
+            "id": "d7450ad64215c234",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    13.7117476,
+                    56.4312364,
+                    14.6061681,
+                    56.7609673
+                ],
+                "properties": {}
+            },
+            "name": "\u00c4lmhult",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "\u00c4lmhult, Sverige"
+        },
+        "tweet_url": "https://twitter.com/114766044/status/1427984428463177733"
+    },
+    "1427942504939335689": {
+        "lang": "sv",
+        "public_metrics": {
+            "retweet_count": 0,
+            "reply_count": 0,
+            "like_count": 0,
+            "quote_count": 0
+        },
+        "referenced_tweets": [
+            {
+                "type": "replied_to",
+                "id": "1427938306818445312"
+            }
+        ],
+        "id": "1427942504939335689",
+        "source": "Twitter for Android",
+        "text": "@TStalgren M\u00e4nskligt av dig. \u00d6versv\u00e4mningar p\u00e5 vissa h\u00e5ll h\u00e4nder ju d\u00e5 och d\u00e5. Men finns ju olika grader...\ud83d\ude10",
+        "created_at": "2021-08-18T10:36:37.000Z",
+        "author_id": "1189710198",
+        "place": {
+            "id": "d56c5babcffde8ef",
+            "country_code": "SE",
+            "geo": {
+                "type": "Feature",
+                "bbox": [
+                    17.7601322,
+                    59.2271383,
+                    18.1999856,
+                    59.4402037
+                ],
+                "properties": {}
+            },
+            "name": "Stockholm",
+            "place_type": "city",
+            "country": "Sverige",
+            "full_name": "Stockholm, Sverige"
+        },
+        "tweet_url": "https://twitter.com/1189710198/status/1427942504939335689"
+    }
+}
