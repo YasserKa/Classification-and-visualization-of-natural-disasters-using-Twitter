@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import TwitterAdapter
+from TwitterAdapter import TwitterAdapter
 import numpy as np
 import math
 import json
@@ -11,7 +11,7 @@ import sys
 """
 
 def main():
-    twitter = TwitterAdapter.TwitterAdapter()
+    twitter = TwitterAdapter()
 
     tweets = {}
     tweets_extra_data = {}

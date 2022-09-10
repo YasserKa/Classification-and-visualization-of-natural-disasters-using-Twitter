@@ -14,7 +14,7 @@ def main():
             end_time = datetime(2021,8,19),
              tweet_fields = twitter.TWEET_FIELDS_EXTRACTED, expansions="geo.place_id",
             place_fields = twitter.PLACE_FIELDS, max_results=10)
-     
+
     tweets = twitter.parse_twitter_response(twitter_respose)
 
     # Write pretty print JSON data to file
