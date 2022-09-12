@@ -7,9 +7,17 @@ name = "pypi"
 tweepy = "*"
 python-dotenv = "*"
 numpy = "*"
+tensorflow = "*"
+pillow = "*"
+pandas = "*"
+matplotlib = "*"
 
 [dev-packages]
 pytest = "*"
+jupyter = "*"
+jupyter-nbextensions-configurator = "*"
+jupytext = "*"
+jupyter-ascending = "*"
 
 [requires]
 python_version = "3.10"
