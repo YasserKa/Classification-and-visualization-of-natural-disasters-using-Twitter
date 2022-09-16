@@ -8,9 +8,15 @@ import json
 # %%
 with open(f"output/annotated_tweets_extracted.json", "r") as file:
     tweets_json = json.load(file)
+df = pd.json_normalize(list(tweets_json.values()))
 
 # %%
-df = pd.json_normalize(tweets_json.values())
+print(df.shape)
+value_counts_lambda = lambda col : print(df[col].value_counts())
+value_counts_lambda("Informative/relevant/non sarcastic")
+value_counts_lambda("Contains specific information about IMPACTS")
+
+# %%
 df = df[(df['On Topic'] != '') & (df['Informative/relevant/non sarcastic'] != '') & (df['Contains specific information about IMPACTS'] != '')]
 df['created_at'] =  pd.to_datetime(df['created_at'])
 
@@ -21,31 +27,15 @@ df['Contains specific information about IMPACTS'] =  df['Contains specific infor
 df_gb = df.groupby([df["created_at"].dt.date])
 
 # %%
-pd.set_option('display.max_colwidth', 100)
-df[df['created_at'].dt.date == datetime.datetime(2021,7, 16).date()]['tweet_url']
-
-# %%
-df_gb['On Topic'].sum().sort_values()
-
-# %%
 fig, ax1 = plt.subplots()
-x = df_gb['On Topic'].sum().keys()
+dates = df_gb.groups.keys()
 
-ax1.set_xlabel('date')
-ax1.set_ylabel('Y1-axis', color = 'red') 
-ax1.plot(x, df_gb['On Topic'].sum().values, color = 'red') 
-ax1.tick_params(axis ='y', labelcolor = 'red') 
+plt.plot(dates, df_gb['On Topic'].sum().values) 
+plt.plot(dates, df_gb["Informative/relevant/non sarcastic"].sum().values) 
+plt.plot(dates, df_gb["Contains specific information about IMPACTS"].sum().values) 
 
-ax2 = ax1.twinx() 
-
-ax2.set_ylabel('Y2-axis', color = 'blue') 
-ax2.plot(x, df_gb["Informative/relevant/non sarcastic"].sum().values, color = 'blue') 
-ax2.tick_params(axis ='y', labelcolor = 'blue') 
-
-ax3 = ax1.twinx() 
-
-ax3.set_ylabel('Y3-axis', color = 'purple') 
-ax3.plot(x, df_gb["Contains specific information about IMPACTS"].sum().values, color = 'purple') 
-ax3.tick_params(axis ='y', labelcolor = 'purple') 
+plt.title('Time series for tweets')
+plt.xlabel('Date')
+plt.ylabel('count')
 
 plt.show()
