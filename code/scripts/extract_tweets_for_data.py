@@ -4,13 +4,14 @@ import numpy as np
 import math
 import json
 import csv
+from deep_translator import GoogleTranslator
 import sys
 
 """
  Utility script to extract twitter for available data (annotated_tweets.csv)
 """
 
-def main():
+def main() -> None:
     twitter = TwitterAdapter()
 
     tweets = {}
@@ -35,6 +36,7 @@ def main():
 
     for tweet_id in tweets.keys():
         tweets[tweet_id].update(tweets_extra_data[str(tweet_id)])
+        tweets[tweet_id]['text_en'] = GoogleTranslator(source='auto', target='en').translate(tweets[tweet_id]['text'])
 
     # Write pretty print JSON data to file
     with open(f"{twitter.OUTPUT_PATH}/annotated_tweets_extracted.json", "w") as write_file:

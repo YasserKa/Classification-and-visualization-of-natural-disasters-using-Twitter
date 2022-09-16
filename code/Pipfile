@@ -7,10 +7,10 @@ name = "pypi"
 tweepy = "*"
 python-dotenv = "*"
 numpy = "*"
-tensorflow = "*"
-pillow = "*"
 pandas = "*"
 matplotlib = "*"
+nltk = "*"
+deep-translator = "*"
 
 [dev-packages]
 pytest = "*"
