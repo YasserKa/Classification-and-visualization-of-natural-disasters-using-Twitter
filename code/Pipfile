@@ -11,6 +11,9 @@ pandas = "*"
 matplotlib = "*"
 nltk = "*"
 deep-translator = "*"
+transformers = {extras = ["torch"], version = "*"}
+sklearn = "*"
+datasets = "*"
 
 [dev-packages]
 pytest = "*"

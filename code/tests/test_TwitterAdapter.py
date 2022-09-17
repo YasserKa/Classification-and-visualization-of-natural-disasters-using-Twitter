@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-import pytest
 from TwitterAdapter import TwitterAdapter
 from tweepy import Response, Place, Tweet
 
