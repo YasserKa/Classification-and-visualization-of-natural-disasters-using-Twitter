@@ -1,4 +1,4 @@
-from code.twitter.TwitterAdapter import TwitterAdapter
+from flood_detection.twitter.TwitterAdapter import TwitterAdapter
 from tweepy import Response, Place, Tweet
 
 

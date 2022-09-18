@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from code.twitter.TwitterAdapter import TwitterAdapter
+from flood_detection.twitter.TwitterAdapter import TwitterAdapter
 import numpy as np
 import math
 import json

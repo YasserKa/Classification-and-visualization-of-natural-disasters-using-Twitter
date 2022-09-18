@@ -13,7 +13,10 @@ nltk = "*"
 deep-translator = "*"
 transformers = {extras = ["torch"], version = "*"}
 sklearn = "*"
-datasets = "*"
+awscli = "*"
+boto3 = "*"
+datasets = {extras = ["s3"], version = "*"}
+sagemaker = "*"
 
 [dev-packages]
 pytest = "*"

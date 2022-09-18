@@ -30,5 +30,3 @@ def clean_text(text):
     text = text.lower()
 
     return text
-
-print(clean_text("CaPitaL, words https://example.com @this #that \n something?"))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from code.twitter.TwitterAdapter import TwitterAdapter
+from flood_detection.twitter.TwitterAdapter import TwitterAdapter
 import json
 import sys
 
