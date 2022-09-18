@@ -1,4 +1,4 @@
-from TwitterAdapter import TwitterAdapter
+from code.twitter.TwitterAdapter import TwitterAdapter
 from tweepy import Response, Place, Tweet
 
 

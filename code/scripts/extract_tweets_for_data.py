@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from TwitterAdapter import TwitterAdapter
+from code.twitter.TwitterAdapter import TwitterAdapter
 import numpy as np
 import math
 import json

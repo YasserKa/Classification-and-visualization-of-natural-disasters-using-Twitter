@@ -1,4 +1,4 @@
-from utils import clean_text
+from code.twitter.utils import clean_text
 
 # distilbert-base-uncased 
 # Accuracy	F1

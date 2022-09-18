@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from TwitterAdapter import TwitterAdapter
+from code.twitter.TwitterAdapter import TwitterAdapter
 import json
 import sys
 

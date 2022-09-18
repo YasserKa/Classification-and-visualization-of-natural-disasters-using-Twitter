@@ -10,7 +10,7 @@ class TwitterAdapter(object):
 
     _instance = None
 
-    OUTPUT_PATH = "./output"
+    OUTPUT_PATH = "./code/output"
 
     # Tweets fields can be found here https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet
     TWEET_FIELDS_AVAILABLE = ["attachments", "author_id", "context_annotations",
