@@ -17,6 +17,7 @@ awscli = "*"
 boto3 = "*"
 datasets = {extras = ["s3"], version = "*"}
 sagemaker = "*"
+botocore = "*"
 
 [dev-packages]
 pytest = "*"
@@ -24,6 +25,7 @@ jupyter = "*"
 jupyter-nbextensions-configurator = "*"
 jupytext = "*"
 jupyter-ascending = "*"
+pandas-stubs = "*"
 
 [requires]
 python_version = "3.10"

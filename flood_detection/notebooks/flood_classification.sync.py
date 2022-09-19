@@ -67,7 +67,8 @@ df_needed['text'] = df_needed['text'].apply(lambda x: utils.clean_text(x))
 df_needed.head()
 
 # %%
-from datasets import Dataset, DatasetDict
+from datasets.dataset_dict import DatasetDict
+from datasets.arrow_dataset import Dataset
 dataset = Dataset.from_pandas(df_needed)
 
 dataset = dataset.remove_columns(['id'])
@@ -87,13 +88,16 @@ train_test_valid_dataset = DatasetDict({
 # Use hugging face library
 
 # %%
+# from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
+# from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+# from transformers.models.auto.tokenization_auto import 
 import torch
-
 model_ckpt = "distilbert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 num_labels = 2
 
 model = (AutoModelForSequenceClassification
@@ -179,9 +183,9 @@ print(train_test_valid_dataset_tokenized['train'])
 
 # %%
 import botocore
-import datasets
+from datasets.filesystems.s3filesystem import S3FileSystem
 
-s3 = datasets.filesystems.S3FileSystem() 
+s3 = S3FileSystem()
 s3_prefix = 'samples/datasets/floods'
 
 train_dataset = train_test_valid_dataset_tokenized['train']
