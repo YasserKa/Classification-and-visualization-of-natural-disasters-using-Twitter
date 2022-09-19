@@ -2,3 +2,4 @@
 /documents/
 /report/tex_output/*
 !/report/tex_output/*.pdf
+/flood_detection/notebooks/corpora/

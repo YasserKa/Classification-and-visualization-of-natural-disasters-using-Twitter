@@ -3,8 +3,10 @@ import string
 import re
 import nltk
 
+nltk.data.path.append('.')
+nltk.download('stopwords', download_dir=".")
+
 def clean_text(text):
-    nltk.download('stopwords')
     stopword = nltk.corpus.stopwords.words('english')
 
     # Remove URLs/Mentions/Hashtags/new lines
