@@ -1,4 +1,3 @@
-# %%
 import string
 import re
 import nltk
@@ -6,8 +5,8 @@ import nltk
 nltk.data.path.append('.')
 nltk.download('stopwords', download_dir=".")
 
-def clean_text(text):
-    stopword = nltk.corpus.stopwords.words('english')
+def clean_text(text: str) -> str:
+    stopword: list[str] = nltk.corpus.stopwords.words('english')
 
     # Remove URLs/Mentions/Hashtags/new lines
     text = re.sub("((www.[^s]+)"
@@ -21,7 +20,7 @@ def clean_text(text):
     text = "".join([char for char in text if char not in string.punctuation])
     text = re.sub('[0-9]+', '', text)
     # Remove Emojis
-    emoji_pattern = re.compile("["
+    emoji_pattern: re.Pattern[str] = re.compile("["
             u"\U0001F600-\U0001F64F"  # emoticons
             u"\U0001F300-\U0001F5FF"  # symbols & pictographs
             u"\U0001F680-\U0001F6FF"  # transport & map symbols
