@@ -8,6 +8,8 @@ import argparse
 import os
 import torch
 
+# flake8: noqa
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

@@ -1,7 +1,23 @@
 # %%
-import pandas as pd
-import json
 from flood_detection.twitter import utils
+from sagemaker.huggingface import HuggingFace
+from sklearn.metrics import accuracy_score, f1_score
+# from transformers import Trainer, TrainingArguments
+# from transformers.models.auto import AutoModelForSequenceClassification
+from huggingface_hub import notebook_login
+from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
+from transformers.models.auto.tokenization_auto import AutoTokenizer
+from transformers.training_args import TrainingArguments
+from transformers.trainer import Trainer
+from datasets.arrow_dataset import Dataset
+from datasets.dataset_dict import DatasetDict
+from datasets.filesystems.s3filesystem import S3FileSystem
+import boto3
+import json
+import pandas as pd
+import sagemaker
+import sagemaker.huggingface
+import torch
 
 # %% [markdown]
 # ## Preprocessing data
@@ -14,7 +30,7 @@ from flood_detection.twitter import utils
 # Data obtained from the supervisor
 
 # %%
-with open(f"../output/annotated_tweets_extracted.json", "r") as file:
+with open("../output/annotated_tweets_extracted.json", "r") as file:
     tweets_json = json.load(file)
 supervisor_df = pd.json_normalize(list(tweets_json.values()))
 print(supervisor_df.shape)
@@ -23,7 +39,8 @@ supervisor_df.head()
 
 # %%
 supervisor_df = supervisor_df[['id', 'text_en', 'On Topic']]
-supervisor_df = supervisor_df.rename(columns={"text_en": "text", "On Topic": "label"})
+supervisor_df = supervisor_df.rename(
+    columns={"text_en": "text", "On Topic": "label"})
 supervisor_df = supervisor_df[supervisor_df['label'] != '']
 supervisor_df = supervisor_df.astype({'label': 'int', 'id': 'int'})
 
@@ -31,8 +48,10 @@ supervisor_df = supervisor_df.astype({'label': 'int', 'id': 'int'})
 # Data obtaine from [CrisisLex: Download Crisis-Related Collections](https://crisislex.org/data-collections.html#CrisisLexT6)
 
 # %%
-queensland_df = pd.read_csv("../data/CrisisLexT6/2013_Queensland_Floods/2013_Queensland_Floods-ontopic_offtopic.csv")
-alberta_df = pd.read_csv("../data/CrisisLexT6/2013_Alberta_Floods/2013_Alberta_Floods-ontopic_offtopic.csv")
+queensland_df = pd.read_csv(
+    "../data/CrisisLexT6/2013_Queensland_Floods/2013_Queensland_Floods-ontopic_offtopic.csv")
+alberta_df = pd.read_csv(
+    "../data/CrisisLexT6/2013_Alberta_Floods/2013_Alberta_Floods-ontopic_offtopic.csv")
 
 print(f"queensland {queensland_df.shape}")
 print(f"alberta {alberta_df.shape}")
@@ -44,10 +63,8 @@ queensland_df.head()
 def process_crisislex_data(df):
     df = df.rename(columns={"tweet_id": "id", "tweet": "text"})
     df['label'] = df['label'].apply(lambda x: 1 if x == 'on-topic' else 0)
-    # Remove single quotation marks (') from start and end
-    df['id'] = df['id'].apply(lambda x: x[1:-1])
-    df = df.astype({'id': 'int'})
     return df
+
 
 queensland_df = process_crisislex_data(queensland_df)
 alberta_df = process_crisislex_data(alberta_df)
@@ -67,8 +84,6 @@ df_needed['text'] = df_needed['text'].apply(lambda x: utils.clean_text(x))
 df_needed.head()
 
 # %%
-from datasets.dataset_dict import DatasetDict
-from datasets.arrow_dataset import Dataset
 dataset = Dataset.from_pandas(df_needed)
 
 dataset = dataset.remove_columns(['id'])
@@ -88,36 +103,29 @@ train_test_valid_dataset = DatasetDict({
 # Use hugging face library
 
 # %%
-# from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
-# from transformers.models.auto.tokenization_auto import AutoTokenizer
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-# from transformers.models.auto.tokenization_auto import 
-import torch
 model_ckpt = "distilbert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 num_labels = 2
 
 model = (AutoModelForSequenceClassification
          .from_pretrained(model_ckpt, num_labels=num_labels).to(device))
 
+
 # tokenizer helper function
 def tokenize(batch):
     return tokenizer(batch['text'], padding='max_length', truncation=True)
 
-train_test_valid_dataset_tokenized = train_test_valid_dataset.map(tokenize, batched=True, batch_size=None)
+
+train_test_valid_dataset_tokenized = train_test_valid_dataset.map(
+    tokenize, batched=True, batch_size=None)
 
 # %%
-from huggingface_hub import notebook_login
-
 notebook_login()
 
-# %%
-from transformers import Trainer, TrainingArguments
-from sklearn.metrics import accuracy_score, f1_score
 
+# %%
 def compute_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
@@ -125,12 +133,14 @@ def compute_metrics(pred):
     acc = accuracy_score(labels, preds)
     return {"accuracy": acc, "f1": f1}
 
+
 batch_size = 64
 logging_steps = len(train_test_valid_dataset_tokenized["train"]) // batch_size
-model_name = f"bert-base-uncased-finetuned-floods"
+model_name = "bert-base-uncased-finetuned-floods"
 torch.cuda.empty_cache()
 
-training_args = TrainingArguments(output_dir=model_name,
+training_args = TrainingArguments(
+        output_dir=model_name,
         num_train_epochs=2,
         learning_rate=2e-5,
         per_device_train_batch_size=batch_size,
@@ -139,14 +149,15 @@ training_args = TrainingArguments(output_dir=model_name,
         evaluation_strategy="epoch",
         disable_tqdm=False,
         logging_steps=logging_steps,
-        push_to_hub=True, 
+        push_to_hub=True,
         log_level="error")
 
-trainer = Trainer(model=model, args=training_args,
-                  compute_metrics=compute_metrics,
-                  train_dataset=train_test_valid_dataset_tokenized["train"],
-                  eval_dataset=train_test_valid_dataset_tokenized["valid"],
-                  tokenizer=tokenizer)
+trainer = Trainer(
+        model=model, args=training_args,
+        compute_metrics=compute_metrics,
+        train_dataset=train_test_valid_dataset_tokenized["train"],
+        eval_dataset=train_test_valid_dataset_tokenized["valid"],
+        tokenizer=tokenizer)
 
 trainer.train()
 
@@ -155,14 +166,10 @@ trainer.train()
 # TODO: Try too use sagemaker to fine tune the transformer
 
 # %%
-import sagemaker
-import sagemaker.huggingface
-import boto3
-
 sess = sagemaker.Session()
 # sagemaker session bucket -> used for uploading data, models and logs
 # sagemaker will automatically create this bucket if it not exists
-sagemaker_session_bucket=None
+sagemaker_session_bucket = None
 if sagemaker_session_bucket is None and sess is not None:
     # set to default bucket if a bucket name is not given
     sagemaker_session_bucket = sess.default_bucket()
@@ -182,9 +189,6 @@ print(f"sagemaker session region: {sess.boto_region_name}")
 print(train_test_valid_dataset_tokenized['train'])
 
 # %%
-import botocore
-from datasets.filesystems.s3filesystem import S3FileSystem
-
 s3 = S3FileSystem()
 s3_prefix = 'samples/datasets/floods'
 
@@ -198,31 +202,33 @@ training_input_path = f's3://{sess.default_bucket()}/{s3_prefix}/train'
 test_input_path = f's3://{sess.default_bucket()}/{s3_prefix}/test'
 
 train_dataset = train_dataset.rename_column("label", "labels")
-train_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
-train_dataset.save_to_disk(training_input_path,fs=s3)
+train_dataset.set_format(
+        'torch', columns=['input_ids', 'attention_mask', 'labels'])
+train_dataset.save_to_disk(training_input_path, fs=s3)
 
 # save test_dataset to s3
 test_dataset = test_dataset.rename_column("label", "labels")
-test_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
-test_dataset.save_to_disk(test_input_path,fs=s3)
+test_dataset.set_format(
+        'torch', columns=['input_ids', 'attention_mask', 'labels'])
+test_dataset.save_to_disk(test_input_path, fs=s3)
 
 # %%
-from sagemaker.huggingface import HuggingFace
-
 # hyperparameters, which are passed into the training job
-hyperparameters={'epochs': 1,
-                 'train_batch_size': 32,
-                 'model_name': model_ckpt
-                 }
+hyperparameters = {
+        'epochs': 1,
+        'train_batch_size': 32,
+        'model_name': model_ckpt}
 
-huggingface_estimator = HuggingFace(entry_point='train.py',
-                            source_dir='./scripts',
-                            instance_type='ml.g4dn.xlarge',
-                            instance_count=1,
-                            role=role,
-                            transformers_version='4.12',
-                            pytorch_version='1.9',
-                            py_version='py38',
-                            hyperparameters = hyperparameters)
+huggingface_estimator = HuggingFace(
+        entry_point='train.py',
+        source_dir='../scripts',
+        instance_type='ml.c5.4xlarge',
+        instance_count=1,
+        role=role,
+        transformers_version='4.12',
+        pytorch_version='1.9',
+        py_version='py38',
+        hyperparameters=hyperparameters)
 
-huggingface_estimator.fit({'train': training_input_path, 'test': test_input_path})
+huggingface_estimator.fit(
+        {'train': training_input_path, 'test': test_input_path})

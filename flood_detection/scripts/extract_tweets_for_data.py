@@ -11,6 +11,7 @@ import sys
  Utility script to extract twitter for available data (annotated_tweets.csv)
 """
 
+
 def main() -> None:
     twitter = TwitterAdapter()
 
@@ -28,21 +29,25 @@ def main() -> None:
 
         for part_of_rows in list_of_rows:
             ids = [row['id'] for row in part_of_rows]
-            twitter_respose = twitter.api.get_tweets(ids=ids,
-                    tweet_fields =twitter.TWEET_FIELDS_EXTRACTED, expansions="geo.place_id",
-                    place_fields=twitter.PLACE_FIELDS)
+            twitter_respose = twitter.api.get_tweets(
+                    ids=ids,
+                    expansions="geo.place_id",
+                    place_fields=twitter.PLACE_FIELDS,
+                    tweet_fields=twitter.TWEET_FIELDS_EXTRACTED
+                    )
 
             tweets.update(twitter.parse_twitter_response(twitter_respose))
 
     for tweet_id in tweets.keys():
         tweets[tweet_id].update(tweets_extra_data[str(tweet_id)])
-        tweets[tweet_id]['text_en'] = GoogleTranslator(source='auto', target='en').translate(tweets[tweet_id]['text'])
+        tweets[tweet_id]['text_en'] = GoogleTranslator(
+                source='auto', target='en').translate(tweets[tweet_id]['text'])
 
     # Write pretty print JSON data to file
-    with open(f"{twitter.OUTPUT_PATH}/annotated_tweets_extracted.json", "w") as write_file:
+    path = f"{twitter.OUTPUT_PATH}/annotated_tweets_extracted.json"
+    with open(path, "w") as write_file:
         json.dump(tweets, write_file, indent=4)
 
 
 if __name__ == '__main__':
     sys.exit(main())
-
