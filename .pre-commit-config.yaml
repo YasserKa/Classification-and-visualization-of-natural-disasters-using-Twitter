@@ -1,23 +1,30 @@
 repos:
--   repo: local
-    hooks:
-    -   id: unittest
-        name: unittest
-        entry: pipenv run make do_tests
-        language: python
-        pass_filenames: false
-    -   id: styletest
-        name: style test
-        entry: flake8
-        language: python
-        pass_filenames: false
-    -   id: generate-requirements
-        name: generate-requirements
-        entry: bash -c 'pipenv requirements >| requirements.txt'
-        language: python
-        pass_filenames: false
-    -   id: generate-dev-requirements
-        name: generate-dev-requirements
-        entry: bash -c 'pipenv requirements --dev-only >| requirements-dev.txt'
-        language: system
-        pass_filenames: false
+- repo: local
+  hooks:
+    - id: unittests
+      name: unittests
+      entry: pipenv run make tests
+      language: python
+      pass_filenames: false
+    - id: generate-requirements
+      name: generate-requirements
+      entry: bash -c 'pipenv requirements --dev-only >| requirements-dev.txt'
+      language: system
+      pass_filenames: false
+    - id: generate-dev-requirements
+      name: generate-dev-requirements
+      entry: bash -c 'pipenv requirements >| requirements.txt'
+      language: system
+      pass_filenames: false
+- repo: https://github.com/PyCQA/flake8
+  rev: 5.0.4
+  hooks:
+    - id: flake8
+- repo: https://github.com/psf/black
+  rev: 22.8.0
+  hooks:
+    - id: black
+- repo: https://github.com/kynan/nbstripout
+  rev: 0.5.0
+  hooks:
+    -   id: nbstripout

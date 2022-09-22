@@ -1,0 +1,5 @@
+outs:
+- md5: 7023cf8853a6f4314b207a249b9558f0.dir
+  size: 4865498
+  nfiles: 1
+  path: tweets

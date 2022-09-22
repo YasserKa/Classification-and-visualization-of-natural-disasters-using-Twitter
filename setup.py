@@ -1,7 +1,7 @@
-import setuptools
+from setuptools import find_packages, setup
 
-setuptools.setup(
+setup(
     name="flood_detection",
     version="0.1",
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
 )
