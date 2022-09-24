@@ -2,8 +2,8 @@ from flood_detection.data.text_processing import TextProcessing
 
 
 def test_clean_text():
-    text = "CaPitaL, words https://example.com @this #that \n something?"
-    expected_text = "capital words something"
+    text = "CaPitaL, words https://example.com @this #that \n 1923 something?"
+    expected_text = "capital words that something"
 
     text_processing = TextProcessing()
 

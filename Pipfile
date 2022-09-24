@@ -17,6 +17,7 @@ datasets = {extras = ["s3"], version = "*"}
 spacy = "*"
 dvc = {extras = ["gdrive"], version = "*"}
 hydra-core = "*"
+git-lfs = "*"
 
 [dev-packages]
 pytest = "*"

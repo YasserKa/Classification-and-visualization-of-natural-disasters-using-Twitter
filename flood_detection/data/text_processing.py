@@ -17,13 +17,13 @@ class TextProcessing:
         for id, text in enumerate(text_list):
             stopwords = self.__sp.Defaults.stop_words
 
-            # Remove URLs/Mentions/Hashtags/new lines
+            # Remove URLs/Mentions/Hashtags/new lines/numbers
             text = re.sub(
                 "((www.[^s]+)"
                 "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
                 "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
                 "|(@[a-zA-Z0-9]*)"
-                "|(#[a-zA-Z0-9]*)"
+                "|([0-9]+)"
                 "|\n)",
                 " ",
                 text,
@@ -34,7 +34,6 @@ class TextProcessing:
             )
             # Remove punctuation
             text = "".join([char for char in text if char not in string.punctuation])
-            text = re.sub("[0-9]+", "", text)
             # Remove Emojis
             emoji_pattern: re.Pattern[str] = re.compile(
                 "["
