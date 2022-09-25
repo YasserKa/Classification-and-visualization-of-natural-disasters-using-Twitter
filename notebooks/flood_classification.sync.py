@@ -5,7 +5,6 @@ import pandas as pd
 import torch
 from datasets.arrow_dataset import Dataset
 from datasets.dataset_dict import DatasetDict
-from datasets.filesystems.s3filesystem import S3FileSystem
 from huggingface_hub import notebook_login
 from hydra import compose, initialize
 from hydra.utils import to_absolute_path as abspath
@@ -16,7 +15,7 @@ from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.trainer import Trainer
 from transformers.training_args import TrainingArguments
 
-from flood_detection.data.text_processing import TextProcessing
+from src.data.text_processing import TextProcessing
 
 # %% [markdown]
 # ## Preprocessing data
@@ -29,15 +28,12 @@ from flood_detection.data.text_processing import TextProcessing
 # Data obtained from the supervisor
 
 # %%
-with initialize(version_base=None, config_path="../config"):
-    cfg: DictConfig = compose(config_name="main")
-    supervisor_tweets_path = abspath("../" + cfg.tweets.supervisor)
-    alberta_path = abspath("../" + cfg.raw.alberta)
-    queensland_path = abspath("../" + cfg.raw.queensland)
+with initialize(version_base=None, config_path="../conf"):
+    cfg: DictConfig = compose(config_name="config")
+    supervisor_tweets_path = abspath("../" + cfg.supervisor.tweets)
+    alberta_path = abspath("../" + cfg.alberta.raw)
+    queensland_path = abspath("../" + cfg.queensland.raw)
 
-    supervisor_tweets_path: str = abspath(
-        "../" + cfg.tweets.supervisor,
-    )
 with open(supervisor_tweets_path, "r") as file:
     tweets_json = json.load(file)
 supervisor_df = pd.json_normalize(list(tweets_json.values()))
@@ -177,79 +173,3 @@ trainer = Trainer(
 )
 
 trainer.train()
-
-# %% [markdown]
-#
-# TODO: Try too use sagemaker to fine tune the transformer
-
-# %%
-# from sagemaker.huggingface import HuggingFace
-# import boto3
-# import sagemaker
-# import sagemaker.huggingface
-# sess = sagemaker.Session()
-# # sagemaker session bucket -> used for uploading data, models and logs
-# # sagemaker will automatically create this bucket if it not exists
-# sagemaker_session_bucket = None
-# if sagemaker_session_bucket is None and sess is not None:
-#     # set to default bucket if a bucket name is not given
-#     sagemaker_session_bucket = sess.default_bucket()
-
-# try:
-#     role = sagemaker.get_execution_role()
-# except ValueError:
-#     iam = boto3.client('iam')
-#     role = iam.get_role(RoleName='sage_maker')['Role']['Arn']
-# sess = sagemaker.Session(default_bucket=sagemaker_session_bucket)
-
-# print(f"sagemaker role arn: {role}")
-# print(f"sagemaker bucket: {sess.default_bucket()}")
-# print(f"sagemaker session region: {sess.boto_region_name}")
-
-# # %%
-# print(train_test_valid_dataset_tokenized['train'])
-
-# # %%
-# s3 = S3FileSystem()
-# s3_prefix = 'samples/datasets/floods'
-
-# train_dataset = train_test_valid_dataset_tokenized['train']
-# test_dataset = train_test_valid_dataset_tokenized['test']
-
-# train_dataset = train_dataset.remove_columns(["__index_level_0__"])
-# test_dataset = test_dataset.remove_columns(["__index_level_0__"])
-# # save train_dataset to s3
-# training_input_path = f's3://{sess.default_bucket()}/{s3_prefix}/train'
-# test_input_path = f's3://{sess.default_bucket()}/{s3_prefix}/test'
-
-# train_dataset = train_dataset.rename_column("label", "labels")
-# train_dataset.set_format(
-#         'torch', columns=['input_ids', 'attention_mask', 'labels'])
-# train_dataset.save_to_disk(training_input_path, fs=s3)
-
-# # save test_dataset to s3
-# test_dataset = test_dataset.rename_column("label", "labels")
-# test_dataset.set_format(
-#         'torch', columns=['input_ids', 'attention_mask', 'labels'])
-# test_dataset.save_to_disk(test_input_path, fs=s3)
-
-# # %%
-# # hyperparameters, which are passed into the training job
-# hyperparameters = {
-#         'epochs': 1,
-#         'train_batch_size': 32,
-#         'model_name': model_ckpt}
-
-# huggingface_estimator = HuggingFace(
-#         entry_point='train.py',
-#         source_dir='../scripts',
-#         instance_type='ml.c5.4xlarge',
-#         instance_count=1,
-#         role=role,
-#         transformers_version='4.12',
-#         pytorch_version='1.9',
-#         py_version='py38',
-#         hyperparameters=hyperparameters)
-
-# huggingface_estimator.fit(
-#         {'train': training_input_path, 'test': test_input_path})

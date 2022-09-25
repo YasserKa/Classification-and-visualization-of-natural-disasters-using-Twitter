@@ -1,0 +1,12 @@
+supervisor: 
+  raw: data/raw/supervisor_annotated_tweets.csv
+  tweets: data/tweets/supervisor_annotated_tweets.json
+  processed: data/processed/supervisor_annotated_tweets.csv
+
+alberta: 
+  raw: data/raw/2013_Alberta_Floods-ontopic_offtopic.csv
+  processed: data/processed/2013_Alberta_Floods-ontopic_offtopic.csv
+
+queensland: 
+  raw: data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
+  processed: data/processed/2013_Queensland_Floods-ontopic_offtopic.csv

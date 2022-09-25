@@ -1,4 +1,4 @@
-from flood_detection.data.text_processing import TextProcessing
+from src.data.text_processing import TextProcessing
 
 
 def test_clean_text():

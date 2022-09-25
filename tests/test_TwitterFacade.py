@@ -1,6 +1,6 @@
 from tweepy import Place, Response, Tweet
 
-from flood_detection.classes.twitter_facade import TwitterFacade
+from src.classes.twitter_facade import TwitterFacade
 
 
 class TestTwitterFacade:

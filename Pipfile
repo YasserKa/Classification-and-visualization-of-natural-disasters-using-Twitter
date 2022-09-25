@@ -13,7 +13,6 @@ deep-translator = "*"
 transformers = {extras = ["torch"], version = "*"}
 sklearn = "*"
 boto3 = "*"
-datasets = {extras = ["s3"], version = "*"}
 spacy = "*"
 dvc = {extras = ["gdrive"], version = "*"}
 hydra-core = "*"

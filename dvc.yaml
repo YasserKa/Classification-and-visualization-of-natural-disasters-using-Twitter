@@ -1,0 +1,13 @@
+stages:
+  preprocess:
+    foreach:
+      - ${supervisor.tweets}
+      - ${alberta.raw}
+      - ${queensland.raw}
+    do:
+      deps:
+        - ${item}
+        - ./src/data/preprocess.py
+      cmd: ./src/data/preprocess.py ${item}
+
+

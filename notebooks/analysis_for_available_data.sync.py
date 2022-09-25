@@ -9,10 +9,10 @@ from omegaconf import DictConfig
 
 # %%
 
-with initialize(version_base=None, config_path="../config"):
-    cfg: DictConfig = compose(config_name="main")
+with initialize(version_base=None, config_path="../conf"):
+    cfg: DictConfig = compose(config_name="config")
     supervisor_tweets_path: str = abspath(
-        "../" + cfg.tweets.supervisor,
+        "../" + cfg.supervisor.tweets,
     )
 
 with open(supervisor_tweets_path, "r") as file:
