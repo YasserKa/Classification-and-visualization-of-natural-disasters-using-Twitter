@@ -1,5 +1,6 @@
 [core]
     remote = remote
+    autostage = true
 [hydra]
     enabled = True
 ['remote "remote"']

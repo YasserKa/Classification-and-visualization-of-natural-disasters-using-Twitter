@@ -120,22 +120,20 @@ def transform_supervisor_dataset(path) -> pd.DataFrame:
 def main() -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
-        supervisor_path: str = cfg.supervisor.tweets
-        alberta_path: str = cfg.alberta.raw
-        queensland_path: str = cfg.queensland.raw
 
     path: str = sys.argv[1]
-    if path == supervisor_path:
-        output: str = cfg.supervisor.processed
-        df = transform_supervisor_dataset(path)
-    elif path == alberta_path:
-        output: str = cfg.alberta.processed
-        df = transform_crisislex_dataset(path)
-    elif path == queensland_path:
-        output: str = cfg.queensland.processed
-        df = transform_crisislex_dataset(path)
-    else:
-        raise Exception(f"{path} file not found")
+    match path:
+        case cfg.supervisor.tweets:
+            output: str = cfg.supervisor.processed
+            df = transform_supervisor_dataset(path)
+        case cfg.alberta.raw:
+            output: str = cfg.alberta.processed
+            df = transform_crisislex_dataset(path)
+        case cfg.queensland.raw:
+            output: str = cfg.queensland.processed
+            df = transform_crisislex_dataset(path)
+        case _:
+            raise Exception(f"{path} file not found")
 
     df.to_csv(output, index=False)
 
