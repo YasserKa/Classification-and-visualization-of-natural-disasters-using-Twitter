@@ -5,17 +5,19 @@ import pandas as pd
 import torch
 from datasets.arrow_dataset import Dataset
 from datasets.dataset_dict import DatasetDict
-from huggingface_hub import notebook_login
 from hydra import compose, initialize
 from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 from sklearn.metrics import accuracy_score, f1_score
-from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
-from transformers.trainer import Trainer
-from transformers.training_args import TrainingArguments
 
 from src.data.text_processing import TextProcessing
+
+from sagemaker.huggingface import HuggingFace
+from datasets.filesystems.s3filesystem import S3FileSystem
+import boto3
+import sagemaker
+import sagemaker.huggingface
 
 # %% [markdown]
 # ## Preprocessing data
@@ -117,10 +119,6 @@ tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 num_labels = 2
 
-model = AutoModelForSequenceClassification.from_pretrained(
-    model_ckpt, num_labels=num_labels
-).to(device)
-
 
 # tokenizer helper function
 def tokenize(batch):
@@ -131,45 +129,69 @@ train_test_valid_dataset_tokenized = train_test_valid_dataset.map(
     tokenize, batched=True, batch_size=None
 )
 
+# %% [markdown]
+#
+# TODO: Try too use sagemaker to fine tune the transformer
+
 # %%
-notebook_login()
+sess = sagemaker.Session()
+# sagemaker session bucket -> used for uploading data, models and logs
+# sagemaker will automatically create this bucket if it not exists
+sagemaker_session_bucket = None
+if sagemaker_session_bucket is None and sess is not None:
+    # set to default bucket if a bucket name is not given
+    sagemaker_session_bucket = sess.default_bucket()
 
+try:
+    role = sagemaker.get_execution_role()
+except ValueError:
+    iam = boto3.client("iam")
+    role = iam.get_role(RoleName="sage_maker")["Role"]["Arn"]
+sess = sagemaker.Session(default_bucket=sagemaker_session_bucket)
+
+print(f"sagemaker role arn: {role}")
+print(f"sagemaker bucket: {sess.default_bucket()}")
+print(f"sagemaker session region: {sess.boto_region_name}")
 
 # %%
-def compute_metrics(pred):
-    labels = pred.label_ids
-    preds = pred.predictions.argmax(-1)
-    f1 = f1_score(labels, preds, average="weighted")
-    acc = accuracy_score(labels, preds)
-    return {"accuracy": acc, "f1": f1}
+print(train_test_valid_dataset_tokenized["train"])
 
+# %%
+s3 = S3FileSystem()
+s3_prefix = "samples/datasets/floods"
 
-batch_size = 64
-logging_steps = len(train_test_valid_dataset_tokenized["train"]) // batch_size
-model_name = "bert-base-uncased-finetuned-floods"
-torch.cuda.empty_cache()
+train_dataset = train_test_valid_dataset_tokenized["train"]
+test_dataset = train_test_valid_dataset_tokenized["test"]
 
-training_args = TrainingArguments(
-    output_dir=model_name,
-    num_train_epochs=2,
-    learning_rate=2e-5,
-    per_device_train_batch_size=batch_size,
-    per_device_eval_batch_size=batch_size,
-    weight_decay=0.01,
-    evaluation_strategy="epoch",
-    disable_tqdm=False,
-    logging_steps=logging_steps,
-    push_to_hub=True,
-    log_level="error",
+train_dataset = train_dataset.remove_columns(["__index_level_0__"])
+test_dataset = test_dataset.remove_columns(["__index_level_0__"])
+# save train_dataset to s3
+training_input_path = f"s3://{sess.default_bucket()}/{s3_prefix}/train"
+test_input_path = f"s3://{sess.default_bucket()}/{s3_prefix}/test"
+
+train_dataset = train_dataset.rename_column("label", "labels")
+train_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
+train_dataset.save_to_disk(training_input_path, fs=s3)
+
+# save test_dataset to s3
+test_dataset = test_dataset.rename_column("label", "labels")
+test_dataset.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
+test_dataset.save_to_disk(test_input_path, fs=s3)
+
+# %%
+# hyperparameters, which are passed into the training job
+hyperparameters = {"epochs": 1, "train_batch_size": 32, "model_name": model_ckpt}
+
+huggingface_estimator = HuggingFace(
+    entry_point="train.py",
+    source_dir="scripts",
+    instance_type="ml.p3.2xlarge",
+    instance_count=1,
+    role=role,
+    transformers_version="4.12",
+    pytorch_version="1.9",
+    py_version="py38",
+    hyperparameters=hyperparameters,
 )
 
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    compute_metrics=compute_metrics,
-    train_dataset=train_test_valid_dataset_tokenized["train"],
-    eval_dataset=train_test_valid_dataset_tokenized["valid"],
-    tokenizer=tokenizer,
-)
-
-trainer.train()
+huggingface_estimator.fit({"train": training_input_path, "test": test_input_path})
