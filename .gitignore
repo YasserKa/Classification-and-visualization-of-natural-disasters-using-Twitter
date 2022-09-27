@@ -97,3 +97,5 @@ outputs
 /report/tex_output/*
 !/report/tex_output/*.pdf
 /models
+# Ignore bibliography for the time being
+/report/bibliography.bib
