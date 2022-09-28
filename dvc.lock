@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   preprocess:
-    cmd: head data/raw/supervisor_annotated_tweets.csv
+    cmd: ./src/data/preprocess.py data/raw/2013_Alberta_Floods-ontopic_offtopic.csv
   preprocess@0:
     cmd: head data/raw/supervisor_annotated_tweets.csv
     deps:
@@ -9,29 +9,35 @@ stages:
       md5: 01f6a5aa8cf08b88843808265eb4ca48
       size: 134808
   preprocess@data/raw/2013_Alberta_Floods-ontopic_offtopic.csv:
-    cmd: ./src/data/preprocess.py data/raw/2013_Alberta_Floods-ontopic_offtopic.csv
+    cmd: src/data/preprocess.py data/raw/2013_Alberta_Floods-ontopic_offtopic.csv
     deps:
-    - path: ./src/data/preprocess.py
-      md5: 89cacb67ef66c1af8394e56558b53c7a
-      size: 4054
     - path: data/raw/2013_Alberta_Floods-ontopic_offtopic.csv
       md5: c5a1d265c5f200f6d66359f926698226
       size: 1391617
+    - path: src/data/preprocess.py
+      md5: 6e2f91b494a35051e8061354f61558df
+      size: 4380
   preprocess@data/raw/2013_Queensland_Floods-ontopic_offtopic.csv:
-    cmd: ./src/data/preprocess.py data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
+    cmd: src/data/preprocess.py data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
     deps:
-    - path: ./src/data/preprocess.py
-      md5: 89cacb67ef66c1af8394e56558b53c7a
-      size: 4054
     - path: data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
       md5: 662337576c2dc5105fe3ef290d01b001
       size: 1332585
+    - path: src/data/preprocess.py
+      md5: 6e2f91b494a35051e8061354f61558df
+      size: 4380
   preprocess@data/tweets/supervisor_annotated_tweets.json:
-    cmd: ./src/data/preprocess.py data/tweets/supervisor_annotated_tweets.json
+    cmd: src/data/preprocess.py data/tweets/supervisor_annotated_tweets.json
     deps:
-    - path: ./src/data/preprocess.py
-      md5: 89cacb67ef66c1af8394e56558b53c7a
-      size: 4054
     - path: data/tweets/supervisor_annotated_tweets.json
       md5: 3c1a7a06ec9a101f3ae4e38b44aa06bb
       size: 4865498
+    - path: src/data/preprocess.py
+      md5: 6e2f91b494a35051e8061354f61558df
+      size: 4380
+  train:
+    cmd: ./src/train/train.py "sagemaker" "mentions_impact" data/processed/supervisor_annotated_tweets.csv
+    deps:
+    - path: src/train/train.py
+      md5: e9bdf3aa93a410ee9227db14116f9f72
+      size: 6934

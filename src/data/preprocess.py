@@ -6,19 +6,20 @@ import sys
 from typing import Union
 
 import pandas as pd
+import numpy as np
 import spacy
 from hydra import compose, initialize
 from omegaconf import DictConfig
 
-from src.data.text_processing import TextProcessing
-
 """ Transform datasets to be ready for training
 
 The data strcture will be:
+id, text, relevant(0/1), mentions_impact(0/1)
 
-tweet_id, text, label
+Not all datasets include "mentions_impact"
 
-label: (0/1) on topic or not
+args:
+    1- str: datasetpath
 """
 
 
@@ -75,44 +76,57 @@ def clean_dataframe(df) -> pd.DataFrame:
     """
     Remove retweets, duplicate tweets and clean text
 
-    :param df [TODO:type]: [TODO:description]
+    :param df pd.DataFrame
     """
     # Remove retweets
     df = df[df["text"].str[:2] != "RT"]
     # Remove duplicates
     df = df.drop_duplicates()
 
-    text_preprocessing = TextProcessing()
     # Clean text
-    df["text"] = text_preprocessing.clean_text(df["text"].to_numpy())
+    df["text"] = clean_text(df["text"].to_numpy())
+    df = df[(df["text"] != "") & df["text"].notnull()]
+
     return df
 
 
-def transform_crisislex_dataset(path) -> pd.DataFrame:
+def preprocess_crisislex_dataset(path) -> pd.DataFrame:
     """
-    [TODO:description]
+    Preprocess a crisislex dataset
+    Its structure is the following:
+    tweet_id, tweet, label
 
-    :param path [TODO:type]: [TODO:description]
-    :rtype pd.DataFrame: [TODO:description]
+    :param path str
+    :rtype pd.DataFrame
     """
     df: pd.DataFrame = pd.read_csv(path)
-    df = df.rename(columns={"tweet_id": "id", "tweet": "text"})
-    df["label"] = df["label"].apply(lambda x: 1 if x == "on-topic" else 0)
+    df = df.rename(
+        columns={"tweet_id": "id", "tweet": "text", "label": "relevant"},
+    )
+    df["relevant"] = df["relevant"].apply(lambda x: 1 if x == "on-topic" else 0)
     df["id"] = df["id"].apply(lambda x: x[1:-1])
     df = df.astype({"id": "int"})
     df = clean_dataframe(df)
     return df
 
 
-def transform_supervisor_dataset(path) -> pd.DataFrame:
+def preprocess_supervisor_dataset(path) -> pd.DataFrame:
     with open(path, "r") as file:
         tweets_json = json.load(file)
 
     df = pd.json_normalize(list(tweets_json.values()))
-    df = df[["id", "text_en", "On Topic"]]
-    df = df.rename(columns={"text_en": "text", "On Topic": "label"})
-    df = df[df["label"] != ""]
-    df = df.astype({"label": "int", "id": "int"})
+    df = df[
+        ["id", "text_en", "On Topic", "Contains specific information about IMPACTS"]
+    ]
+    df = df.rename(
+        columns={
+            "text_en": "text",
+            "On Topic": "relevant",
+            "Contains specific information about IMPACTS": "mentions_impact",
+        }
+    )
+    df = df[(df["relevant"] != "") & (df["mentions_impact"] != "")]
+    df = df.astype({"relevant": "int", "mentions_impact": "int", "id": "int"})
     df = clean_dataframe(df)
     return df
 
@@ -125,13 +139,13 @@ def main() -> None:
     match path:
         case cfg.supervisor.tweets:
             output: str = cfg.supervisor.processed
-            df = transform_supervisor_dataset(path)
+            df = preprocess_supervisor_dataset(path)
         case cfg.alberta.raw:
             output: str = cfg.alberta.processed
-            df = transform_crisislex_dataset(path)
+            df = preprocess_crisislex_dataset(path)
         case cfg.queensland.raw:
             output: str = cfg.queensland.processed
-            df = transform_crisislex_dataset(path)
+            df = preprocess_crisislex_dataset(path)
         case _:
             raise Exception(f"{path} file not found")
 

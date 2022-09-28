@@ -7,7 +7,9 @@ stages:
     do:
       deps:
         - ${item}
-        - ./src/data/preprocess.py
-      cmd: ./src/data/preprocess.py ${item}
-
-
+        - src/data/preprocess.py
+      cmd: src/data/preprocess.py ${item}
+  train:
+    deps: 
+      - src/train/train.py
+    cmd: ./src/train/train.py "sagemaker" "mentions_impact" ${supervisor.processed}
