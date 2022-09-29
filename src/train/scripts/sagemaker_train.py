@@ -9,6 +9,7 @@ from datasets import load_from_disk
 import random
 import logging
 import sys
+import json
 import argparse
 import os
 import torch
@@ -99,10 +100,8 @@ if __name__ == "__main__":
     eval_result = trainer.evaluate(eval_dataset=test_dataset)
 
     # writes eval result to file which can be accessed later in s3 ouput
-    with open(os.path.join(args.output_data_dir, "eval_results.txt"), "w") as writer:
-        print(f"***** Eval results *****")
-        for key, value in sorted(eval_result.items()):
-            writer.write(f"{key} = {value}\n")
+    with open(os.path.join(args.output_data_dir, "eval.json"), "w") as file:
+        json.dump(eval_result, file)
 
     # Saves the model to s3
     trainer.save_model(args.model_dir)

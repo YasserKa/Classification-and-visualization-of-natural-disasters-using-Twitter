@@ -4,6 +4,7 @@ stages:
       - ${supervisor.tweets}
       - ${alberta.raw}
       - ${queensland.raw}
+      - ${crisis.raw}
     do:
       deps:
         - ${item}
@@ -12,4 +13,8 @@ stages:
   train:
     deps: 
       - src/train/train.py
-    cmd: ./src/train/train.py --env "sagemaker" --model "distilbert-base-uncased" --label "mentions_impact" -- ${supervisor.processed}
+      - ${supervisor.processed}
+  # NOTE: DVC can't interpolate a list, hence the need to write them down manually here everytime
+    cmd: ./src/train/train.py --env "sagemaker" --model ${model} --label ${label} -- ${supervisor.processed} ${crisis.processed}
+    metrics:
+      - eval.json

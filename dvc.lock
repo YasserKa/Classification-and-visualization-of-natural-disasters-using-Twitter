@@ -15,8 +15,8 @@ stages:
       md5: c5a1d265c5f200f6d66359f926698226
       size: 1391617
     - path: src/data/preprocess.py
-      md5: 6e2f91b494a35051e8061354f61558df
-      size: 4380
+      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
+      size: 5449
   preprocess@data/raw/2013_Queensland_Floods-ontopic_offtopic.csv:
     cmd: src/data/preprocess.py data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
     deps:
@@ -24,8 +24,8 @@ stages:
       md5: 662337576c2dc5105fe3ef290d01b001
       size: 1332585
     - path: src/data/preprocess.py
-      md5: 6e2f91b494a35051e8061354f61558df
-      size: 4380
+      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
+      size: 5449
   preprocess@data/tweets/supervisor_annotated_tweets.json:
     cmd: src/data/preprocess.py data/tweets/supervisor_annotated_tweets.json
     deps:
@@ -33,11 +33,29 @@ stages:
       md5: 3c1a7a06ec9a101f3ae4e38b44aa06bb
       size: 4865498
     - path: src/data/preprocess.py
-      md5: 6e2f91b494a35051e8061354f61558df
-      size: 4380
+      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
+      size: 5449
+      isexec: true
   train:
-    cmd: ./src/train/train.py "sagemaker" "mentions_impact" data/processed/supervisor_annotated_tweets.csv
+    cmd: ./src/train/train.py --env "sagemaker" --model distilbert-base-uncased --label
+      mentions_impact -- data/processed/supervisor_annotated_tweets.csv data/processed/crisis_nlp_task_dmg.csv
     deps:
+    - path: data/processed/supervisor_annotated_tweets.csv
+      md5: 721ca1b4fed72da2e4d6899368205277
+      size: 494393
     - path: src/train/train.py
-      md5: e9bdf3aa93a410ee9227db14116f9f72
-      size: 6934
+      md5: 6c95b556ea22862cedd239e69133f17b
+      size: 9261
+    outs:
+    - path: eval.json
+      md5: 2245589f34da52bd3373680e676573c3
+      size: 240
+  preprocess@data/raw/crisis_nlp_task_dmg.tsv:
+    cmd: src/data/preprocess.py data/raw/crisis_nlp_task_dmg.tsv
+    deps:
+    - path: data/raw/crisis_nlp_task_dmg.tsv
+      md5: 55b99d09e2cc9f859110612af9b8e043
+      size: 895579
+    - path: src/data/preprocess.py
+      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
+      size: 5449

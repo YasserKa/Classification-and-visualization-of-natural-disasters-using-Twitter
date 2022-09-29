@@ -6,11 +6,15 @@ from datasets.arrow_dataset import Dataset
 import boto3
 import json
 from enum import Enum
+import tarfile
 import sagemaker
+from hydra import compose, initialize
+from omegaconf import DictConfig
 from sagemaker.huggingface import HuggingFace
 from datasets.dataset_dict import DatasetDict
 from transformers.trainer import Trainer
 from sklearn.metrics import accuracy_score, f1_score
+from imblearn.under_sampling import RandomUnderSampler
 import pandas as pd
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 import torch
@@ -100,7 +104,7 @@ def train_locally(dataset, model_enc) -> None:
 
     trainer.train()
     preds_output = trainer.predict(dataset["test"])
-    with open("output/eval.js", "w") as file:
+    with open("eval.js", "w") as file:
         json.dump(preds_output.metrics, file)
 
 
@@ -128,7 +132,7 @@ def train_sagemaker(dataset, model_enc, role_name):
     train_dataset = dataset["train"]
     test_dataset = dataset["test"]
 
-    save_to_s3 = False
+    save_to_s3 = True
     training_input_path = f"s3://{sess.default_bucket()}/{s3_prefix}/train"
     test_input_path = f"s3://{sess.default_bucket()}/{s3_prefix}/test"
 
@@ -138,7 +142,7 @@ def train_sagemaker(dataset, model_enc, role_name):
         train_dataset.set_format(
             "torch", columns=["input_ids", "attention_mask", "labels"]
         )
-        # train_dataset.save_to_disk(training_input_path, fs=s3)
+        train_dataset.save_to_disk(training_input_path, fs=s3)
 
         # save test_dataset to s3
         test_dataset = test_dataset.rename_column("label", "labels")
@@ -171,8 +175,9 @@ def train_sagemaker(dataset, model_enc, role_name):
 
     print(huggingface_estimator.model_data)
     # Get directory of output for model
+    output = "output.tar.gz"
     eval_s3_URI = (
-        "/".join(huggingface_estimator.model_data.split("/")[:-1]) + "/output.tar.gz"
+        "/".join(huggingface_estimator.model_data.split("/")[:-1]) + f"/{output}"
     )
     S3Downloader.download(
         # s3_uri=huggingface_estimator.model_data, # S3 URI where the trained model is located
@@ -180,23 +185,57 @@ def train_sagemaker(dataset, model_enc, role_name):
         local_path=".",  # local path where *.targ.gz is saved
         sagemaker_session=sess,  # SageMaker session used for training the model
     )
-    print("Model metrics can be found output.tar.gz")
+    with tarfile.open(output) as tar:
+        tar.extractall()
 
 
-def get_datasets(list_path, model_enc, label_enum) -> DatasetDict:
+def get_tweets_from_paths(path_list, label_enum):
+    """
+    Concatenate datasets from list of paths to datasets
+    """
     df_last = pd.DataFrame()
 
     # Use datasets that has the target label only
-    for path in list_path:
+    for path in path_list:
         df = pd.read_csv(path)
         if label_enum.value not in df.columns:
             raise Exception(f"{label_enum.value} label doesn't exist in {path} dataset")
 
         df = df.rename(columns={label_enum.value: "label"})
+
+        with initialize(version_base=None, config_path="../../conf"):
+            cfg: DictConfig = compose(config_name="config")
+        # Consider the tweets that are relevant to floods
+        if label_enum == Label.MENTIONS_IMPACT and path == cfg.supervisor.processed:
+            df = df[df["relevant"] == 1]
+
         df = df[["id", "text", "label"]]
         df_last = pd.concat([df_last, df])
 
-    dataset = Dataset.from_pandas(df_last)
+    return df_last
+
+
+def get_dataset(
+    path_list: list[str], model_enc: ModelEncapsualtion, label_enum: Label
+) -> DatasetDict:
+    """
+    Get a train/valid/test splitted tokenized dataset from a list of datasets
+    """
+    df: pd.DataFrame = get_tweets_from_paths(path_list, label_enum)
+
+    # Undersample tweets that don't mention impact
+    if label_enum == Label.MENTIONS_IMPACT:
+        ros: RandomUnderSampler = RandomUnderSampler(random_state=0)
+        X_labels: list[str] = list(df.columns != "label")
+        y_label: str = "label"
+        df_undersampled: pd.DataFrame = pd.DataFrame()
+        X, y = ros.fit_resample(df.loc[:, X_labels], df[y_label])
+        df_undersampled: pd.DataFrame = X
+        df_undersampled[y_label] = y
+        # Shuffle
+        df: pd.DataFrame = df_undersampled.sample(frac=1)
+
+    dataset: Dataset = Dataset.from_pandas(df)
 
     train_testvalid = dataset.train_test_split(test_size=0.1)
 
@@ -229,7 +268,7 @@ def get_datasets(list_path, model_enc, label_enum) -> DatasetDict:
 def main(env, model, label, datasets_path, role_name):
     model_enc = ModelEncapsualtion(model)
     label_enum = Label(label)
-    dataset = get_datasets(datasets_path, model_enc, label_enum)
+    dataset = get_dataset(datasets_path, model_enc, label_enum)
     env_enum = Environment(env)
 
     if env_enum == Environment.SAGEMAKER:

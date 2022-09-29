@@ -6,7 +6,6 @@ import sys
 from typing import Union
 
 import pandas as pd
-import numpy as np
 import spacy
 from hydra import compose, initialize
 from omegaconf import DictConfig
@@ -79,7 +78,7 @@ def clean_dataframe(df) -> pd.DataFrame:
     :param df pd.DataFrame
     """
     # Remove retweets
-    df = df[df["text"].str[:2] != "RT"]
+    df = df.drop(df[df["text"].str.startswith("RT")].index)
     # Remove duplicates
     df = df.drop_duplicates()
 
@@ -87,6 +86,39 @@ def clean_dataframe(df) -> pd.DataFrame:
     df["text"] = clean_text(df["text"].to_numpy())
     df = df[(df["text"] != "") & df["text"].notnull()]
 
+    return df
+
+
+def preprocess_crisis_dataset(path) -> pd.DataFrame:
+    """
+     Preprocess a crisis dataset to get impact
+     Its structure is the following:
+     event_name	tweet_id	image_id	tweet_text	image	label
+
+     Label shows the impact severity:
+    * Severe damage
+    * Mild damage
+    * Little or no damage
+
+    mentions_impact is 1 if the severity is (Mild or Sever), 0 otherwise
+
+     :param path str
+     :rtype pd.DataFrame
+    """
+    df: pd.DataFrame = pd.read_csv(path, sep="\t")
+    df = df[["tweet_id", "event_name", "tweet_text", "label"]]
+    df = df.rename(
+        columns={
+            "tweet_text": "text",
+            "tweet_id": "id",
+            "label": "mentions_impact",
+        }
+    )
+    impactful_labels = ["sever_damage", "mild_damage"]
+    df["mentions_impact"] = df["mentions_impact"].apply(
+        lambda x: 1 if x in impactful_labels else 0
+    )
+    df = df.astype({"id": "int", "mentions_impact": "int"})
     return df
 
 
@@ -105,8 +137,7 @@ def preprocess_crisislex_dataset(path) -> pd.DataFrame:
     )
     df["relevant"] = df["relevant"].apply(lambda x: 1 if x == "on-topic" else 0)
     df["id"] = df["id"].apply(lambda x: x[1:-1])
-    df = df.astype({"id": "int"})
-    df = clean_dataframe(df)
+    df = df.astype({"id": "int", "relevant": "int"})
     return df
 
 
@@ -127,7 +158,6 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
     )
     df = df[(df["relevant"] != "") & (df["mentions_impact"] != "")]
     df = df.astype({"relevant": "int", "mentions_impact": "int", "id": "int"})
-    df = clean_dataframe(df)
     return df
 
 
@@ -146,9 +176,13 @@ def main() -> None:
         case cfg.queensland.raw:
             output: str = cfg.queensland.processed
             df = preprocess_crisislex_dataset(path)
+        case cfg.crisis.raw:
+            output: str = cfg.crisis.processed
+            df = preprocess_crisis_dataset(path)
         case _:
             raise Exception(f"{path} file not found")
 
+    df = clean_dataframe(df)
     df.to_csv(output, index=False)
 
 
