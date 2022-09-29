@@ -12,4 +12,4 @@ stages:
   train:
     deps: 
       - src/train/train.py
-    cmd: ./src/train/train.py "sagemaker" "mentions_impact" ${supervisor.processed}
+    cmd: ./src/train/train.py --env "sagemaker" --model "distilbert-base-uncased" --label "mentions_impact" -- ${supervisor.processed}

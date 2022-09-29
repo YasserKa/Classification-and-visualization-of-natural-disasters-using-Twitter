@@ -17,6 +17,8 @@ spacy = "*"
 dvc = {extras = ["gdrive"], version = "*"}
 hydra-core = "*"
 git-lfs = "*"
+click = "*"
+protobuf = "==3.20.0"
 
 [dev-packages]
 pytest = "*"

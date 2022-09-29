@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import sys
+import click
 from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
 from datasets.filesystems.s3filesystem import S3FileSystem
 from datasets.arrow_dataset import Dataset
 import boto3
+import json
+from enum import Enum
 import sagemaker
 from sagemaker.huggingface import HuggingFace
 from datasets.dataset_dict import DatasetDict
@@ -15,32 +17,56 @@ import torch
 from transformers.training_args import TrainingArguments
 
 """
-Training dataset/s using either sagemaker or locally
+Training dataset/s locally or using sagemaker
 
 args:
-    1- method: locally, sagemaker
-    2- target label: relevant, mentions_impact
-    *- dataset: path to dataset
+    --environment: locally, sagemaker
+    --label: relevant, mentions_impact
+    -- path to dataset/s
 """
 
-model_name: str = "distilbert-base-uncased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-target_label = ""
+# TODO: Remove train_locally() and use train.py instead
+# TODO: Add --download_model option
 
 
-def train_locally(dataset) -> None:
+class Environment(Enum):
+    SAGEMAKER = "sagemaker"
+    LOCALLY = "locally"
+
+
+class Label(Enum):
+    RELEVANT = "relevant"
+    MENTIONS_IMPACT = "mentions_impact"
+
+
+class ModelEncapsualtion:
+    """Model used to train the dataset"""
+
+    def __init__(self, name, labels_num=2):
+        self.__name = name
+        self.__tokenizer = AutoTokenizer.from_pretrained(name)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.__model = AutoModelForSequenceClassification.from_pretrained(
+            name, num_labels=labels_num
+        ).to(device)
+
+    def get_model(self):
+        return self.__model
+
+    def get_name(self):
+        return self.__name
+
+    def get_tokenizer(self):
+        return self.__tokenizer
+
+    def tokenize(self, batch):
+        return self.__tokenizer(batch["text"], padding="max_length", truncation=True)
+
+
+def train_locally(dataset, model_enc) -> None:
     batch_size = 64
     logging_steps = len(dataset["train"]) // batch_size
     output_model_name = "bert-base-uncased-finetuned-floods"
-    torch.cuda.empty_cache()
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # Number of labels for classification task
-    num_labels = 2
-
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=num_labels
-    ).to(device)
 
     training_args = TrainingArguments(
         output_dir=output_model_name,
@@ -64,20 +90,21 @@ def train_locally(dataset) -> None:
         return {"accuracy": acc, "f1": f1}
 
     trainer = Trainer(
-        model=model,
+        model=model_enc.get_model(),
         args=training_args,
         compute_metrics=compute_metrics,
         train_dataset=dataset["train"],
         eval_dataset=dataset["valid"],
-        tokenizer=tokenizer,
+        tokenizer=model_enc.get_tokenizer(),
     )
 
     trainer.train()
     preds_output = trainer.predict(dataset["test"])
-    print(preds_output.metrics)
+    with open("output/eval.js", "w") as file:
+        json.dump(preds_output.metrics, file)
 
 
-def train_sagemaker(dataset):
+def train_sagemaker(dataset, model_enc, role_name):
     # Getting session/role
     sess = sagemaker.Session()
     # sagemaker session bucket -> used for uploading data, models and logs
@@ -91,7 +118,7 @@ def train_sagemaker(dataset):
         role = sagemaker.get_execution_role()
     except ValueError:
         iam = boto3.client("iam")
-        role = iam.get_role(RoleName="sage_maker")["Role"]["Arn"]
+        role = iam.get_role(RoleName=role_name)["Role"]["Arn"]
     sess = sagemaker.Session(default_bucket=sagemaker_session_bucket)
 
     # Storing data in s3 bucket
@@ -120,7 +147,11 @@ def train_sagemaker(dataset):
         )
         test_dataset.save_to_disk(test_input_path, fs=s3)
 
-    hyperparameters = {"epochs": 1, "train_batch_size": 32, "model_name": model_name}
+    hyperparameters = {
+        "epochs": 1,
+        "train_batch_size": 32,
+        "model_name": model_enc.get_name(),
+    }
 
     huggingface_estimator = HuggingFace(
         entry_point="sagemaker_train.py",
@@ -152,20 +183,20 @@ def train_sagemaker(dataset):
     print("Model metrics can be found output.tar.gz")
 
 
-def get_datasets(list_path) -> DatasetDict:
+def get_datasets(list_path, model_enc, label_enum) -> DatasetDict:
     df_last = pd.DataFrame()
 
     # Use datasets that has the target label only
     for path in list_path:
         df = pd.read_csv(path)
-        if target_label not in df.columns:
-            raise Exception(f"{target_label} label doesn't exist in {path} dataset")
+        if label_enum.value not in df.columns:
+            raise Exception(f"{label_enum.value} label doesn't exist in {path} dataset")
 
-        df = df.rename(columns={target_label: "label"})
+        df = df.rename(columns={label_enum.value: "label"})
         df = df[["id", "text", "label"]]
         df_last = pd.concat([df_last, df])
 
-    dataset = Dataset.from_pandas(df)
+    dataset = Dataset.from_pandas(df_last)
 
     train_testvalid = dataset.train_test_split(test_size=0.1)
 
@@ -178,35 +209,35 @@ def get_datasets(list_path) -> DatasetDict:
             "valid": test_valid["train"],
         }
     )
-
-    def tokenize(batch):
-        return tokenizer(batch["text"], padding="max_length", truncation=True)
-
     train_test_valid_dataset_tokenized = train_test_valid_dataset.map(
-        tokenize, batched=True, batch_size=None
+        model_enc.tokenize, batched=True, batch_size=None
     )
 
     return train_test_valid_dataset_tokenized
 
 
-def main():
-    global target_label
-    method = sys.argv[1]
-    target_label = sys.argv[2]
-    print(target_label)
-    available_labels = ["mentions_impact", "relevant"]
-    if target_label not in available_labels:
-        raise Exception(
-            f"{target_label} is not valid, it should be one of the"
-            f" following {', '.join(available_labels)}"
-        )
-    dataset = get_datasets(sys.argv[3:])
-    if method == "sagemaker":
-        train_sagemaker(dataset)
-    elif method == "locally":
-        train_locally(dataset)
+@click.command()
+@click.option(
+    "--environment", "--env", "env", default="sagemaker", help="Training environment"
+)
+@click.option("--model", default="distilbert-base-uncased", help="Model used to train")
+@click.option("--label", default="relevant", help="Target label to train the model for")
+@click.option(
+    "--role_name", default="sage_maker", help="AWS role_name to access resources"
+)
+@click.argument("datasets_path", nargs=-1)
+def main(env, model, label, datasets_path, role_name):
+    model_enc = ModelEncapsualtion(model)
+    label_enum = Label(label)
+    dataset = get_datasets(datasets_path, model_enc, label_enum)
+    env_enum = Environment(env)
+
+    if env_enum == Environment.SAGEMAKER:
+        train_sagemaker(dataset, model_enc, role_name)
+    elif env_enum == Environment.LOCALLY:
+        train_locally(dataset, model_enc)
     else:
-        raise Exception(f"{method} is not valid method")
+        raise Exception(f"{env} is not valid environment")
 
 
 if __name__ == "__main__":
