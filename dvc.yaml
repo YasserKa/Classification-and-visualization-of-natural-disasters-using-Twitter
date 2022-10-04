@@ -12,9 +12,10 @@ stages:
       cmd: src/data/preprocess.py ${item}
   train:
     deps: 
+    # NOTE: Can't include datasets in dependencies, since they are in the form
+    # of datasets: <dataset1> <dataset2> instead of a list. Check config.yaml
+    # for more info
       - src/train/train.py
-      - ${supervisor.processed}
-  # NOTE: DVC can't interpolate a list, hence the need to write them down manually here everytime
-    cmd: ./src/train/train.py --env "sagemaker" --model ${model} --label ${label} -- ${supervisor.processed} ${crisis.processed}
+    cmd: ./src/train/train.py --env ${env} --model ${model} --label ${label} --download_model -- ${datasets}
     metrics:
       - eval.json

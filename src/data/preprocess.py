@@ -13,7 +13,7 @@ from omegaconf import DictConfig
 """ Transform datasets to be ready for training
 
 The data strcture will be:
-id, text, relevant(0/1), mentions_impact(0/1)
+id, text, raw_text, relevant(0/1), mentions_impact(0/1)
 
 Not all datasets include "mentions_impact"
 
@@ -77,13 +77,27 @@ def clean_dataframe(df) -> pd.DataFrame:
 
     :param df pd.DataFrame
     """
+    # HACK: process the english translated tweets instead of the original
+    # swedish ones
+    # TODO: include the swe->en translation step here by detecting the language
+    # of the raw text and adding it as a new column, and translate it
+    if "text" in df.columns:
+        raw_text_series = df["text"]
+    else:
+        raw_text_series = df["raw_text"]
+
     # Remove retweets
-    df = df.drop(df[df["text"].str.startswith("RT")].index)
+    df = df.drop(df[raw_text_series.str.startswith("RT")].index)
     # Remove duplicates
     df = df.drop_duplicates()
 
+    if "text" in df.columns:
+        raw_text_series = df["text"]
+    else:
+        raw_text_series = df["raw_text"]
+
     # Clean text
-    df["text"] = clean_text(df["text"].to_numpy())
+    df["text"] = clean_text(raw_text_series.to_numpy())
     df = df[(df["text"] != "") & df["text"].notnull()]
 
     return df
@@ -109,7 +123,7 @@ def preprocess_crisis_dataset(path) -> pd.DataFrame:
     df = df[["tweet_id", "event_name", "tweet_text", "label"]]
     df = df.rename(
         columns={
-            "tweet_text": "text",
+            "tweet_text": "raw_text",
             "tweet_id": "id",
             "label": "mentions_impact",
         }
@@ -133,7 +147,7 @@ def preprocess_crisislex_dataset(path) -> pd.DataFrame:
     """
     df: pd.DataFrame = pd.read_csv(path)
     df = df.rename(
-        columns={"tweet_id": "id", "tweet": "text", "label": "relevant"},
+        columns={"tweet_id": "id", "tweet": "raw_text", "label": "relevant"},
     )
     df["relevant"] = df["relevant"].apply(lambda x: 1 if x == "on-topic" else 0)
     df["id"] = df["id"].apply(lambda x: x[1:-1])
@@ -146,12 +160,20 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
         tweets_json = json.load(file)
 
     df = pd.json_normalize(list(tweets_json.values()))
+    # HACK: check line 86
     df = df[
-        ["id", "text_en", "On Topic", "Contains specific information about IMPACTS"]
+        [
+            "id",
+            "text",
+            "text_en",
+            "On Topic",
+            "Contains specific information about IMPACTS",
+        ]
     ]
     df = df.rename(
         columns={
             "text_en": "text",
+            "text": "raw_text",
             "On Topic": "relevant",
             "Contains specific information about IMPACTS": "mentions_impact",
         }

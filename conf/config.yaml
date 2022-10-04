@@ -1,5 +1,17 @@
+env: ${envs.sagemaker}
 model: "distilbert-base-uncased"
-label: "mentions_impact"
+label: ${labels.flood_detection}
+# NOTE: DVC can't interpolate a list, hence the need to write them down manually here everytime
+# Reference: https://github.com/iterative/dvc/issues/5789
+datasets: ${supervisor.processed}
+
+envs:
+  sagemaker: "sagemaker"
+  locally: "locally"
+
+labels:
+  flood_detection: "relevant"
+  mentions_impact: "mentions_impact"
 
 supervisor: 
   raw: data/raw/supervisor_annotated_tweets.csv

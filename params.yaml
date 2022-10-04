@@ -1,5 +1,13 @@
+env: sagemaker
 model: distilbert-base-uncased
-label: mentions_impact
+label: relevant
+datasets: data/processed/supervisor_annotated_tweets.csv
+envs:
+  sagemaker: sagemaker
+  locally: locally
+labels:
+  flood_detection: relevant
+  mentions_impact: mentions_impact
 supervisor:
   raw: data/raw/supervisor_annotated_tweets.csv
   tweets: data/tweets/supervisor_annotated_tweets.json

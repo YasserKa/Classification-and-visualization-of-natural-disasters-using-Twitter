@@ -1,10 +1,8 @@
-from src.data.text_processing import TextProcessing
+from src.data.preprocess import clean_text
 
 
 def test_clean_text():
     text = "CaPitaL, words https://example.com @this #that \n 1923 something?"
     expected_text = "capital words that something"
 
-    text_processing = TextProcessing()
-
-    assert text_processing.clean_text(text) == [expected_text]
+    assert clean_text(text) == [expected_text]

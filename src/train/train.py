@@ -70,7 +70,7 @@ class ModelEncapsualtion:
 def train_locally(dataset, model_enc) -> None:
     batch_size = 64
     logging_steps = len(dataset["train"]) // batch_size
-    output_model_name = "bert-base-uncased-finetuned-floods"
+    output_model_name = f"{model_enc.get_name()}_output"
 
     training_args = TrainingArguments(
         output_dir=output_model_name,
@@ -108,7 +108,7 @@ def train_locally(dataset, model_enc) -> None:
         json.dump(preds_output.metrics, file)
 
 
-def train_sagemaker(dataset, model_enc, role_name):
+def train_sagemaker(dataset, model_enc, role_name, download_model):
     # Getting session/role
     sess = sagemaker.Session()
     # sagemaker session bucket -> used for uploading data, models and logs
@@ -179,14 +179,21 @@ def train_sagemaker(dataset, model_enc, role_name):
     eval_s3_URI = (
         "/".join(huggingface_estimator.model_data.split("/")[:-1]) + f"/{output}"
     )
+    # Download evaluation
     S3Downloader.download(
-        # s3_uri=huggingface_estimator.model_data, # S3 URI where the trained model is located
         s3_uri=eval_s3_URI,  # S3 URI where the trained model is located
         local_path=".",  # local path where *.targ.gz is saved
         sagemaker_session=sess,  # SageMaker session used for training the model
     )
     with tarfile.open(output) as tar:
         tar.extractall()
+
+    if download_model:
+        S3Downloader.download(
+            s3_uri=huggingface_estimator.model_data,  # S3 URI where the trained model is located
+            local_path=".",  # local path where *.targ.gz is saved
+            sagemaker_session=sess,  # SageMaker session used for training the model
+        )
 
 
 def get_tweets_from_paths(path_list, label_enum):
@@ -202,12 +209,6 @@ def get_tweets_from_paths(path_list, label_enum):
             raise Exception(f"{label_enum.value} label doesn't exist in {path} dataset")
 
         df = df.rename(columns={label_enum.value: "label"})
-
-        with initialize(version_base=None, config_path="../../conf"):
-            cfg: DictConfig = compose(config_name="config")
-        # Consider the tweets that are relevant to floods
-        if label_enum == Label.MENTIONS_IMPACT and path == cfg.supervisor.processed:
-            df = df[df["relevant"] == 1]
 
         df = df[["id", "text", "label"]]
         df_last = pd.concat([df_last, df])
@@ -264,15 +265,18 @@ def get_dataset(
 @click.option(
     "--role_name", default="sage_maker", help="AWS role_name to access resources"
 )
+@click.option(
+    "--download_model", is_flag=True, default=False, help="Download trained model"
+)
 @click.argument("datasets_path", nargs=-1)
-def main(env, model, label, datasets_path, role_name):
+def main(env, model, label, datasets_path, role_name, download_model):
     model_enc = ModelEncapsualtion(model)
     label_enum = Label(label)
     dataset = get_dataset(datasets_path, model_enc, label_enum)
     env_enum = Environment(env)
 
     if env_enum == Environment.SAGEMAKER:
-        train_sagemaker(dataset, model_enc, role_name)
+        train_sagemaker(dataset, model_enc, role_name, download_model)
     elif env_enum == Environment.LOCALLY:
         train_locally(dataset, model_enc)
     else:

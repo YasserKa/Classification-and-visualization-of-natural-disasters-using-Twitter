@@ -15,8 +15,8 @@ stages:
       md5: c5a1d265c5f200f6d66359f926698226
       size: 1391617
     - path: src/data/preprocess.py
-      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
-      size: 5449
+      md5: e6a601166a0e63d9e9c57b6b58ca837f
+      size: 6036
   preprocess@data/raw/2013_Queensland_Floods-ontopic_offtopic.csv:
     cmd: src/data/preprocess.py data/raw/2013_Queensland_Floods-ontopic_offtopic.csv
     deps:
@@ -24,8 +24,8 @@ stages:
       md5: 662337576c2dc5105fe3ef290d01b001
       size: 1332585
     - path: src/data/preprocess.py
-      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
-      size: 5449
+      md5: e6a601166a0e63d9e9c57b6b58ca837f
+      size: 6036
   preprocess@data/tweets/supervisor_annotated_tweets.json:
     cmd: src/data/preprocess.py data/tweets/supervisor_annotated_tweets.json
     deps:
@@ -33,23 +33,19 @@ stages:
       md5: 3c1a7a06ec9a101f3ae4e38b44aa06bb
       size: 4865498
     - path: src/data/preprocess.py
-      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
-      size: 5449
-      isexec: true
+      md5: e6a601166a0e63d9e9c57b6b58ca837f
+      size: 6036
   train:
-    cmd: ./src/train/train.py --env "sagemaker" --model distilbert-base-uncased --label
-      mentions_impact -- data/processed/supervisor_annotated_tweets.csv data/processed/crisis_nlp_task_dmg.csv
+    cmd: ./src/train/train.py --env sagemaker --model distilbert-base-uncased --label
+      relevant --download_model -- data/processed/supervisor_annotated_tweets.csv
     deps:
-    - path: data/processed/supervisor_annotated_tweets.csv
-      md5: 721ca1b4fed72da2e4d6899368205277
-      size: 494393
     - path: src/train/train.py
-      md5: 6c95b556ea22862cedd239e69133f17b
-      size: 9261
+      md5: 3d025fad7efc8180eebea6c6ed5c4714
+      size: 9412
     outs:
     - path: eval.json
-      md5: 2245589f34da52bd3373680e676573c3
-      size: 240
+      md5: 880ffa6bba097e137ae27d53126570ac
+      size: 276
   preprocess@data/raw/crisis_nlp_task_dmg.tsv:
     cmd: src/data/preprocess.py data/raw/crisis_nlp_task_dmg.tsv
     deps:
@@ -57,5 +53,5 @@ stages:
       md5: 55b99d09e2cc9f859110612af9b8e043
       size: 895579
     - path: src/data/preprocess.py
-      md5: e71bd81dfbe2bd2c8910cc7e21d80fdd
-      size: 5449
+      md5: e6a601166a0e63d9e9c57b6b58ca837f
+      size: 6036
