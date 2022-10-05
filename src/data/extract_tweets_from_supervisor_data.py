@@ -10,13 +10,12 @@ from omegaconf import DictConfig
 from src.classes.twitter_facade import TwitterFacade
 
 
-# NOTE: if this going to be used often, refactor it, and maybe include it in the
-# pipeline
+# NOTE: if this going to be used often, refactor it, and include it in the pipeline
 def extract_tweets_for_supervisor_data() -> None:
-    with initialize(version_base=None, config_path="../../config"):
-        cfg: DictConfig = compose(config_name="main")
-        supervisor_raw_path: str = abspath(cfg.raw.supervisor)
-        supervisor_tweets_path: str = abspath(cfg.tweets.supervisor)
+    with initialize(version_base=None, config_path="../../conf"):
+        cfg: DictConfig = compose(config_name="config")
+        supervisor_raw_path: str = abspath(cfg.supervisor.raw)
+        supervisor_tweets_path: str = abspath(cfg.supervisor.tweets)
     twitter: TwitterFacade = TwitterFacade()
 
     tweets = {}

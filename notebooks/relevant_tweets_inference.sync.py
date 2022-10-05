@@ -17,28 +17,8 @@ with initialize(version_base=None, config_path="../conf"):
 path_to_data = cfg.supervisor.processed
 
 
-def get_tweets_from_paths(path_list, label_enum):
-    """
-    Concatenate datasets from list of paths to datasets
-    """
-    df_last = pd.DataFrame()
-
-    # Use datasets that has the target label only
-    for path in path_list:
-        df = pd.read_csv("../" + path)
-        if label_enum not in df.columns:
-            raise Exception(f"{label_enum} label doesn't exist in {path} dataset")
-
-        df = df.rename(columns={label_enum: "label"})
-
-        df = df[["id", "text", "label"]]
-        df_last = pd.concat([df_last, df])
-
-    return df_last
-
-
-df: pd.DataFrame = get_tweets_from_paths([path_to_data], "relevant")
-dataset: Dataset = Dataset.from_pandas(df)
+df1 = pd.read_csv("../" + path_to_data)
+dataset: Dataset = Dataset.from_pandas(df1)
 # %%
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,10 +38,10 @@ def tokenize(batch):
 
 
 tokenized = dataset.map(tokenize, batched=True, batch_size=None)
-tokenized.set_format("torch", columns=["input_ids", "attention_mask", "label"])
+tokenized.set_format("torch", columns=["input_ids", "attention_mask", "relevant"])
+
+
 # %%
-
-
 def forward_pass_with_label(batch):
     # Place all input tensors on the same device as the model
     inputs = {
@@ -70,7 +50,9 @@ def forward_pass_with_label(batch):
     with torch.no_grad():
         output = model(**inputs)
         pred_label = torch.argmax(output.logits, axis=-1)
-        loss = cross_entropy(output.logits, batch["label"].to(device), reduction="none")
+        loss = cross_entropy(
+            output.logits, batch["relevant"].to(device), reduction="none"
+        )
         # Place outputs on CPU for compatibility with other dataset columns
         return {"loss": loss.cpu().numpy(), "predicted_label": pred_label.cpu().numpy()}
 
@@ -79,6 +61,6 @@ tokenized = tokenized.map(forward_pass_with_label, batched=True, batch_size=16)
 tokenized.set_format("pandas")
 # %%
 pd.options.display.max_colwidth = 100
-cols = ["text", "label", "predicted_label", "loss"]
+cols = ["text", "relevant", "predicted_label", "loss"]
 test = tokenized[:][cols]
-test[test["label"] == 1].sort_values("loss", ascending=False).head(100)
+test[test["relevant"] == 1].sort_values("loss", ascending=False).head(100)

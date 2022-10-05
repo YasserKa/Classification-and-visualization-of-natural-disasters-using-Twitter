@@ -13,13 +13,35 @@ from omegaconf import DictConfig
 """ Transform datasets to be ready for training
 
 The data strcture will be:
-id, text, raw_text, relevant(0/1), mentions_impact(0/1)
+id, text, raw_text, relevant(0/1), mentions_impact(0/1), mentions_location(0/1)
 
-Not all datasets include "mentions_impact"
+Not all datasets include mentions_impact and mentions_location
 
 args:
     1- str: datasetpath
 """
+
+
+def remove_not_needed_elements_from_string(text: str) -> str:
+    """
+    Remove URLs/Mentions/Hashtags/new lines/numbers
+
+    :param text str: to be processed text
+    :rtype str: processed text
+    """
+
+    processed_text = re.sub(
+        "((www.[^s]+)"
+        "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
+        "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
+        "|(@[a-zA-Z0-9_]*)"
+        "|([0-9]+)"
+        "|\n)",
+        " ",
+        text,
+    )
+
+    return processed_text
 
 
 def clean_text(text_list: Union[list, str]) -> list[str]:
@@ -39,16 +61,7 @@ def clean_text(text_list: Union[list, str]) -> list[str]:
     for id, text in enumerate(text_list):
 
         # Remove URLs/Mentions/Hashtags/new lines/numbers
-        text = re.sub(
-            "((www.[^s]+)"
-            "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
-            "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
-            "|(@[a-zA-Z0-9]*)"
-            "|([0-9]+)"
-            "|\n)",
-            " ",
-            text,
-        )
+        text = remove_not_needed_elements_from_string(text)
         # Remove stopwords
         text = " ".join([word for word in str(text).split() if word not in stopwords])
         # Remove punctuation
@@ -165,6 +178,7 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
         [
             "id",
             "text",
+            "Explicit location in Sweden",
             "text_en",
             "On Topic",
             "Contains specific information about IMPACTS",
@@ -175,11 +189,19 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
             "text_en": "text",
             "text": "raw_text",
             "On Topic": "relevant",
+            "Explicit location in Sweden": "mentions_location",
             "Contains specific information about IMPACTS": "mentions_impact",
         }
     )
     df = df[(df["relevant"] != "") & (df["mentions_impact"] != "")]
-    df = df.astype({"relevant": "int", "mentions_impact": "int", "id": "int"})
+    df = df.astype(
+        {
+            "relevant": "int",
+            "mentions_impact": "int",
+            "mentions_location": "int",
+            "id": "int",
+        }
+    )
     return df
 
 
