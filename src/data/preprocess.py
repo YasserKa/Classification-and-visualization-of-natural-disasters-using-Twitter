@@ -193,7 +193,11 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
             "Contains specific information about IMPACTS": "mentions_impact",
         }
     )
-    df = df[(df["relevant"] != "") & (df["mentions_impact"] != "")]
+    df = df[
+        (df["relevant"] != "")
+        & (df["mentions_impact"] != "")
+        & (df["mentions_location"] != "")
+    ]
     df = df.astype(
         {
             "relevant": "int",

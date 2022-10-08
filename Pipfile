@@ -22,6 +22,9 @@ protobuf = "==3.20.0"
 imbalanced-learn = "*"
 tqdm = "*"
 geopy = "*"
+plotly = "*"
+geopandas = "*"
+shapely = "*"
 
 [dev-packages]
 pytest = "*"
