@@ -10,13 +10,14 @@ asyncssh==2.12.0 ; python_version >= '3.6'
 atpublic==3.1.1 ; python_version >= '3.7'
 attrs==22.1.0 ; python_version >= '3.5'
 beautifulsoup4==4.11.1 ; python_full_version >= '3.6.0'
-billiard==4.0.2 ; python_version >= '3.7'
+billiard==3.6.4.0 ; python_version >= '3.7'
 blis==0.7.8
 boto3==1.24.89
 botocore==1.27.89 ; python_version >= '3.7'
+brotli==1.0.9
 cachetools==5.2.0 ; python_version ~= '3.7'
 catalogue==2.0.8 ; python_version >= '3.6'
-celery==5.3.0b1 ; python_version >= '3.7'
+celery==5.2.7 ; python_version >= '3.7'
 certifi==2022.9.24 ; python_version >= '3.6'
 cffi==1.15.1
 charset-normalizer==2.1.1 ; python_full_version >= '3.6.0'
@@ -24,7 +25,7 @@ click==8.1.3
 click-didyoumean==0.3.0 ; python_full_version >= '3.6.2' and python_full_version < '4.0.0'
 click-plugins==1.1.1
 click-repl==0.2.0
-cligj==0.7.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2' and python_version < '4'
+cligj==0.7.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3' and python_version < '4'
 colorama==0.4.5 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 commonmark==0.9.1
 confection==0.0.3 ; python_version >= '3.6'
@@ -33,35 +34,41 @@ contourpy==1.0.5 ; python_version >= '3.7'
 cryptography==38.0.1 ; python_version >= '3.6'
 cycler==0.11.0 ; python_version >= '3.6'
 cymem==2.0.6
+dash==2.6.2
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+dash-table==5.0.0
 deep-translator==1.9.0
 dictdiffer==0.9.0
 diskcache==5.4.0 ; python_version >= '3'
-distro==1.7.0 ; python_version >= '3.6'
+distro==1.8.0 ; python_version >= '3.6'
 dpath==2.0.6 ; python_version >= '3'
 dulwich==0.20.46 ; python_version >= '3.6'
-dvc[gdrive]==2.29.0
-dvc-data==0.14.0 ; python_version >= '3.8'
+dvc[gdrive]==2.30.0
+dvc-data==0.17.1 ; python_version >= '3.8'
 dvc-gdrive==2.19.0
 dvc-http==2.27.2 ; python_version >= '3.8'
-dvc-objects==0.5.0 ; python_version >= '3.8'
-dvc-render==0.0.11 ; python_version >= '3.8'
+dvc-objects==0.7.0 ; python_version >= '3.8'
+dvc-render==0.0.12 ; python_version >= '3.8'
 dvc-task==0.1.3 ; python_version >= '3.8'
-dvclive==0.11.0 ; python_version >= '3.8'
+dvclive==0.12.0 ; python_version >= '3.8'
 filelock==3.8.0 ; python_version >= '3.7'
-fiona==1.9a2 ; python_version >= '3.7'
+fiona==1.8.21 ; python_version >= '3.7'
+flask==2.2.2 ; python_version >= '3.7'
+flask-compress==1.13
 flatten-dict==0.4.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 flufl.lock==7.1.1 ; python_version >= '3.7'
 fonttools==4.37.4 ; python_version >= '3.7'
 frozenlist==1.3.1 ; python_version >= '3.7'
 fsspec[http]==2022.8.2 ; python_version >= '3.7'
 funcy==1.17
-future==0.18.2 ; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
+future==0.18.2 ; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 geographiclib==1.52
 geopandas==0.11.1
 geopy==2.2.0
 git-lfs==1.6
 gitdb==4.0.9 ; python_version >= '3.6'
-gitpython==3.1.28 ; python_version >= '3.7'
+gitpython==3.1.29 ; python_version >= '3.7'
 google-api-core==2.8.2 ; python_version >= '3.6'
 google-api-python-client==2.64.0 ; python_version >= '3.7'
 google-auth==2.12.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
@@ -69,28 +76,29 @@ google-auth-httplib2==0.1.0
 googleapis-common-protos==1.56.4 ; python_version >= '3.7'
 grandalf==0.6
 httplib2==0.20.4 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-huggingface-hub==0.10.0 ; python_full_version >= '3.7.0'
+huggingface-hub==0.10.1 ; python_full_version >= '3.7.0'
 hydra-core==1.2.0
 idna==3.4 ; python_version >= '3.5'
 imbalanced-learn==0.9.1
 iterative-telemetry==0.0.5 ; python_version >= '3.7'
+itsdangerous==2.1.2 ; python_version >= '3.7'
 jinja2==3.1.2 ; python_version >= '3.7'
 jmespath==1.0.1 ; python_version >= '3.7'
 joblib==1.2.0 ; python_version >= '3.7'
 kiwisolver==1.4.4 ; python_version >= '3.7'
-kombu==5.3.0b1 ; python_version >= '3.7'
+kombu==5.2.4 ; python_version >= '3.7'
 langcodes==3.3.0 ; python_version >= '3.6'
 markupsafe==2.1.1 ; python_version >= '3.7'
 matplotlib==3.6.1
 multidict==6.0.2 ; python_version >= '3.7'
-munch==2.5.1.dev12
+munch==2.5.0
 murmurhash==1.0.8 ; python_version >= '3.6'
 nanotime==0.5.2
 networkx==2.8.7 ; python_version >= '3.8'
 numpy==1.23.3
 oauth2client==4.1.3
 oauthlib==3.2.1 ; python_version >= '3.6'
-omegaconf==2.3.0.dev1 ; python_version >= '3.6'
+omegaconf==2.2.3 ; python_version >= '3.6'
 packaging==21.3 ; python_version >= '3.6'
 pandas==1.5.0
 pathspec==0.9.0
@@ -101,8 +109,8 @@ preshed==3.0.7 ; python_version >= '3.6'
 prompt-toolkit==3.0.31 ; python_full_version >= '3.6.2'
 protobuf==3.20.0
 psutil==5.9.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pyasn1==0.5.0rc2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
-pyasn1-modules==0.3.0rc1 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+pyasn1==0.4.8 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+pyasn1-modules==0.2.8 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
 pycparser==2.21
 pydantic==1.9.2 ; python_full_version >= '3.6.1'
 pydot==1.4.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -113,7 +121,7 @@ pygtrie==2.5.0
 pyopenssl==22.1.0 ; python_version >= '3.6'
 pyparsing==3.0.9 ; python_full_version >= '3.6.8'
 pyproj==3.4.0 ; python_version >= '3.8'
-python-dateutil==2.8.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'
+python-dateutil==2.8.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-dotenv==0.21.0
 pytz==2022.4
 pyyaml==6.0 ; python_version >= '3.6'
@@ -123,7 +131,7 @@ requests-oauthlib==1.3.1 ; python_version >= '2.7' and python_version not in '3.
 rich==12.6.0 ; python_full_version >= '3.6.3' and python_full_version < '4.0.0'
 rsa==4.9 ; python_version >= '3.6' and python_version < '4'
 ruamel.yaml==0.17.21 ; python_version >= '3'
-ruamel.yaml.clib==0.2.6 ; platform_python_implementation == 'CPython' and python_version < '3.11'
+ruamel.yaml.clib==0.2.6 ; python_version < '3.11' and platform_python_implementation == 'CPython'
 s3transfer==0.6.0 ; python_version >= '3.7'
 scikit-learn==1.1.2 ; python_version >= '3.8'
 scipy==1.9.2 ; python_version >= '3.8'
@@ -132,7 +140,7 @@ setuptools==65.4.1 ; python_version >= '3.7'
 shapely==1.8.4
 shortuuid==1.0.9 ; python_version >= '3.5'
 shtab==1.5.5 ; python_version >= '3.2'
-six==1.16.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'
+six==1.16.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sklearn==0.0
 smart-open==5.2.1 ; python_version >= '3.6' and python_version < '4.0'
 smmap==5.0.0 ; python_version >= '3.6'
@@ -145,11 +153,11 @@ tabulate==0.9.0 ; python_version >= '3.7'
 tenacity==8.1.0 ; python_version >= '3.6'
 thinc==8.1.3 ; python_version >= '3.6'
 threadpoolctl==3.1.0 ; python_version >= '3.6'
-tokenizers==0.12.1
+tokenizers==0.13.1
 tomlkit==0.11.5 ; python_version >= '3.6' and python_version < '4.0'
 torch==1.12.1
 tqdm==4.64.1
-transformers[torch]==4.22.2
+transformers[torch]==4.23.1
 tweepy==4.10.1
 typer==0.4.2 ; python_version >= '3.6'
 typing-extensions==4.4.0 ; python_version >= '3.7'
@@ -159,5 +167,6 @@ vine==5.0.0 ; python_version >= '3.6'
 voluptuous==0.13.1
 wasabi==0.10.1
 wcwidth==0.2.5
+werkzeug==2.2.2 ; python_version >= '3.7'
 yarl==1.8.1 ; python_version >= '3.7'
 zc.lockfile==2.0
