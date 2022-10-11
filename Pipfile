@@ -25,6 +25,7 @@ geopy = "*"
 plotly = "*"
 geopandas = "*"
 shapely = "*"
+requests = "*"
 
 [dev-packages]
 pytest = "*"

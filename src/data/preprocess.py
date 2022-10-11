@@ -22,24 +22,25 @@ args:
 """
 
 
-def remove_not_needed_elements_from_string(text: str) -> str:
+def remove_not_needed_elements_from_string(text: str, remove_numbers=True) -> str:
     """
     Remove URLs/Mentions/Hashtags/new lines/numbers
 
     :param text str: to be processed text
     :rtype str: processed text
     """
-
-    processed_text = re.sub(
+    regex = (
         "((www.[^s]+)"
         "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
         "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
         "|(@[a-zA-Z0-9_]*)"
-        "|([0-9]+)"
-        "|\n)",
-        " ",
-        text,
+        "|\n"
     )
+    if remove_numbers:
+        regex += "|([0-9]+)"
+    regex += ")"
+
+    processed_text = re.sub(regex, " ", text)
 
     return processed_text
 

@@ -9,9 +9,6 @@ from tqdm.notebook import tqdm
 from geopy.geocoders import Nominatim, GeoNames
 import plotly.express as px
 from shapely.geometry import Point
-import geopandas as gpd
-from urllib.request import urlopen
-import json
 import ast
 
 # %%
@@ -21,138 +18,150 @@ with initialize(version_base=None, config_path="../conf"):
 path_to_data = cfg.supervisor.processed
 
 df = pd.read_csv("../" + path_to_data)
+# Use NER on only relevant tweets
+df = df[df["relevant"] == 1]
 
 print(
     f"Number of tweets that explicity mentions Swedish locations\n{len(df[df['mentions_location'] == 1])}/{len(df)}"
 )
 
+transformer = "KB/bert-base-swedish-cased-ner"
+transformer = "KBLab/bert-base-swedish-cased-ner"
+
 # %%
-tok = AutoTokenizer.from_pretrained("KB/bert-base-swedish-cased")
-model = AutoModel.from_pretrained("KB/bert-base-swedish-cased")
+tok = AutoTokenizer.from_pretrained(transformer)
+model = AutoModel.from_pretrained(transformer)
 nlp = pipeline(
     "ner",
-    model="KB/bert-base-swedish-cased-ner",
-    tokenizer="KB/bert-base-swedish-cased-ner",
+    model=transformer,
+    tokenizer=transformer,
+    # Default ignore list is ["O"] which are tokens needed to extract locations
+    ignore_labels=[],
 )
+
+geolocater: Nominatim = Nominatim(user_agent="flood_detection")
+# geonames_geolocater = GeoNames("yasser_kaddoura")
 
 
 # %%
 def get_location_entities(text: str):
-    text = remove_not_needed_elements_from_string(text)
-    # Remove stopwords
+    text = remove_not_needed_elements_from_string(text, remove_numbers=False)
     tokens = nlp(text)
-    updated_tokens = []
+    merged_tokens = []
     for token in tokens:
         if token["word"].startswith("##"):
-            try:
-                updated_tokens[-1]["word"] += token["word"][2:]
-            except Exception:
-                continue
+            merged_tokens[-1]["word"] += token["word"][2:]
         else:
-            updated_tokens += [token]
-    loc_entities = list(filter(lambda x: x["entity"] == "LOC", updated_tokens))
-    return [{entity["word"]: entity["score"]} for entity in loc_entities]
+            merged_tokens += [token]
+    # Remove not needed tokens
+    return list(filter(lambda x: x["entity"] != "O", merged_tokens))
 
 
-# Use NER on only relevant tweets
-df = df[df["relevant"] == 1]
 tqdm.pandas(desc="NER NLP")
 df["tokens"] = df["raw_text"].progress_apply(get_location_entities)
 
-# %% [markdown]
-# The NLP pipeline seems to generate tokens missing it's initial part that's needed for the subsequents that contains "##" at the start
-
-# %% [markdown]
-# Now, let's filter out non-swedish locations
 
 # %%
-geolocater = Nominatim(user_agent="flood_detection")
+def get_location_tokens(tokens: list[dict]) -> dict[str, dict[str, float]]:
+    loc_tokens: dict[str, dict[str, float]] = {}
+    for token in tokens:
+        if token["entity"] == "LOC":
+            loc_tokens[token["word"]] = {"ner_score": token["score"]}
+    return loc_tokens
+
+
+df["locations"] = df["tokens"].apply(get_location_tokens)
 
 
 # %%
-def is_swedish_geo(list_entities):
-    for geo in list_entities:
-        entity_name = list(geo.keys())[0]
+def is_swedish_geo(locations: dict[str, dict]) -> dict[str, dict]:
+    swedish_locations = locations.copy()
+    for name in locations:
         swedish_location = geolocater.geocode(
-            entity_name, country_codes="se", language="en", extratags=True
+            name, country_codes="se", language="en", extratags=True  # pyright: ignore
         )
+
+        # swedish_location = geonames_geolocater.geocode(name, country="SE", country_bias="SE")
+
         if swedish_location is not None:
-            #             if swedish_location.raw['importance'] > 0.5:
-            # if 'population' in swedish_location.raw['extratags'] and \
-            #     int(swedish_location.raw['extratags']['population']) > 1000:
-            return swedish_location.raw
-    return False
+            swedish_locations[name]["swedish_loc_info"] = swedish_location.raw
+        else:
+            swedish_locations[name]["swedish_loc_info"] = {}
+
+    return swedish_locations
 
 
-df["has_loc_entities"] = df["tokens"].apply(lambda x: len(x) > 0)
 tqdm.pandas(desc="Is Swidish location")
-df["loc_ent_is_swedish"] = df["tokens"].progress_apply(is_swedish_geo)
+df["locations"] = df["locations"].progress_apply(is_swedish_geo)
 df.to_csv("file1.csv")
 
 # %%
-df = pd.read_csv("file1.csv")
+# Convert locations to json
+df = pd.read_csv("file1.csv", converters={"locations": ast.literal_eval})
+
+
+# %%
+def has_swedish_loc(location_row) -> bool:
+    for loc in location_row:
+        if len(location_row[loc]["swedish_loc_info"]) > 0:
+            return True
+    return False
+
+
+TP = df[(df["locations"].apply(has_swedish_loc)) & (df["mentions_location"] == 1)]
+TN = df[(~df["locations"].apply(has_swedish_loc)) & (df["mentions_location"] == 0)]
+FP = df[(df["locations"].apply(has_swedish_loc)) & (df["mentions_location"] == 0)]
+FN = df[(~df["locations"].apply(has_swedish_loc)) & (df["mentions_location"] == 1)]
 
 confusion_matrix = pd.crosstab(
     df["mentions_location"],
-    df["loc_ent_is_swedish"] != "False",
+    df["locations"].apply(has_swedish_loc),
     rownames=["Actual"],
     colnames=["Predicted"],
 )
-confusion_matrix
+print(confusion_matrix)
 
-# %%
-TP = len(df[(df["loc_ent_is_swedish"] != "False") & (df["mentions_location"] == 1)])
-TN = len(df[(df["loc_ent_is_swedish"] == "False") & (df["mentions_location"] == 0)])
-FP = len(df[(df["loc_ent_is_swedish"] != "False") & (df["mentions_location"] == 0)])
-FN = len(df[(df["loc_ent_is_swedish"] == "False") & (df["mentions_location"] == 1)])
-
-print(f"precision {TP/(TP+FP)}")
-print(f"recall {TP/(TP+FN)}")
-print(f"f1 {TP/(TP+0.5*(FP+FN))}")
+print(f"precision {len(TP)/(len(TP)+len(FP))}")
+print(f"recall {len(TP)/(len(TP)+len(FN))}")
+print(f"f1 {len(TP)/(len(TP)+0.5*(len(FP)+len(FN)))}")
 
 # %% [markdown]
 # ## Error analysis
 
 # %%
 # False negatives
-needed_columns = ["id", "tokens", "raw_text", "text"]
-false_neg = df[(df["mentions_location"] == 1) & (df["loc_ent_is_swedish"] == "False")][
-    needed_columns
-]
+needed_columns = ["id", "locations", "raw_text", "text"]
 
-# %%
 # Locations extracted by NER, not recognized by geocoders
-false_neg[false_neg["tokens"].apply(lambda x: len(ast.literal_eval(x)) > 0)]
-
-
-# %%
-# Another geocoder
-geonames_geolocater = GeoNames("yasser_kaddoura")
-print(geonames_geolocater.geocode("Skånska", country="SE", country_bias="SE"))
-print(geonames_geolocater.geocode("Kullabygden", country="SE", country_bias="SE"))
-print(geonames_geolocater.geocode("Sydkusten", country="SE", country_bias="SE"))
+FN[FN["locations"].apply(lambda x: len(x) > 0)][needed_columns]
 
 # %%
 # Locations not extracted by NER
-# Gavla wsn't recognized
-# E18 E6 wasn't recognized (Are these places?)
-false_neg[false_neg["tokens"].apply(lambda x: len(ast.literal_eval(x)) == 0)]
+FN[FN["locations"].apply(lambda x: len(x) == 0)][needed_columns]
 
 # %%
 # Geocoder seems to identify some of the locations not extracted by NER
-# To increase recall, use geocders on text
-print(geolocater.geocode("Skånska", country_codes="se", language="en", extratags=True))
-print(geolocater.geocode("E6", country_codes="se", language="en", extratags=True))
+# To increase recall, use geocders on text directly
+print(
+    geolocater.geocode("Åker–Nyhom", country_codes="se", language="en", extratags=True)
+)
 print(
     geolocater.geocode("Höglandet", country_codes="se", language="en", extratags=True)
 )
 
+
 # %%
 # False positives
-false_pos = df[(df["mentions_location"] == 0) & (df["loc_ent_is_swedish"] != "False")][
-    needed_columns
-]
-false_pos.head(50)
+def func(row):
+    return [
+        key if len(value["swedish_loc_info"]) > 0 else None
+        for key, value in row.items()
+    ]
+
+
+x = FP.copy()
+x["loc_names"] = FP["locations"].apply(func)
+x[["loc_names", "id"]]
 # Sweden has locations that contains florida and miami
 # Idea: Increase precision by:
 # - Make more restrictive classification using data extracted from geocoders regarding location (e.g. population, type, popularity)
@@ -160,63 +169,72 @@ false_pos.head(50)
 
 
 # %%
-def parse_raw_text(raw_json):
-    if raw_json == "False":
-        return pd.Series(5 * [False])
-    return pd.Series(
-        [
-            ast.literal_eval(raw_json)["class"],
-            ast.literal_eval(raw_json)["importance"],
-            ast.literal_eval(raw_json)["type"],
-            ast.literal_eval(raw_json)["display_name"],
-            float(ast.literal_eval(raw_json)["lat"]),
-            float(ast.literal_eval(raw_json)["lon"]),
-        ]
-    )
-
-
-df[
-    [
-        "loc_class",
-        "loc_importance",
-        "loc_type",
-        "loc_display_name",
-        "loc_lat",
-        "loc_lon",
-    ]
-] = df["loc_ent_is_swedish"].apply(parse_raw_text)
-
+x = geolocater.geocode("Vita", country_codes="se", language="en", extratags=True).raw
+print(x)
 
 # %%
+data_needed = ["class", "importance", "type", "display_name", "lat", "lon"]
+
+pd.set_option("max_colwidth", 800)
+
+
+def get_from_raw_loc(row):
+    locations = {}
+    for name, value in row.items():
+        extracted_data = {}
+        for data in data_needed:
+            if data in value["swedish_loc_info"]:
+                extracted_data[data] = value["swedish_loc_info"][data]
+            else:
+                extracted_data[data] = None
+        locations[name] = extracted_data
+    return locations
+
+
+df["locations_info"] = df["locations"].apply(get_from_raw_loc)
+
+# %%
+# Create a row for each location
+df["locations_info"] = df["locations_info"].apply(lambda x: list(x.items()))
+df_exploded = df.explode("locations_info")
+
+df_exploded = df_exploded[df_exploded["locations_info"].notna()]
+# Seperate each data in column
+df_exploded[["loc_name", "raw_data"]] = df_exploded["locations_info"].to_list()
+df_exploded[["class", "importance", "type", "display_name", "lat", "lon"]] = (
+    df_exploded["raw_data"].apply(lambda x: list(x.values())).to_list()
+)
+df_exploded = df_exploded.astype({"lon": "float", "lat": "float"})
+
+
 def get_color(row):
-    if row["mentions_location"] == 1 and row["loc_ent_is_swedish"] != "False":
+    if row["mentions_location"] == 1 and has_swedish_loc(row["locations"]):
         return "blue"
-    elif row["mentions_location"] == 0 and row["loc_ent_is_swedish"] != "False":
+    elif row["mentions_location"] == 0 and has_swedish_loc(row["locations"]):
         return "red"
 
 
-df["color"] = df.apply(
-    get_color,
-    axis=1,
-)
+df_exploded["color"] = df_exploded.apply(get_color, axis=1)
 
+
+geometry = [Point(x, y) for x, y in zip(df_exploded["lon"], df_exploded["lat"])]
 
 # %%
-# Get the geojson file and load it as a geopandas dataframe
-with urlopen(
-    "https://raw.githubusercontent.com/ostropunk/swegeojson/master/geodata/kommun/Kommun_RT90_region.json"
-) as response:
-    sweden_json = json.load(response)
+df_exploded["count"] = 1
+df_exploded_agg = df_exploded.groupby(["lon", "lat"], as_index=False).agg(
+    {"count": "sum", "color": "first", "id": "first", "loc_name": "first"}
+)
 
-sweden_geo_df = gpd.GeoDataFrame.from_features(sweden_json["features"])
-geometry = [Point(x, y) for x, y in zip(df["loc_lon"], df["loc_lat"])]
+# %%
+df_exploded[df_exploded["loc_name"] == "län"]
 
 # %%
 fig = px.scatter_mapbox(
-    df,
-    lat="loc_lat",
-    lon="loc_lon",
-    hover_name=df["loc_display_name"],
+    df_exploded_agg,
+    lat="lat",
+    lon="lon",
+    size="count",
+    hover_name=df_exploded_agg["loc_name"],
     hover_data=["id"],
     color_discrete_map={"blue": "blue", "red": "red"},
     color="color",
