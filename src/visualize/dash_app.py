@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import ast
-import json
 
 import click
 import pandas as pd
@@ -11,8 +10,6 @@ from dash.dependencies import Input, Output
 
 data_needed = ["class", "importance", "type", "display_name", "lat", "lon"]
 app = Dash(__name__)
-
-styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
 df_global = pd.DataFrame()
 
@@ -48,9 +45,14 @@ def plot(df, app):
     global df_global
     df["count"] = 1
     df_agg = df.groupby(["lon", "lat"], as_index=False).agg(
-        {"loc_name": "first", "count": "sum"}
+        {
+            "loc_name": "first",
+            "count": "sum",
+            "id": lambda x: list(x),
+            "text": lambda x: list(x),
+        }
     )
-    df_global = df_agg.copy()
+    df_global = df
 
     fig = px.scatter_mapbox(
         df_agg,
@@ -58,7 +60,6 @@ def plot(df, app):
         lon="lon",
         size="count",
         hover_name=df_agg["loc_name"],
-        color_discrete_map={"blue": "blue", "red": "red"},
         mapbox_style="carto-positron",
         height=600,
         zoom=3,
@@ -69,11 +70,10 @@ def plot(df, app):
     app.layout = html.Div(
         className="row",
         children=[
-            html.H1(children="Hello Dash"),
+            html.H1(children="Flood Detection"),
             html.Div(children=f"Number of tweets {len(df)}"),
             dcc.Graph(id="example-graph", figure=fig),
-            generate_table(df_agg),
-            dcc.Markdown(children="### Markdown text"),
+            dcc.Markdown(children="### Tweets"),
             html.Div(id="selected-data"),
         ],
     )
@@ -85,20 +85,23 @@ def plot(df, app):
 def display_selected_data(selectedData):
     if selectedData is None:
         return ""
-    indices_selected = [x["pointIndex"] for x in selectedData["points"]]
-    return generate_table(df_global.iloc[indices_selected])
+    indices_selected = [(x["lon"], x["lat"]) for x in selectedData["points"]]
+
+    return generate_table(
+        df_global[df_global.set_index(["lon", "lat"]).index.isin(indices_selected)][
+            ["id", "text"]
+        ]
+    )
 
 
-def generate_table(dataframe, max_rows=10):
+def generate_table(df, max_rows=10):
     return html.Table(
         [
-            html.Thead(html.Tr([html.Th(col) for col in dataframe.columns])),
+            html.Thead(html.Tr([html.Th(col) for col in df.columns])),
             html.Tbody(
                 [
-                    html.Tr(
-                        [html.Td(dataframe.iloc[i][col]) for col in dataframe.columns]
-                    )
-                    for i in range(min(len(dataframe), max_rows))
+                    html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
+                    for i in range(min(len(df), max_rows))
                 ]
             ),
         ]
