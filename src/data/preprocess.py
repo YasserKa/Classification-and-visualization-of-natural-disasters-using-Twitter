@@ -174,7 +174,7 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
         tweets_json = json.load(file)
 
     df = pd.json_normalize(list(tweets_json.values()))
-    # HACK: check line 86
+
     df = df[
         [
             "id",

@@ -36,16 +36,16 @@ stages:
       md5: 7454b24d4d9f1e8cf0f6b6b3f3d13104
       size: 6658
   train:
-    cmd: ./src/train/train.py --env sagemaker --model distilbert-base-uncased --label
-      relevant --download_model -- data/processed/supervisor_annotated_tweets.csv
+    cmd: ./src/train/train_flood_classifier.py --env sagemaker --model distilbert-base-uncased
+      --label relevant --download_model -- data/processed/supervisor_annotated_tweets.csv
     deps:
-    - path: src/train/train.py
-      md5: 3d025fad7efc8180eebea6c6ed5c4714
-      size: 9412
+    - path: src/train/train_flood_classifier.py
+      md5: 42be9adb9d6ed9f0ea284d98b981e554
+      size: 9659
     outs:
     - path: eval.json
-      md5: 880ffa6bba097e137ae27d53126570ac
-      size: 276
+      md5: 759a31152d502f66aff4ae30e634c908
+      size: 250
   preprocess@data/raw/crisis_nlp_task_dmg.tsv:
     cmd: src/data/preprocess.py data/raw/crisis_nlp_task_dmg.tsv
     deps:
@@ -55,3 +55,13 @@ stages:
     - path: src/data/preprocess.py
       md5: 7454b24d4d9f1e8cf0f6b6b3f3d13104
       size: 6658
+  geoparser_extract_location:
+    cmd: ./src/predict/extract_location.py data/processed/supervisor_annotated_tweets.csv
+    deps:
+    - path: ./src/predict/extract_location.py
+      md5: 047d438facd69cf4b33ae10bfe089b5c
+      size: 4640
+      isexec: true
+    - path: data/processed/supervisor_annotated_tweets.csv
+      md5: 45f91dd0ab24bc38b2ccab108dd2c1f5
+      size: 1170804

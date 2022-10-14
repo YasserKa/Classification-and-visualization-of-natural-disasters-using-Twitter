@@ -2,6 +2,7 @@ env: sagemaker
 model: distilbert-base-uncased
 label: relevant
 datasets: data/processed/supervisor_annotated_tweets.csv
+models_dir: ./models
 envs:
   sagemaker: sagemaker
   locally: locally
@@ -12,6 +13,7 @@ supervisor:
   raw: data/raw/supervisor_annotated_tweets.csv
   tweets: data/tweets/supervisor_annotated_tweets.json
   processed: data/processed/supervisor_annotated_tweets.csv
+  processed_geo: data/processed_geo/supervisor_annotated_tweets.csv
 crisis:
   raw: data/raw/crisis_nlp_task_dmg.tsv
   processed: data/processed/crisis_nlp_task_dmg.csv

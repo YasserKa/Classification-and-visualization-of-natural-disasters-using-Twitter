@@ -15,7 +15,13 @@ stages:
     # NOTE: Can't include datasets in dependencies, since they are in the form
     # of datasets: <dataset1> <dataset2> instead of a list. Check config.yaml
     # for more info
-      - src/train/train.py
-    cmd: ./src/train/train.py --env ${env} --model ${model} --label ${label} --download_model -- ${datasets}
+      - src/train/train_flood_classifier.py
+    cmd: ./src/train/train_flood_classifier.py --env ${env} --model ${model} --label ${label} --download_model -- ${datasets}
     metrics:
       - eval.json
+
+  geoparser_extract_location:
+    deps:
+      - ${supervisor.processed}
+      - ./src/predict/extract_location.py
+    cmd: ./src/predict/extract_location.py ${supervisor.processed}

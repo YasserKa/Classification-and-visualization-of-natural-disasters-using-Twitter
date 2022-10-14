@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-import click
+
+import sys
 from enum import Enum
-from src.data.preprocess import remove_not_needed_elements_from_string
-from geopy.geocoders import Nominatim, GeoNames
-from transformers import AutoModel, AutoTokenizer
-from transformers import pipeline
-from tqdm import tqdm
+
+import click
 import pandas as pd
+from geopy.geocoders import GeoNames, Nominatim
+from hydra import compose, initialize
+from omegaconf import DictConfig
+from src.data.preprocess import remove_not_needed_elements_from_string
+from tqdm import tqdm
+from transformers import pipeline
 
 """
 Extract locations from swedish text
@@ -69,7 +73,7 @@ class GeoCoder:
             case GeoCodersEnum.GEONAMES:
                 self.__geocoder_obj: GeoNames = GeoNames("yasser_kaddoura")
             case _:
-                raise Exception(f"{self.__geocoder} geocoder isn't available")
+                raise Exception(f"{self.__geocoder_name} geocoder isn't available")
 
     def __get_location(self, text):
         match self.__geocoder_name:
@@ -81,7 +85,7 @@ class GeoCoder:
                 loc = self.__geocoder_obj.geocode(text, country="SE", country_bias="SE")
                 pass
             case _:
-                raise Exception(f"{self.__geocoder} geocoder isn't available")
+                raise Exception(f"{self.__geocoder_name} geocoder isn't available")
         return loc
 
     def get_swedish_location(self, locations: dict[str, dict]) -> dict[str, dict]:
@@ -110,7 +114,15 @@ class GeoCoder:
 )
 @click.argument("path_to_data", nargs=-1)
 def main(model_name, geocoder_name, path_to_data):
-    df = pd.read_csv(path_to_data[0])
+    with initialize(version_base=None, config_path="../../conf"):
+        cfg: DictConfig = compose(config_name="config")
+
+    input_path: str = path_to_data[0]
+
+    if input_path == cfg.supervisor.processed:
+        output_path: str = cfg.supervisor.processed_geo
+
+    df = pd.read_csv(input_path)
     model = Transform(model_name)
     geocoder = GeoCoder(geocoder_name)
     df = df[df["relevant"] == 1]
@@ -120,7 +132,7 @@ def main(model_name, geocoder_name, path_to_data):
     df["locations"] = df["tokens"].apply(model.get_location_tokens)
     tqdm.pandas(desc="Swedish locations")
     df["locations"] = df["locations"].progress_apply(geocoder.get_swedish_location)
-    df.to_csv("file1.csv", index=False)
+    df.to_csv(output_path, index=False)
 
 
 if __name__ == "__main__":

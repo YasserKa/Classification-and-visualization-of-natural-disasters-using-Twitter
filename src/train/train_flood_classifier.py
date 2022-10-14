@@ -29,6 +29,7 @@ Training dataset/s locally or using sagemaker
 """
 
 # REFACTOR: Remove train_locally() and use train.py instead
+# TODO: Add --download_model option
 
 
 class Environment(Enum):
@@ -196,9 +197,6 @@ def train_sagemaker(dataset, model_enc, role_name, download_model):
             local_path=".",  # local path where *.targ.gz is saved
             sagemaker_session=sess,  # SageMaker session used for training the model
         )
-
-    # with tarfile.open("model.tar.gz") as tar:
-    #     tar.extractall()
 
 
 def get_tweets_from_paths(path_list, label_enum):
