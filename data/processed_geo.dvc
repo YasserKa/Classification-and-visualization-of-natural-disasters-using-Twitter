@@ -1,0 +1,5 @@
+outs:
+- md5: 87a2172d7ab11f2c68901de5161bdb40.dir
+  size: 1475888
+  nfiles: 1
+  path: processed_geo

@@ -16,8 +16,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from sagemaker.huggingface import HuggingFace
 from sagemaker.s3 import S3Downloader
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from transformers.models.auto.modeling_auto import \
-    AutoModelForSequenceClassification
+from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.trainer import Trainer
 from transformers.training_args import TrainingArguments
@@ -239,7 +238,6 @@ def get_dataset(
         # Shuffle
         df: pd.DataFrame = df_undersampled.sample(frac=1)
 
-    df = df[:50]
     dataset: Dataset = Dataset.from_pandas(df)
 
     train_testvalid = dataset.train_test_split(test_size=0.1)

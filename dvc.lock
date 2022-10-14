@@ -40,12 +40,13 @@ stages:
       --label relevant --download_model -- data/processed/supervisor_annotated_tweets.csv
     deps:
     - path: src/train/train_flood_classifier.py
-      md5: 42be9adb9d6ed9f0ea284d98b981e554
-      size: 9659
+      md5: 50f9ff1b878bd56aeccdb675ca991299
+      size: 9642
+      isexec: true
     outs:
     - path: eval.json
-      md5: 759a31152d502f66aff4ae30e634c908
-      size: 250
+      md5: 85f728f137eea037b9920ce0f22c42ca
+      size: 281
   preprocess@data/raw/crisis_nlp_task_dmg.tsv:
     cmd: src/data/preprocess.py data/raw/crisis_nlp_task_dmg.tsv
     deps:

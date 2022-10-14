@@ -21,7 +21,7 @@ until to give you permission to complete this step.
 **To train the flood classifier**
 `dvc exp run train --set-param 'datasets=${supervisor.processed}'`
 
-The pipeline runs in AWS Sagemaker by default, to run it locally, use the
+The pipeline runs on AWS Sagemaker by default, to run it locally, use the
 following
 `dvc exp run train --set-param 'datasets=${supervisor.processed}' --set-param 'env=${envs.locally}'`
 
