@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+import json
 from datetime import datetime
 
 from src.classes.twitter_facade import TwitterFacade
@@ -11,7 +13,7 @@ def main():
         "(floods OR flood OR översvämning OR översvämningar)" "place_country:SE has:geo"
     )
 
-    twitter_respose = twitter.api.search_all_tweets(
+    tweets = twitter.search_all_tweets(
         query=query,
         start_time=datetime(2021, 8, 17),
         end_time=datetime(2021, 8, 19),
@@ -21,9 +23,11 @@ def main():
         max_results=10,
     )
 
-    tweets = twitter.parse_twitter_response(twitter_respose)
+    with open("data.json", "w") as outfile:
+        json.dump(tweets, outfile, indent=2)
+
     return tweets
 
 
 if __name__ == "__main__":
-    print(main())
+    main()

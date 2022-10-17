@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+
 import math
 import os
+from time import sleep
 
 import numpy as np
 import tweepy
@@ -81,6 +83,15 @@ class TwitterFacade:
                 del tweets_dict[id]["geo"]
 
         return tweets_dict
+
+    def search_all_tweets(self, **args):
+        tweets = {}
+
+        for response in tweepy.Paginator(self.api.search_all_tweets, **args):
+            # To mitigate "Too Many Requests" twitter API error
+            sleep(1)
+            tweets.update(self.parse_twitter_response(response))
+        return tweets
 
     def get_tweets_from_id(self, ids: list[int]):
         tweets = dict()
