@@ -27,6 +27,7 @@ geopandas = "*"
 shapely = "*"
 requests = "*"
 dash = "*"
+gensim = "*"
 
 [dev-packages]
 pytest = "*"

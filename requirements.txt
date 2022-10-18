@@ -11,9 +11,9 @@ atpublic==3.1.1 ; python_version >= '3.7'
 attrs==22.1.0 ; python_version >= '3.5'
 beautifulsoup4==4.11.1 ; python_full_version >= '3.6.0'
 billiard==3.6.4.0 ; python_version >= '3.7'
-blis==0.7.8
-boto3==1.24.89
-botocore==1.27.89 ; python_version >= '3.7'
+blis==0.7.9
+boto3==1.24.92
+botocore==1.27.92 ; python_version >= '3.7'
 brotli==1.0.9
 cachetools==5.2.0 ; python_version ~= '3.7'
 catalogue==2.0.8 ; python_version >= '3.6'
@@ -33,7 +33,7 @@ configobj==5.0.6
 contourpy==1.0.5 ; python_version >= '3.7'
 cryptography==38.0.1 ; python_version >= '3.6'
 cycler==0.11.0 ; python_version >= '3.6'
-cymem==2.0.6
+cymem==2.0.7
 dash==2.6.2
 dash-core-components==2.0.0
 dash-html-components==2.0.0
@@ -53,7 +53,7 @@ dvc-render==0.0.12 ; python_version >= '3.8'
 dvc-task==0.1.3 ; python_version >= '3.8'
 dvclive==0.12.0 ; python_version >= '3.8'
 filelock==3.8.0 ; python_version >= '3.7'
-fiona==1.8.21 ; python_version >= '3.7'
+fiona==1.8.22 ; python_version >= '3.7'
 flask==2.2.2 ; python_version >= '3.7'
 flask-compress==1.13
 flatten-dict==0.4.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
@@ -63,6 +63,7 @@ frozenlist==1.3.1 ; python_version >= '3.7'
 fsspec[http]==2022.8.2 ; python_version >= '3.7'
 funcy==1.17
 future==0.18.2 ; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+gensim==4.2.0
 geographiclib==1.52
 geopandas==0.11.1
 geopy==2.2.0
@@ -71,7 +72,7 @@ gitdb==4.0.9 ; python_version >= '3.6'
 gitpython==3.1.29 ; python_version >= '3.7'
 google-api-core==2.8.2 ; python_version >= '3.6'
 google-api-python-client==2.64.0 ; python_version >= '3.7'
-google-auth==2.12.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+google-auth==2.13.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
 google-auth-httplib2==0.1.0
 googleapis-common-protos==1.56.4 ; python_version >= '3.7'
 grandalf==0.6
@@ -92,12 +93,12 @@ markupsafe==2.1.1 ; python_version >= '3.7'
 matplotlib==3.6.1
 multidict==6.0.2 ; python_version >= '3.7'
 munch==2.5.0
-murmurhash==1.0.8 ; python_version >= '3.6'
+murmurhash==1.0.9 ; python_version >= '3.6'
 nanotime==0.5.2
 networkx==2.8.7 ; python_version >= '3.8'
-numpy==1.23.3
+numpy==1.23.4
 oauth2client==4.1.3
-oauthlib==3.2.1 ; python_version >= '3.6'
+oauthlib==3.2.2 ; python_version >= '3.6'
 omegaconf==2.2.3 ; python_version >= '3.6'
 packaging==21.3 ; python_version >= '3.6'
 pandas==1.5.0
@@ -105,7 +106,7 @@ pathspec==0.9.0
 pathy==0.6.2 ; python_version >= '3.6'
 pillow==9.2.0 ; python_version >= '3.7'
 plotly==5.10.0
-preshed==3.0.7 ; python_version >= '3.6'
+preshed==3.0.8 ; python_version >= '3.6'
 prompt-toolkit==3.0.31 ; python_full_version >= '3.6.2'
 protobuf==3.20.0
 psutil==5.9.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -123,7 +124,7 @@ pyparsing==3.0.9 ; python_full_version >= '3.6.8'
 pyproj==3.4.0 ; python_version >= '3.8'
 python-dateutil==2.8.2 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 python-dotenv==0.21.0
-pytz==2022.4
+pytz==2022.5
 pyyaml==6.0 ; python_version >= '3.6'
 regex==2022.9.13 ; python_version >= '3.6'
 requests==2.28.1
@@ -136,8 +137,8 @@ s3transfer==0.6.0 ; python_version >= '3.7'
 scikit-learn==1.1.2 ; python_version >= '3.8'
 scipy==1.9.2 ; python_version >= '3.8'
 scmrepo==0.1.1 ; python_version >= '3.8'
-setuptools==65.4.1 ; python_version >= '3.7'
-shapely==1.8.4
+setuptools==65.5.0 ; python_version >= '3.7'
+shapely==1.8.5.post1
 shortuuid==1.0.9 ; python_version >= '3.5'
 shtab==1.5.5 ; python_version >= '3.2'
 six==1.16.0 ; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -148,10 +149,10 @@ soupsieve==2.3.2.post1 ; python_version >= '3.6'
 spacy==3.4.1
 spacy-legacy==3.0.10 ; python_version >= '3.6'
 spacy-loggers==1.0.3 ; python_version >= '3.6'
-srsly==2.4.4 ; python_version >= '3.6'
+srsly==2.4.5 ; python_version >= '3.6'
 tabulate==0.9.0 ; python_version >= '3.7'
 tenacity==8.1.0 ; python_version >= '3.6'
-thinc==8.1.3 ; python_version >= '3.6'
+thinc==8.1.4 ; python_version >= '3.6'
 threadpoolctl==3.1.0 ; python_version >= '3.6'
 tokenizers==0.13.1
 tomlkit==0.11.5 ; python_version >= '3.6' and python_version < '4.0'
