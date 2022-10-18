@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 with initialize(version_base=None, config_path="../conf"):
     cfg: DictConfig = compose(config_name="config")
     supervisor_tweets_path: str = abspath(
-        "../" + cfg.supervisor.tweets,
+        "./" + cfg.supervisor.tweets,
     )
 
 with open(supervisor_tweets_path, "r") as file:
@@ -51,6 +51,10 @@ df["Contains specific information about IMPACTS"] = df[
 df_gb = df.groupby([df["created_at"].dt.date])
 
 # %%
+
+df_gb = df.groupby([pd.Grouper(key="created_at", freq="W")])
+
+# %%
 fig, ax1 = plt.subplots()
 dates = df_gb.groups.keys()
 
@@ -63,3 +67,12 @@ plt.xlabel("Date")
 plt.ylabel("count")
 
 plt.show()
+
+# %%
+
+df_gb["On Topic"].sum().sort_values()
+
+
+# %%
+
+print(df_gb.get_group("2015-07-12 00:00:00+00:00").sort_values(by="created_at"))
