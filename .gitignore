@@ -99,3 +99,4 @@ outputs
 # Ignore bibliography for the time being
 /report/bibliography.bib
 /eval.json
+/nltk_data

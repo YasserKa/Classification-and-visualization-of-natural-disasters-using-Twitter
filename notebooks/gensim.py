@@ -62,8 +62,8 @@ tfidf = models.TfidfModel(bow_corpus)
 # %%
 # Lemmatize the documents.
 
-nltk.download("wordnet")
-nltk.download("omw-1.4")
+nltk.download("wordnet", download_dir="./nltk_data")
+nltk.download("omw-1.4", download_dir="./nltk_data")
 lemmatizer = WordNetLemmatizer()
 docs = [
     [lemmatizer.lemmatize(token) for token in doc]
