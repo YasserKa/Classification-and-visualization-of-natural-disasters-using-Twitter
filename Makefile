@@ -11,9 +11,6 @@ activate:
 	@echo "Activating virtual environment"
 	pipenv shell
 
-initialize_git:
-	git init 
-
 pull_data:
 	pipenv run dvc pull
 
@@ -21,7 +18,11 @@ setup: initialize_git install
 
 test:
 	pytest
- 
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+
+
+extract_from_api:
+	python ./src/data/extract_tweets_from_api.py --from $(from) --to $(to)
+	python ./src/data/preprocess.py data/tweets/twitter_api.json 
+	python ./src/predict/predict_floods.py --dataset_path data/processed/twitter_api.csv 
+	python ./src/predict/extract_location.py data/processed_flood/twitter_api.csv 
+	python ./src/visualize/dash_app.py ./data/processed_geo/twitter_api.csv 

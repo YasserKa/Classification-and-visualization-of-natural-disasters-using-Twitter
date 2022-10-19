@@ -5,7 +5,8 @@ label: ${labels.flood_detection}
 # Reference: https://github.com/iterative/dvc/issues/5789
 datasets: ${supervisor.processed}
 
-models_dir: "./models"
+models_dir: 
+  flood_detection: "./models/flood_detection"
 
 envs:
   sagemaker: "sagemaker"
@@ -14,6 +15,12 @@ envs:
 labels:
   flood_detection: "relevant"
   mentions_impact: "mentions_impact"
+
+twitter_api:
+  tweets: data/tweets/twitter_api.json
+  processed: data/processed/twitter_api.csv
+  processed_flood: data/processed_flood/twitter_api.csv
+  processed_geo: data/processed_geo/twitter_api.csv
 
 supervisor: 
   raw: data/raw/supervisor_annotated_tweets.csv

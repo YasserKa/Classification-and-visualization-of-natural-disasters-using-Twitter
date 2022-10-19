@@ -3,10 +3,16 @@
 import json
 from datetime import datetime
 
+from hydra import compose, initialize
+from omegaconf import DictConfig
 from src.classes.twitter_facade import TwitterFacade
 
 
 def main():
+    with initialize(version_base=None, config_path="../../conf"):
+        cfg: DictConfig = compose(config_name="config")
+
+    output_path = cfg.twitter_api.tweets
     twitter = TwitterFacade()
 
     query = (
@@ -23,10 +29,8 @@ def main():
         max_results=10,
     )
 
-    with open("data.json", "w") as outfile:
+    with open(output_path, "w") as outfile:
         json.dump(tweets, outfile, indent=2)
-
-    return tweets
 
 
 if __name__ == "__main__":

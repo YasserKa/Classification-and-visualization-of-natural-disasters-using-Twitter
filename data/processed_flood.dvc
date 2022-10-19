@@ -1,0 +1,5 @@
+outs:
+- md5: 8f8c7458bf04834abe4b6fdc62e7831b.dir
+  size: 6598
+  nfiles: 1
+  path: processed_flood

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 from enum import Enum
 
 import click
@@ -118,14 +117,17 @@ def main(model_name, geocoder_name, path_to_data):
         cfg: DictConfig = compose(config_name="config")
 
     input_path: str = path_to_data[0]
+    df = pd.read_csv(input_path)
 
     if input_path == cfg.supervisor.processed:
         output_path: str = cfg.supervisor.processed_geo
+        df = df[df["relevant"] == 1]
+    elif input_path == cfg.twitter_api.processed_flood:
+        output_path = cfg.twitter_api.processed_geo
+        df = df[df["predicted_label"] == 1]
 
-    df = pd.read_csv(input_path)
     model = Transform(model_name)
     geocoder = GeoCoder(geocoder_name)
-    df = df[df["relevant"] == 1]
 
     tqdm.pandas(desc="NER NLP")
     df["tokens"] = df["raw_text"].progress_apply(model.get_tokens)

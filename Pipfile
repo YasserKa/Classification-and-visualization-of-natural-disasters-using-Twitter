@@ -39,6 +39,7 @@ pandas-stubs = "*"
 pre-commit = "*"
 flake8 = "*"
 setuptools = "*"
+visidata = "*"
 
 [requires]
 python_version = "3.10"

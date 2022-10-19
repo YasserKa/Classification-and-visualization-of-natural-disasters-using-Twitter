@@ -169,6 +169,33 @@ def preprocess_crisislex_dataset(path) -> pd.DataFrame:
     return df
 
 
+def preprocess_tweets(path) -> pd.DataFrame:
+    with open(path, "r") as file:
+        tweets_json = json.load(file)
+
+    df = pd.json_normalize(list(tweets_json.values()))
+
+    df = df[
+        [
+            "id",
+            "text",
+            "text_en",
+        ]
+    ]
+    df = df.rename(
+        columns={
+            "text_en": "text",
+            "text": "raw_text",
+        }
+    )
+    df = df.astype(
+        {
+            "id": "int",
+        }
+    )
+    return df
+
+
 def preprocess_supervisor_dataset(path) -> pd.DataFrame:
     with open(path, "r") as file:
         tweets_json = json.load(file)
@@ -219,6 +246,9 @@ def main() -> None:
         case cfg.supervisor.tweets:
             output: str = cfg.supervisor.processed
             df = preprocess_supervisor_dataset(path)
+        case cfg.twitter_api.tweets:
+            output: str = cfg.twitter_api.processed
+            df = preprocess_tweets(path)
         case cfg.alberta.raw:
             output: str = cfg.alberta.processed
             df = preprocess_crisislex_dataset(path)

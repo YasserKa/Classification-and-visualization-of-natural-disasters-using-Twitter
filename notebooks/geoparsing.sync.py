@@ -1,23 +1,27 @@
 # %%
-from src.data.preprocess import remove_not_needed_elements_from_string
-from transformers import AutoModel, AutoTokenizer
-from transformers import pipeline
-import pandas as pd
-from hydra import compose, initialize
-from omegaconf import DictConfig
-from tqdm.notebook import tqdm
-from geopy.geocoders import Nominatim, GeoNames
-import plotly.express as px
-from shapely.geometry import Point
+
 import ast
 
+import pandas as pd
+import plotly.express as px
+import visidata
+from geopy.geocoders import Nominatim
+from hydra import compose, initialize
+from omegaconf import DictConfig
+from shapely.geometry import Point
+from src.data.preprocess import remove_not_needed_elements_from_string
+from tqdm import tqdm
+from transformers import AutoModel, AutoTokenizer, pipeline
+
+# from tqdm.notebook import tqdm
+
 # %%
-with initialize(version_base=None, config_path="../conf"):
+with initialize(version_base=None, config_path="conf"):
     cfg: DictConfig = compose(config_name="config")
 
 path_to_data = cfg.supervisor.processed
 
-df = pd.read_csv("../" + path_to_data)
+df = pd.read_csv(path_to_data)
 # Use NER on only relevant tweets
 df = df[df["relevant"] == 1]
 
@@ -59,6 +63,11 @@ def get_location_entities(text: str):
 
 tqdm.pandas(desc="NER NLP")
 df["tokens"] = df["raw_text"].progress_apply(get_location_entities)
+
+
+# %%
+
+visidata.vd.view_pandas(df)
 
 
 # %%
