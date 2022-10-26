@@ -1,26 +1,26 @@
 repos:
-- repo: local
-  hooks:
-    - id: unittests
-      name: unittests
-      entry: pipenv run make tests
-      language: python
-      pass_filenames: false
-    - id: generate-requirements
-      name: generate-requirements
-      entry: bash -c 'pipenv requirements --dev-only >| requirements-dev.txt'
-      language: system
-      pass_filenames: false
-    - id: generate-dev-requirements
-      name: generate-dev-requirements
-      entry: bash -c 'pipenv requirements >| requirements.txt'
-      language: system
-      pass_filenames: false
-- repo: https://github.com/PyCQA/flake8
-  rev: 5.0.4
-  hooks:
-    - id: flake8
-- repo: https://github.com/psf/black
-  rev: 22.8.0
-  hooks:
-    - id: black
+  - repo: local
+    hooks:
+      - id: unittests
+        name: unittests
+        entry: poetry run make tests
+        language: python
+        pass_filenames: false
+      - id: generate-requirements
+        name: generate-requirements
+        entry: bash -c 'poetry export -f requirements.txt --output requirements.txt'
+        language: system
+        pass_filenames: false
+      - id: generate-dev-requirements
+        name: generate-dev-requirements
+        entry: bash -c 'poetry export -f requirements.txt --output requirements-dev.txt --only dev'
+        language: system
+        pass_filenames: false
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+  - repo: https://github.com/psf/black
+    rev: 22.8.0
+    hooks:
+      - id: black

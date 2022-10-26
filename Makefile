@@ -1,24 +1,17 @@
 .PHONY: notebook docs
 .EXPORT_ALL_VARIABLES:
 
-install: 
+install_spacy_packages: 
 	@echo "Installing..."
-	pipenv install
-	pipenv run pre-commit install
+	poetry install
+	poetry run pre-commit install
 	python -m spacy download en_core_web_sm
 
-activate:
-	@echo "Activating virtual environment"
-	pipenv shell
-
 pull_data:
-	pipenv run dvc pull
-
-setup: initialize_git install
+	python -m dvc pull
 
 test:
-	pytest
-
+	python -m pytest
 
 extract_from_api:
 	python ./src/data/extract_tweets_from_api.py --from $(from) --to $(to)

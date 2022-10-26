@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from datasets.arrow_dataset import Dataset
 from hydra import compose, initialize
+from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
@@ -21,13 +22,14 @@ def main(dataset_path):
         cfg: DictConfig = compose(config_name="config")
     path_to_model = cfg.models_dir.flood_detection
 
-    match dataset_path:
-        case cfg.supervisor.processed:
-            output_path: str = cfg.supervisor.processed_flood
-        case cfg.twitter_api.processed:
-            output_path: str = cfg.twitter_api.processed_flood
-        case _:
-            raise Exception(f"{dataset_path} file not found")
+    dataset_path = abspath(dataset_path)
+
+    if dataset_path == abspath(cfg.supervisor.processed):
+        output_path: str = cfg.supervisor.processed_flood
+    elif dataset_path == abspath(cfg.twitter_api.processed):
+        output_path: str = cfg.twitter_api.processed_flood
+    else:
+        raise Exception(f"{dataset_path} file not found")
 
     df = pd.read_csv(dataset_path)
     dataset: Dataset = Dataset.from_pandas(df)
