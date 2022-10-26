@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+import json
 from datetime import datetime
 
-import json
 import click
 from deep_translator import GoogleTranslator
 from hydra import compose, initialize
 from omegaconf import DictConfig
+
 from src.classes.twitter_facade import TwitterFacade
 
 
@@ -32,8 +33,20 @@ def main(to_date, from_date) -> None:
     to_date = list(map(lambda x: int(x), to_date.split("-")))
     from_date = list(map(lambda x: int(x), from_date.split("-")))
 
+    # query: str = (
+    #     "place_country:SE"
+    # )
+    # query: str = (
+    #     "place_country:SE lang:sv"
+    # )
+
     query: str = (
-        "(floods OR flood OR översvämning OR översvämningar)" "place_country:SE has:geo"
+        '"atmosfärisk flod" OR "hög vatten" OR åskskur'
+        ' OR regnskur OR dagvattensystem OR dränering OR "höga vågor"'
+        ' OR "höga flöden" OR dämmor'
+        " OR snösmältning OR blött OR oväder OR stormflod OR vattenstånd"
+        " OR vattennivå OR åskväder OR regnstorm"
+        ' OR "mycket regn" OR "kraftig regn" OR översvämningsskador OR översvämningar OR översvämning'
     )
 
     tweets = twitter.search_all_tweets(

@@ -7,9 +7,10 @@ import pandas as pd
 from geopy.geocoders import GeoNames, Nominatim
 from hydra import compose, initialize
 from omegaconf import DictConfig
-from src.data.preprocess import remove_not_needed_elements_from_string
 from tqdm import tqdm
 from transformers import pipeline
+
+from src.data.preprocess import remove_not_needed_elements_from_string
 
 """
 Extract locations from swedish text
@@ -119,9 +120,9 @@ def main(model_name, geocoder_name, path_to_data):
     input_path: str = path_to_data[0]
     df = pd.read_csv(input_path)
 
-    if input_path == cfg.supervisor.processed:
+    if input_path == cfg.supervisor.processed_flood:
         output_path: str = cfg.supervisor.processed_geo
-        df = df[df["relevant"] == 1]
+        df = df[df["predicted_label"] == 1]
     elif input_path == cfg.twitter_api.processed_flood:
         output_path = cfg.twitter_api.processed_geo
         df = df[df["predicted_label"] == 1]

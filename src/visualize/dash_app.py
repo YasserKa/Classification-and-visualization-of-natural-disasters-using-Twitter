@@ -8,7 +8,15 @@ import plotly.express as px
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 
-data_needed = ["class", "importance", "type", "display_name", "lat", "lon"]
+data_needed = [
+    "class",
+    "importance",
+    "type",
+    "display_name",
+    "lat",
+    "lon",
+    "boundingbox",
+]
 app = Dash(__name__)
 
 df_global = pd.DataFrame()
@@ -17,28 +25,40 @@ df_global = pd.DataFrame()
 def get_from_raw_loc(row):
     locations = {}
     for name, value in row.items():
-        extracted_data = {}
-        for data in data_needed:
-            if data in value["swedish_loc_info"]:
-                extracted_data[data] = value["swedish_loc_info"][data]
-            else:
-                extracted_data[data] = None
-        locations[name] = extracted_data
+        if len(value["swedish_loc_info"]) > 0:
+            location_info = {
+                data: value["swedish_loc_info"][data] for data in data_needed
+            }
+            locations[name] = location_info
     return locations
 
 
-def explode_df(df):
+def get_smallest_loc_info(df):
     # Create a row for each location
-    df["locations_info"] = df["locations_info"].apply(lambda x: list(x.items()))
-    df_exploded = df.explode("locations_info")
-
-    df_exploded = df_exploded[df_exploded["locations_info"].notna()]
-    # Seperate each data in column
-    df_exploded[["loc_name", "raw_data"]] = df_exploded["locations_info"].to_list()
-    df_exploded[["class", "importance", "type", "display_name", "lat", "lon"]] = (
-        df_exploded["raw_data"].apply(lambda x: list(x.values())).to_list()
+    df["locations_info"] = df["loc_smalled_bounding_box"].apply(
+        lambda x: list(x.values())
     )
-    return df_exploded.astype({"lon": "float", "lat": "float"})
+
+    df = df[df["locations_info"].str.len() > 0]
+    # Seperate each data in column
+    df[data_needed] = df["locations_info"].to_list()
+    df["name"] = df["display_name"].apply(lambda x: x.split(",")[0])
+    return df.astype({"lon": "float", "lat": "float"})
+
+
+def get_location_with_lowest_parameter(row):
+    lowest_param = 999
+    curr_location = {}
+    for location in row.values():
+        bounding_box = location["boundingbox"]
+        param = abs(float(bounding_box[0]) - float(bounding_box[1])) + abs(
+            float(bounding_box[2]) - float(bounding_box[3])
+        )
+        if param < lowest_param:
+            lowest_param = param
+            curr_location = location
+
+    return curr_location
 
 
 def plot(df, app):
@@ -46,7 +66,7 @@ def plot(df, app):
     df["count"] = 1
     df_agg = df.groupby(["lon", "lat"], as_index=False).agg(
         {
-            "loc_name": "first",
+            "name": "first",
             "count": "sum",
             "id": lambda x: list(x),
             "text": lambda x: list(x),
@@ -59,7 +79,7 @@ def plot(df, app):
         lat="lat",
         lon="lon",
         size="count",
-        hover_name=df_agg["loc_name"],
+        hover_name=df_agg["name"],
         mapbox_style="carto-positron",
         height=600,
         zoom=3,
@@ -67,12 +87,24 @@ def plot(df, app):
     )
     fig.update_layout(clickmode="event+select")
 
+    # Group by day
+    df["created_at"] = pd.to_datetime(df["created_at"])
+    df_agg_day = df.groupby([pd.Grouper(key="created_at", freq="W")])
+
+    dates = df_agg_day.groups.keys()
+    import plotly.graph_objects as go
+
+    histo = go.Figure([go.Bar(x=list(dates), y=df_agg_day.count()["count"])])
+    histo.update_layout(clickmode="event+select")
+    # histo = px.bar(df_agg_day, x=dates, y=df_agg_day.sum())
+
     app.layout = html.Div(
         className="row",
         children=[
             html.H1(children="Flood Detection"),
             html.Div(children=f"Number of tweets {len(df)}"),
-            dcc.Graph(id="example-graph", figure=fig),
+            dcc.Graph(id="geomap", figure=fig),
+            dcc.Graph(id="histo", figure=histo),
             dcc.Markdown(children="### Tweets"),
             html.Div(id="selected-data"),
         ],
@@ -80,18 +112,24 @@ def plot(df, app):
 
 
 @app.callback(
-    Output("selected-data", "children"), Input("example-graph", "selectedData")
+    Output("selected-data", "children"),
+    # Output("geomap_out", "children"),
+    # Output("histo_out", "children"),
+    Input("geomap", "selectedData"),
+    # Input("histo", "selectedData"),
 )
-def display_selected_data(selectedData):
-    if selectedData is None:
+def display_selected_data(selection1):
+    if selection1 is None:
         return ""
-    indices_selected = [(x["lon"], x["lat"]) for x in selectedData["points"]]
+    indices_selected = [(x["lon"], x["lat"]) for x in selection1["points"]]
 
-    return generate_table(
-        df_global[df_global.set_index(["lon", "lat"]).index.isin(indices_selected)][
-            ["id", "text"]
-        ]
-    )
+    return [
+        generate_table(
+            df_global[df_global.set_index(["lon", "lat"]).index.isin(indices_selected)][
+                ["id", "text"]
+            ]
+        )
+    ]
 
 
 def generate_table(df, max_rows=10):
@@ -113,9 +151,12 @@ def generate_table(df, max_rows=10):
 def main(path_to_data):
     df = pd.read_csv(path_to_data[0], converters={"locations": ast.literal_eval})
     df["locations_info"] = df["locations"].apply(get_from_raw_loc)
-    df_exploded = explode_df(df)
+    df["loc_smalled_bounding_box"] = df["locations_info"].apply(
+        get_location_with_lowest_parameter
+    )
+    df = get_smallest_loc_info(df)
 
-    plot(df_exploded, app)
+    plot(df, app)
     app.run_server(debug=True)
 
 

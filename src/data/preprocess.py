@@ -96,12 +96,16 @@ def clean_dataframe(df) -> pd.DataFrame:
     # TODO: include the swe->en translation step here by detecting the language
     # of the raw text and adding it as a new column, and translate it
     if "text" in df.columns:
+        # Some tweets has emojis only, and their translation is None, remove these
+        df = df.drop(df[df["text"].isnull()].index)
         raw_text_series = df["text"]
     else:
         raw_text_series = df["raw_text"]
 
     # Remove retweets
     df = df.drop(df[raw_text_series.str.startswith("RT")].index)
+    # Drop tweets that has same text
+    df = df[~df["text"].duplicated()]
     # Remove duplicates
     df = df.drop_duplicates()
 
@@ -178,6 +182,7 @@ def preprocess_tweets(path) -> pd.DataFrame:
     df = df[
         [
             "id",
+            "created_at",
             "text",
             "text_en",
         ]
@@ -206,6 +211,7 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
         [
             "id",
             "text",
+            "created_at",
             "Explicit location in Sweden",
             "text_en",
             "On Topic",

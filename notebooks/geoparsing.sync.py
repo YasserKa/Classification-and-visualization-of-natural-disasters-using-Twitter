@@ -9,9 +9,10 @@ from geopy.geocoders import Nominatim
 from hydra import compose, initialize
 from omegaconf import DictConfig
 from shapely.geometry import Point
-from src.data.preprocess import remove_not_needed_elements_from_string
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, pipeline
+
+from src.data.preprocess import remove_not_needed_elements_from_string
 
 # from tqdm.notebook import tqdm
 

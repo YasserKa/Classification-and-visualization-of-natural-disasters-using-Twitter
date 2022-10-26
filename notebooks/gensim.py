@@ -6,13 +6,12 @@ from pprint import pprint
 
 import nltk
 import pandas as pd
-from hydra import compose, initialize
-from nltk.stem.wordnet import WordNetLemmatizer
-from omegaconf import DictConfig
-
 from gensim import corpora, models
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel, Phrases
+from hydra import compose, initialize
+from nltk.stem.wordnet import WordNetLemmatizer
+from omegaconf import DictConfig
 
 # %%
 

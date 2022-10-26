@@ -20,7 +20,14 @@ def main(dataset_path):
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
     path_to_model = cfg.models_dir.flood_detection
-    output_path = cfg.twitter_api.processed_flood
+
+    match dataset_path:
+        case cfg.supervisor.processed:
+            output_path: str = cfg.supervisor.processed_flood
+        case cfg.twitter_api.processed:
+            output_path: str = cfg.twitter_api.processed_flood
+        case _:
+            raise Exception(f"{dataset_path} file not found")
 
     df = pd.read_csv(dataset_path)
     dataset: Dataset = Dataset.from_pandas(df)
@@ -58,7 +65,9 @@ def main(dataset_path):
 
     tokenized = tokenized.map(forward_pass_with_label, batched=True, batch_size=16)
     tokenized.set_format("pandas")
-    df_output = tokenized[:][["id", "raw_text", "text", "predicted_label"]]
+    df_output = tokenized[:][
+        ["id", "raw_text", "created_at", "text", "predicted_label"]
+    ]
 
     df_output.to_csv(output_path, index=False)
 

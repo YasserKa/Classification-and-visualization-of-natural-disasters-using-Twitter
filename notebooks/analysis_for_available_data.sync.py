@@ -3,13 +3,14 @@ import json
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import visidata
 from hydra import compose, initialize
 from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 
 # %%
 
-with initialize(version_base=None, config_path="../conf"):
+with initialize(version_base=None, config_path="conf"):
     cfg: DictConfig = compose(config_name="config")
     supervisor_tweets_path: str = abspath(
         "./" + cfg.supervisor.tweets,
@@ -37,10 +38,13 @@ df = df[
     (df["On Topic"] != "")
     & (df["Informative/relevant/non sarcastic"] != "")
     & (df["Contains specific information about IMPACTS"] != "")
+    & (df["Explicit location in Sweden"] != "")
 ]
 df["created_at"] = pd.to_datetime(df["created_at"])
 
 df["On Topic"] = df["On Topic"].astype(int)
+df["Explicit location in Sweden"] = df["Explicit location in Sweden"].astype(int)
+
 df["Informative/relevant/non sarcastic"] = df[
     "Informative/relevant/non sarcastic"
 ].astype(int)
@@ -76,3 +80,14 @@ df_gb["On Topic"].sum().sort_values()
 # %%
 
 print(df_gb.get_group("2015-07-12 00:00:00+00:00").sort_values(by="created_at"))
+
+# %%
+
+df_ = df[
+    (df["created_at"] >= "2021-08-18")
+    & (df["created_at"] <= "2021-08-20")
+    & (df["Explicit location in Sweden"] == 1)
+    & (df["On Topic"] == 1)
+]
+# df_
+visidata.vd.view_pandas(df_)
