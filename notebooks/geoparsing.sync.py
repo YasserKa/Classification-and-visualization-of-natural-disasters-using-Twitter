@@ -12,7 +12,7 @@ from shapely.geometry import Point
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, pipeline
 
-from src.data.preprocess import remove_not_needed_elements_from_string
+from flood_detection.data.preprocess import remove_not_needed_elements_from_string
 
 # from tqdm.notebook import tqdm
 

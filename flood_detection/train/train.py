@@ -16,8 +16,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from sagemaker.huggingface import HuggingFace
 from sagemaker.s3 import S3Downloader
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from transformers.models.auto.modeling_auto import \
-    AutoModelForSequenceClassification
+from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.trainer import Trainer
 from transformers.training_args import TrainingArguments

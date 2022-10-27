@@ -8,7 +8,7 @@ from deep_translator import GoogleTranslator
 from hydra import compose, initialize
 from omegaconf import DictConfig
 
-from src.classes.twitter_facade import TwitterFacade
+from flood_detection.classes.twitter_facade import TwitterFacade
 
 
 @click.command()
@@ -53,9 +53,6 @@ def main(to_date, from_date) -> None:
         query=query,
         start_time=datetime(*from_date),
         end_time=datetime(*to_date),
-        tweet_fields=twitter.TWEET_FIELDS_EXTRACTED,
-        place_fields=twitter.PLACE_FIELDS,
-        expansions="geo.place_id",
         max_results=10,
     )
 

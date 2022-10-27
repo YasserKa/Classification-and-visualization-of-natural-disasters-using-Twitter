@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from tqdm import tqdm
 from transformers import pipeline
 
-from src.data.preprocess import remove_not_needed_elements_from_string
+from flood_detection.data.preprocess import remove_not_needed_elements_from_string
 
 """
 Extract locations from swedish text

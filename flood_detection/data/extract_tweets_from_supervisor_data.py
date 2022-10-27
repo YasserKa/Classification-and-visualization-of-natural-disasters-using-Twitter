@@ -7,7 +7,7 @@ from hydra import compose, initialize
 from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 
-from src.classes.twitter_facade import TwitterFacade
+from flood_detection.classes.twitter_facade import TwitterFacade
 
 
 # NOTE: if this going to be used often, refactor it, and include it in the pipeline

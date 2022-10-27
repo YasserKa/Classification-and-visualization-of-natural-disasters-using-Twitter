@@ -1,4 +1,4 @@
-from src.data.preprocess import clean_text
+from flood_detection.data.preprocess import clean_text
 
 
 def test_clean_text():
