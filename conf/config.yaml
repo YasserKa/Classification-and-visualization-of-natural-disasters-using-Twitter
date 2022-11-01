@@ -16,6 +16,9 @@ labels:
   flood_detection: "relevant"
   mentions_impact: "mentions_impact"
 
+paths:
+  tweets: data/tweets
+
 twitter_api:
   tweets: data/tweets/twitter_api.json
   processed: data/processed/twitter_api.csv

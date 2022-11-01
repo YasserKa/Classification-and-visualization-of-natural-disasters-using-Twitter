@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 
 import click
-from deep_translator import GoogleTranslator
 from hydra import compose, initialize
 from omegaconf import DictConfig
 
@@ -28,17 +27,10 @@ def main(to_date, from_date) -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
 
-    output_path: str = cfg.twitter_api.tweets
     twitter: TwitterFacade = TwitterFacade()
     to_date = list(map(lambda x: int(x), to_date.split("-")))
     from_date = list(map(lambda x: int(x), from_date.split("-")))
-
-    # query: str = (
-    #     "place_country:SE"
-    # )
-    # query: str = (
-    #     "place_country:SE lang:sv"
-    # )
+    output_path: str = f"{cfg.paths.tweets}/twitter_api_{from_date}_to_{to_date}.json"
 
     query: str = (
         '"atmosfärisk flod" OR "hög vatten" OR åskskur'
@@ -53,18 +45,10 @@ def main(to_date, from_date) -> None:
         query=query,
         start_time=datetime(*from_date),
         end_time=datetime(*to_date),
-        max_results=10,
     )
 
-    # Add the labels to the tweets
-    for id in tweets.keys():
-        tweets[id].update(tweets[id])
-        tweets[id]["text_en"] = GoogleTranslator(source="auto", target="en").translate(
-            tweets[id]["text"]
-        )
-
     with open(output_path, "w") as outfile:
-        json.dump(tweets, outfile, indent=2)
+        json.dump(tweets, outfile, indent=4, sort_keys=True, default=str)
 
 
 if __name__ == "__main__":

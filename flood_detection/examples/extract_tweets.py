@@ -22,10 +22,10 @@ def main():
     print(tweets)
 
 
-def extract_from_id(id=[1428506193014796289]):
+def extract_from_id(id):
 
     twitter = TwitterFacade()
-    tweets = twitter.get_tweets_from_id(id)
+    tweets = twitter.get_tweets_from_ids(id)
     print(tweets)
 
 

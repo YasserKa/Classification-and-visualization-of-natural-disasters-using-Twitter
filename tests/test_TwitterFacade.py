@@ -1,25 +1,26 @@
 import datetime
 
-from tweepy import Place, Response, Tweet
+from tweepy import Media, Place, Response, Tweet, User
 
 from flood_detection.classes.twitter_facade import TwitterFacade
 
 
+# TODO: add test for attachements
 class TestTwitterFacade:
     def test_parse_twitter_response(self) -> None:
         tweet_data = {
             "id": "1",
             "text": "This is a tweet",
-            "author_id": "2",
+            "author_id": "1",
             "geo": {"place_id": "1"},
             "lang": "sv",
             "edit_history_tweet_ids": ["2"],
         }
         place = {"name": "place1", "id": "1", "full_name": "full_name1"}
-        print()
+        user = {"id": "1", "username": "username", "name": "name"}
         response = Response(
             data=[Tweet(tweet_data)],
-            includes={"places": [Place(place)]},
+            includes={"places": [Place(place)], "users": [User(user)]},
             meta=None,
             errors=None,
         )
@@ -28,9 +29,9 @@ class TestTwitterFacade:
             1: {
                 "id": "1",
                 "text": "This is a tweet",
-                "author_id": "2",
                 "lang": "sv",
                 "edit_history_tweet_ids": ["2"],
+                "user": {"id": "1", "username": "username", "name": "name"},
                 "place": {"name": "place1", "id": "1", "full_name": "full_name1"},
             }
         }
@@ -38,7 +39,7 @@ class TestTwitterFacade:
         result = twitter.parse_twitter_response(response)
         assert result == parsed_tweet
 
-    def test_extract_from_id(self):
+    def test_extract_from_ids(self):
         id = [1428506193014796289]
         result = {
             1428506193014796289: {
@@ -74,11 +75,22 @@ class TestTwitterFacade:
                         }
                     ]
                 },
-                "author_id": "903741974456520705",
                 "lang": "sv",
                 "text": "RT @chrissieSTH: Lyssnar på nyheterna.. Katastrof, katastrof och allt är extremt. Men i morse, mitt i allt extremt så säger meteorologen Ma…",
+                "user": {
+                    "protected": False,
+                    "location": "Sweden",
+                    "name": "POGO",
+                    "pinned_tweet_id": "1583260532773388289",
+                    "id": "903741974456520705",
+                    "username": "Pogo_Pedagog2",
+                    "verified": False,
+                    "description": "Meme war veteran.\nTwitter-winter survivor.",
+                    "profile_image_url": "https://pbs.twimg.com/profile_images/1586084217695379456/efr1pG73_normal.jpg",
+                    "created_at": "2017-09-01T22:10:52.000Z",
+                },
             }
         }
         twitter = TwitterFacade()
-        tweets = twitter.get_tweets_from_id(id)
+        tweets = twitter.get_tweets_from_ids(id)
         assert tweets == result

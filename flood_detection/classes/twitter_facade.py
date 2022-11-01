@@ -3,11 +3,15 @@
 import math
 import os
 from time import sleep
+from typing import Union
 
 import numpy as np
 import tweepy
 from dotenv import load_dotenv
 from tweepy.errors import BadRequest, TooManyRequests
+
+# NOTE: Doesn't include data about tweets from attachments
+# Adjust parse_twitter_response to include it
 
 
 class TwitterFacade:
@@ -84,6 +88,8 @@ class TwitterFacade:
     def parse_twitter_response(self, twitter_respose):
         tweets_dict = {}
         places = {}
+        users = {}
+        medias = {}
 
         # No tweets returned
         if not twitter_respose.data:
@@ -93,39 +99,69 @@ class TwitterFacade:
             for place in twitter_respose.includes["places"]:
                 places[place.data["id"]] = place.data
 
+        if "users" in twitter_respose.includes:
+            for user in twitter_respose.includes["users"]:
+                users[int(user.data["id"])] = user.data
+
+        if "media" in twitter_respose.includes:
+            for media in twitter_respose.includes["media"]:
+                medias[media.data["media_key"]] = media.data
+
         for tweet in twitter_respose.data:
+            # if "attachments" in tweet:
+            #     print(tweet["attachments"])
+            #     print(twitter_respose.includes["media"])
             id = tweet["id"]
             tweets_dict[id] = tweet.data
+            # Add user
+            tweets_dict[id]["user"] = users[tweet["author_id"]]
+            del tweets_dict[id]["author_id"]
+            # Add place
             if "geo" in tweet:
                 tweets_dict[id]["place"] = places[tweet["geo"]["place_id"]]
                 del tweets_dict[id]["geo"]
+            # Attachments can be polls (not interested in)
+            if "attachments" in tweet and "media_keys" in tweet["attachments"]:
+                media_list = {}
+                for media_key in tweet["attachments"]["media_keys"]:
+                    media_list[media_key] = medias[media_key]
+                del tweets_dict[id]["attachments"]
+                tweets_dict[id]["media"] = media_list
 
         return tweets_dict
 
-    def search_all_tweets(self, **args):
+    def search_all_tweets(self, oldest_id=None, **args):
         tweets = {}
         try:
             for response in tweepy.Paginator(
                 self.api.search_all_tweets,
                 tweet_fields=self.TWEET_FIELDS,
                 place_fields=self.PLACE_FIELDS,
+                since_id=oldest_id,
                 user_fields=self.USER_FIELDS,
                 expansions=["author_id", "geo.place_id", "attachments.media_keys"],
+                max_results=100,
                 **args
             ):
                 # To mitigate "Too Many Requests" twitter API error
                 sleep(1)
+                oldest_id = response.meta["oldest_id"]
                 tweets.update(self.parse_twitter_response(response))
         except TooManyRequests:
-            print("Too many requests, returning currently extracted tweets")
+            print("Too many requests, doing another attempt")
+            tweets.update(self.search_all_tweets(oldest_id=oldest_id, **args))
 
         return tweets
 
-    def get_tweets_from_id(self, ids: list[int]):
+    def get_tweets_from_ids(self, ids: Union[list[int], int]):
         tweets = {}
-        #  Twitter API accepts 100 tweets per request, so they are seperated
+        if isinstance(ids, int):
+            list_ids = [ids]
+        else:
+            list_ids = ids
+        #  Twitter API accepts 100 tweets per request, so they are separated
         #  in a list of lists that have 100 tweet ids at most
-        list_of_list_of_ids = np.array_split(ids, math.ceil(len(ids) / 100))
+        list_of_list_of_ids = np.array_split(ids, math.ceil(len(list_ids) / 100))
 
         for list_of_ids in list_of_list_of_ids:
             twitter_respose = self.api.get_tweets(
