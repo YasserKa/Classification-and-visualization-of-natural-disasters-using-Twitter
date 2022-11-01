@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
+""" Visualize the output of location extraction model using a geomap and
+histogram
+"""
+
 
 import ast
 
 import click
+import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
+
+app = Dash(__name__)
+
+colors = {"background": "#111111", "text": "#7FDBFF"}
 
 data_needed = [
     "class",
@@ -17,7 +27,6 @@ data_needed = [
     "lon",
     "boundingbox",
 ]
-app = Dash(__name__)
 
 df_global = pd.DataFrame()
 
@@ -40,7 +49,7 @@ def get_smallest_loc_info(df):
     )
 
     df = df[df["locations_info"].str.len() > 0]
-    # Seperate each data in column
+    # Separate each data in column
     df[data_needed] = df["locations_info"].to_list()
     df["name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
@@ -61,10 +70,11 @@ def get_location_with_lowest_parameter(row):
     return curr_location
 
 
-def plot(df, app):
-    global df_global
+def get_geomap(df):
     df["count"] = 1
-    df_agg = df.groupby(["lon", "lat"], as_index=False).agg(
+    df_group = df.groupby(["lon", "lat"], as_index=False, group_keys=True)
+
+    df_agg = df_group.agg(
         {
             "name": "first",
             "count": "sum",
@@ -72,8 +82,7 @@ def plot(df, app):
             "text": lambda x: list(x),
         }
     )
-    df_global = df
-
+    indecies = df_group.groups.values()
     fig = px.scatter_mapbox(
         df_agg,
         lat="lat",
@@ -85,54 +94,84 @@ def plot(df, app):
         zoom=3,
         center={"lat": 63.333112, "lon": 16.007205},
     )
+    fig.update_traces(customdata=list(indecies))
     fig.update_layout(clickmode="event+select")
+    return fig
 
+
+def get_histo(df):
     # Group by day
     df["created_at"] = pd.to_datetime(df["created_at"])
-    df_agg_day = df.groupby([pd.Grouper(key="created_at", freq="W")])
+    df_agg_day = df.groupby(
+        [
+            pd.Grouper(
+                key="created_at",
+                freq="W",
+            )
+        ],
+        group_keys=True,
+    )
 
     dates = df_agg_day.groups.keys()
-    import plotly.graph_objects as go
+    indices = df_agg_day.groups.values()
 
-    histo = go.Figure([go.Bar(x=list(dates), y=df_agg_day.count()["count"])])
+    histo = go.Figure(
+        [
+            go.Bar(
+                x=list(dates),
+                y=df_agg_day.count()["count"],
+                customdata=list(indices),
+            )
+        ]
+    )
     histo.update_layout(clickmode="event+select")
-    # histo = px.bar(df_agg_day, x=dates, y=df_agg_day.sum())
+    return histo
+
+
+def plot(df, app):
+    global df_global
+    df_global = df
+
+    geomap = get_geomap(df)
+    histo = get_histo(df)
 
     app.layout = html.Div(
         className="row",
         children=[
             html.H1(children="Flood Detection"),
-            html.Div(children=f"Number of tweets {len(df)}"),
-            dcc.Graph(id="geomap", figure=fig),
+            html.Div(children=f"Total number of tweets: {len(df)}"),
+            dcc.Graph(id="geomap", figure=geomap),
             dcc.Graph(id="histo", figure=histo),
-            dcc.Markdown(children="### Tweets"),
-            html.Div(id="selected-data"),
+            dcc.Markdown(children="### Tweets Selected"),
+            html.Div(id="tweets"),
         ],
     )
 
 
 @app.callback(
-    Output("selected-data", "children"),
-    # Output("geomap_out", "children"),
-    # Output("histo_out", "children"),
+    Output("tweets", "children"),
+    Output("geomap", "figure"),
     Input("geomap", "selectedData"),
-    # Input("histo", "selectedData"),
+    Input("histo", "selectedData"),
 )
-def display_selected_data(selection1):
-    if selection1 is None:
-        return ""
-    indices_selected = [(x["lon"], x["lat"]) for x in selection1["points"]]
+def display_selected_data(geomap_selection, histo_selection):
+    selected_indices = df_global.index
 
+    for selected_data_fig in [geomap_selection, histo_selection]:
+        if selected_data_fig and selected_data_fig["points"]:
+            selected_indices_fig = sum(
+                [p["customdata"] for p in selected_data_fig["points"]], []
+            )
+            selected_indices = np.intersect1d(selected_indices, selected_indices_fig)
+
+    data = df_global[df_global.index.isin(selected_indices)]
     return [
-        generate_table(
-            df_global[df_global.set_index(["lon", "lat"]).index.isin(indices_selected)][
-                ["id", "text"]
-            ]
-        )
+        generate_table(data[["id", "text"]]),
+        get_geomap(data),
     ]
 
 
-def generate_table(df, max_rows=10):
+def generate_table(df, max_rows=20):
     return html.Table(
         [
             html.Thead(html.Tr([html.Th(col) for col in df.columns])),
