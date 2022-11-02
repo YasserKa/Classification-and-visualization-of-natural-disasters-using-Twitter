@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
 import string
 import sys
@@ -214,8 +215,11 @@ def main() -> None:
     if path == abspath(cfg.supervisor.tweets):
         output: str = abspath("./" + cfg.supervisor.processed)
         df = preprocess_supervisor_dataset(path)
-    elif path == abspath(cfg.twitter_api.tweets):
-        output: str = abspath("./" + cfg.twitter_api.processed)
+    elif path.startswith(abspath(cfg.twitter_api.tweets)):
+        output_file_name = os.path.basename(path)
+        output: str = abspath(
+            "./" + os.path.dirname(cfg.twitter_api.processed) + "/" + output_file_name
+        )
         df = preprocess_tweets(path)
     elif path == abspath(cfg.alberta.raw):
         output: str = abspath("./" + cfg.alberta.processed)

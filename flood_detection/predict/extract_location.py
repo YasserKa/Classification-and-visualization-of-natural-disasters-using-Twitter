@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import os
 from enum import Enum
 
 import click
 import pandas as pd
 from geopy.geocoders import GeoNames, Nominatim
 from hydra import compose, initialize
+from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 from tqdm import tqdm
 from transformers import pipeline
@@ -117,21 +119,29 @@ def main(model_name, geocoder_name, path_to_data):
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
 
-    input_path: str = path_to_data[0]
-    df = pd.read_csv(input_path)
+    input_path: str = abspath(path_to_data[0])
 
-    if input_path == cfg.supervisor.processed_flood:
+    if input_path == abspath(cfg.supervisor.processed_flood):
         output_path: str = cfg.supervisor.processed_geo
-        df = df[df["predicted_label"] == 1]
-    elif input_path == cfg.twitter_api.processed_flood:
-        output_path = cfg.twitter_api.processed_geo
-        df = df[df["predicted_label"] == 1]
+    elif input_path.startswith(abspath(cfg.twitter_api.processed_flood)):
+        output_file_name = os.path.basename(input_path)
+        output_path: str = abspath(
+            "./"
+            + os.path.dirname(cfg.twitter_api.processed_geo)
+            + "/"
+            + output_file_name
+        )
+    else:
+        raise Exception(f"{input_path} file not found")
+
+    df = pd.read_csv(input_path)
+    df = df[df["predicted_label"] == 1]
 
     model = Transform(model_name)
     geocoder = GeoCoder(geocoder_name)
 
     tqdm.pandas(desc="NER NLP")
-    df["tokens"] = df["raw_text"].progress_apply(model.get_tokens)
+    df["tokens"] = df["text_raw"].progress_apply(model.get_tokens)
     df["locations"] = df["tokens"].apply(model.get_location_tokens)
     tqdm.pandas(desc="Swedish locations")
     df["locations"] = df["locations"].progress_apply(geocoder.get_swedish_location)

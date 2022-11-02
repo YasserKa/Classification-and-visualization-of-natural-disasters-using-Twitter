@@ -12,9 +12,11 @@ from omegaconf import DictConfig
 
 with initialize(version_base=None, config_path="conf"):
     cfg: DictConfig = compose(config_name="config")
-    supervisor_tweets_path: str = abspath(
-        "./" + cfg.supervisor.tweets,
-    )
+
+
+supervisor_tweets_path: str = abspath(
+    "./" + cfg.supervisor.tweets,
+)
 
 with open(supervisor_tweets_path, "r") as file:
     tweets_json = json.load(file)
@@ -85,7 +87,7 @@ print(df_gb.get_group("2015-07-12 00:00:00+00:00").sort_values(by="created_at"))
 
 df_ = df[
     (df["created_at"] >= "2021-08-18")
-    & (df["created_at"] <= "2021-08-20")
+    & (df["created_at"] <= "2021-08-23")
     & (df["Explicit location in Sweden"] == 1)
     & (df["On Topic"] == 1)
 ]

@@ -20,10 +20,10 @@ paths:
   tweets: data/tweets
 
 twitter_api:
-  tweets: data/tweets/twitter_api.json
-  processed: data/processed/twitter_api.csv
-  processed_flood: data/processed_flood/twitter_api.csv
-  processed_geo: data/processed_geo/twitter_api.csv
+  tweets: data/tweets/twitter_api
+  processed: data/processed/twitter_api
+  processed_flood: data/processed_flood/twitter_api
+  processed_geo: data/processed_geo/twitter_api
 
 supervisor:
   raw: data/raw/supervisor_annotated_tweets.csv

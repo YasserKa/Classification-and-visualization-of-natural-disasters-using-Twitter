@@ -108,9 +108,6 @@ class TwitterFacade:
                 medias[media.data["media_key"]] = media.data
 
         for tweet in twitter_respose.data:
-            # if "attachments" in tweet:
-            #     print(tweet["attachments"])
-            #     print(twitter_respose.includes["media"])
             id = tweet["id"]
             tweets_dict[id] = tweet.data
             # Add user

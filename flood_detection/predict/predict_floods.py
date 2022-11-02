@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 import click
 import pandas as pd
 import torch
@@ -26,12 +28,19 @@ def main(dataset_path):
 
     if dataset_path == abspath(cfg.supervisor.processed):
         output_path: str = cfg.supervisor.processed_flood
-    elif dataset_path == abspath(cfg.twitter_api.processed):
-        output_path: str = cfg.twitter_api.processed_flood
+    elif dataset_path.startswith(abspath(cfg.twitter_api.processed)):
+        output_file_name = os.path.basename(dataset_path)
+        output_path: str = abspath(
+            "./"
+            + os.path.dirname(cfg.twitter_api.processed_flood)
+            + "/"
+            + output_file_name
+        )
     else:
         raise Exception(f"{dataset_path} file not found")
 
     df = pd.read_csv(dataset_path)
+
     dataset: Dataset = Dataset.from_pandas(df)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -67,9 +76,8 @@ def main(dataset_path):
 
     tokenized = tokenized.map(forward_pass_with_label, batched=True, batch_size=16)
     tokenized.set_format("pandas")
-    df_output = tokenized[:][
-        ["id", "raw_text", "created_at", "text", "predicted_label"]
-    ]
+    df_output = tokenized[:][:]
+    df_output = df_output.drop(columns=["input_ids", "attention_mask"])
 
     df_output.to_csv(output_path, index=False)
 
