@@ -12,7 +12,9 @@ import torch
 from datasets.arrow_dataset import Dataset
 from datasets.dataset_dict import DatasetDict
 from datasets.filesystems.s3filesystem import S3FileSystem
+from hydra import compose, initialize
 from imblearn.under_sampling import RandomUnderSampler
+from omegaconf import DictConfig
 from sagemaker.huggingface import HuggingFace
 from sagemaker.s3 import S3Downloader
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
@@ -20,15 +22,12 @@ from transformers.models.auto.modeling_auto import AutoModelForSequenceClassific
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.trainer import Trainer
 from transformers.training_args import TrainingArguments
-from hydra import compose, initialize
-from omegaconf import DictConfig
 
 """
 Training dataset/s locally or using sagemaker
 """
 
 # REFACTOR: Remove train_locally() and use train.py instead
-# TODO: Add --download_model option
 
 
 class Environment(Enum):
@@ -164,7 +163,7 @@ def train_sagemaker(dataset, model_enc, role_name, download_model):
 
     huggingface_estimator = HuggingFace(
         entry_point="sagemaker_train.py",
-        source_dir="src/train/scripts",
+        source_dir="flood_detection/train/scripts",
         instance_type="ml.p3.2xlarge",
         instance_count=1,
         role=role,

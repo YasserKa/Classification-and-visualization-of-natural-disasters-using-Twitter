@@ -16,8 +16,6 @@ from dash.dependencies import Input, Output
 
 app = Dash(__name__)
 
-colors = {"background": "#111111", "text": "#7FDBFF"}
-
 data_needed = [
     "class",
     "importance",
@@ -50,8 +48,9 @@ def get_smallest_loc_info(df):
 
     df = df[df["locations_info"].str.len() > 0]
     # Separate each data in column
-    df[data_needed] = df["locations_info"].to_list()
-    df["name"] = df["display_name"].apply(lambda x: x.split(",")[0])
+    df.loc[:, data_needed] = df["locations_info"].tolist()
+
+    df.loc[:, "name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
 
 

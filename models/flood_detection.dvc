@@ -1,5 +1,5 @@
 outs:
-- md5: 57307be30f61a0d613fe0103462618ef.dir
-  size: 268827256
-  nfiles: 16
+- md5: 075833f69a6a5016397698b330696aa4.dir
+  size: 515867589
+  nfiles: 10
   path: flood_detection

@@ -7,13 +7,15 @@ from typing import Union
 
 import pandas as pd
 import spacy
+from deep_translator import GoogleTranslator
 from hydra import compose, initialize
+from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 
 """ Transform datasets to be ready for training
 
 The data strcture will be:
-id, text, raw_text, relevant(0/1), mentions_impact(0/1), mentions_location(0/1)
+id, text, text_raw, text_translated, relevant(0/1), mentions_impact(0/1), mentions_location(0/1), other columns provided
 
 Not all datasets include mentions_impact and mentions_location
 
@@ -85,37 +87,29 @@ def clean_text(text_list: Union[list, str]) -> list[str]:
     return text_list
 
 
+def translate_text_list(text_list: list[str]):
+    return GoogleTranslator(source="auto", target="en").translate_batch(text_list)
+
+
 def clean_dataframe(df) -> pd.DataFrame:
     """
     Remove retweets, duplicate tweets and clean text
 
     :param df pd.DataFrame
     """
-    # HACK: process the english translated tweets instead of the original
-    # swedish ones
-    # TODO: include the swe->en translation step here by detecting the language
-    # of the raw text and adding it as a new column, and translate it
-    if "text" in df.columns:
-        # Some tweets has emojis only, and their translation is None, remove these
-        df = df.drop(df[df["text"].isnull()].index)
-        raw_text_series = df["text"]
-    else:
-        raw_text_series = df["raw_text"]
-
-    # Remove retweets
-    df = df.drop(df[raw_text_series.str.startswith("RT")].index)
+    print("Cleaning dataframe")
     # Drop tweets that has same text
     df = df[~df["text"].duplicated()]
-    # Remove duplicates
-    df = df.drop_duplicates()
+    # Remove retweets
+    df = df.drop(df[df["text"].str.startswith("RT")].index)
 
-    if "text" in df.columns:
-        raw_text_series = df["text"]
-    else:
-        raw_text_series = df["raw_text"]
+    df["text_raw"] = df["text"]
+    print("Translating text")
+    df["text_translated"] = translate_text_list(df["text"].tolist())
 
+    print("Cleaning text")
     # Clean text
-    df["text"] = clean_text(raw_text_series.to_numpy())
+    df["text"] = clean_text(df["text_translated"].to_numpy())
     df = df[(df["text"] != "") & df["text"].notnull()]
 
     return df
@@ -138,10 +132,9 @@ def preprocess_crisis_dataset(path) -> pd.DataFrame:
      :rtype pd.DataFrame
     """
     df: pd.DataFrame = pd.read_csv(path, sep="\t")
-    df = df[["tweet_id", "event_name", "tweet_text", "label"]]
     df = df.rename(
         columns={
-            "tweet_text": "raw_text",
+            "tweet_text": "text",
             "tweet_id": "id",
             "label": "mentions_impact",
         }
@@ -165,7 +158,7 @@ def preprocess_crisislex_dataset(path) -> pd.DataFrame:
     """
     df: pd.DataFrame = pd.read_csv(path)
     df = df.rename(
-        columns={"tweet_id": "id", "tweet": "raw_text", "label": "relevant"},
+        columns={"tweet_id": "id", "tweet": "text", "label": "relevant"},
     )
     df["relevant"] = df["relevant"].apply(lambda x: 1 if x == "on-topic" else 0)
     df["id"] = df["id"].apply(lambda x: x[1:-1])
@@ -177,27 +170,9 @@ def preprocess_tweets(path) -> pd.DataFrame:
     with open(path, "r") as file:
         tweets_json = json.load(file)
 
-    df = pd.json_normalize(list(tweets_json.values()))
+    df = pd.json_normalize(list(tweets_json.values()), max_level=0)
 
-    df = df[
-        [
-            "id",
-            "created_at",
-            "text",
-            "text_en",
-        ]
-    ]
-    df = df.rename(
-        columns={
-            "text_en": "text",
-            "text": "raw_text",
-        }
-    )
-    df = df.astype(
-        {
-            "id": "int",
-        }
-    )
+    df = df.astype({"id": "int"})
     return df
 
 
@@ -205,23 +180,10 @@ def preprocess_supervisor_dataset(path) -> pd.DataFrame:
     with open(path, "r") as file:
         tweets_json = json.load(file)
 
-    df = pd.json_normalize(list(tweets_json.values()))
+    df = pd.json_normalize(list(tweets_json.values()), max_level=0)
 
-    df = df[
-        [
-            "id",
-            "text",
-            "created_at",
-            "Explicit location in Sweden",
-            "text_en",
-            "On Topic",
-            "Contains specific information about IMPACTS",
-        ]
-    ]
     df = df.rename(
         columns={
-            "text_en": "text",
-            "text": "raw_text",
             "On Topic": "relevant",
             "Explicit location in Sweden": "mentions_location",
             "Contains specific information about IMPACTS": "mentions_impact",
@@ -247,25 +209,25 @@ def main() -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
 
-    path: str = sys.argv[1]
-    match path:
-        case cfg.supervisor.tweets:
-            output: str = cfg.supervisor.processed
-            df = preprocess_supervisor_dataset(path)
-        case cfg.twitter_api.tweets:
-            output: str = cfg.twitter_api.processed
-            df = preprocess_tweets(path)
-        case cfg.alberta.raw:
-            output: str = cfg.alberta.processed
-            df = preprocess_crisislex_dataset(path)
-        case cfg.queensland.raw:
-            output: str = cfg.queensland.processed
-            df = preprocess_crisislex_dataset(path)
-        case cfg.crisis.raw:
-            output: str = cfg.crisis.processed
-            df = preprocess_crisis_dataset(path)
-        case _:
-            raise Exception(f"{path} file not found")
+    path: str = abspath(sys.argv[1])
+
+    if path == abspath(cfg.supervisor.tweets):
+        output: str = abspath("./" + cfg.supervisor.processed)
+        df = preprocess_supervisor_dataset(path)
+    elif path == abspath(cfg.twitter_api.tweets):
+        output: str = abspath("./" + cfg.twitter_api.processed)
+        df = preprocess_tweets(path)
+    elif path == abspath(cfg.alberta.raw):
+        output: str = abspath("./" + cfg.alberta.processed)
+        df = preprocess_crisislex_dataset(path)
+    elif path == abspath(cfg.queensland.raw):
+        output: str = abspath("./" + cfg.queensland.processed)
+        df = preprocess_crisislex_dataset(path)
+    elif path == abspath(cfg.crisis.raw):
+        output: str = abspath("./" + cfg.crisis.processed)
+        df = preprocess_crisis_dataset(path)
+    else:
+        raise Exception(f"{path} file not found")
 
     df = clean_dataframe(df)
     df.to_csv(output, index=False)

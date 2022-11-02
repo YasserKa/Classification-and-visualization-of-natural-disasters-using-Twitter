@@ -22,9 +22,9 @@ flake8==5.0.4 ; python_version >= "3.10" and python_version < "3.11" \
 identify==2.5.7 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:5b8fd1e843a6d4bf10685dd31f4520a7f1c7d0e14e9bc5d34b1d6f111cabc011 \
     --hash=sha256:7a67b2a6208d390fd86fd04fb3def94a3a8b7f0bcbd1d1fcd6736f4defe26390
-importlib-metadata==5.0.0 ; python_version >= "3.10" and python_version < "3.11" \
-    --hash=sha256:da31db32b304314d044d3c12c79bd59e307889b287ad12ff387b3500835fc2ab \
-    --hash=sha256:ddb0e35065e8938f867ed4928d0ae5bf2a53b7773871bfe6bcc7e4fcdc7dea43
+importlib-metadata==4.13.0 ; python_version >= "3.10" and python_version < "3.11" \
+    --hash=sha256:8a8a81bcf996e74fee46f0d16bd3eaa382a7eb20fd82445c3ad11f4090334116 \
+    --hash=sha256:dd0173e8f150d6815e098fd354f6414b0f079af4644ddfe90c71e2fc6174346d
 iniconfig==1.1.1 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3 \
     --hash=sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32

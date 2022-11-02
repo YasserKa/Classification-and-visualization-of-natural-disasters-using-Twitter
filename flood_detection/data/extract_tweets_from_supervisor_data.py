@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from flood_detection.classes.twitter_facade import TwitterFacade
 
 
-# NOTE: if this going to be used often, refactor it, and include it in the pipeline
+# REFACTOR: if this going to be used often, refactor it, and include it in the pipeline
 def extract_tweets_for_supervisor_data() -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
@@ -24,18 +24,15 @@ def extract_tweets_for_supervisor_data() -> None:
         rows = list(csv.DictReader(csvfile, delimiter=","))
         tweets_dict = dict((int(row["id"]), row) for row in rows)
 
-        tweets = twitter.get_tweets_from_id(list(tweets_dict.keys()))
+        tweets = twitter.get_tweets_from_ids(list(tweets_dict.keys()))
 
         # Add the labels to the tweets
         for id in tweets.keys():
             tweets[id].update(tweets_dict[id])
-            tweets[id]["text_en"] = GoogleTranslator(
-                source="auto", target="en"
-            ).translate(tweets[id]["text"])
 
     # Write pretty print JSON data to file
-    with open(supervisor_tweets_path, "w") as write_file:
-        json.dump(tweets, write_file, indent=4)
+    with open(supervisor_tweets_path, "w") as outfile:
+        json.dump(tweets, outfile, indent=4, sort_keys=True, default=str)
 
 
 if __name__ == "__main__":

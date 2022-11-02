@@ -13,6 +13,12 @@ pull_data:
 test:
 	python -m pytest
 
+train_flood_classifier:
+	dvc exp run train --set-param 'datasets=${supervisor.processed}' -f
+
+evaluation:
+	dvc exp show --drop '.*' --keep "(Experiment|Created|eval_accuracy|eval_f1|eval_precision|eval_recall)" -n 2
+
 extract_from_api:
 	python ./flood_detection/data/extract_tweets_from_api.py --from $(from) --to $(to)
 	python ./flood_detection/data/preprocess.py data/tweets/twitter_api.json 
