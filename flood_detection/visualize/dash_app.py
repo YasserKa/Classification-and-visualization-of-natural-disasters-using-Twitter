@@ -139,6 +139,7 @@ def plot(df, app):
         children=[
             html.H1(children="Flood Detection"),
             html.Div(children=f"Total number of tweets: {len(df)}"),
+            html.Div(id="tweets_num_picked"),
             dcc.Graph(id="geomap", figure=geomap),
             dcc.Graph(id="histo", figure=histo),
             dcc.Markdown(children="### Tweets Selected"),
@@ -150,6 +151,7 @@ def plot(df, app):
 @app.callback(
     Output("tweets", "children"),
     Output("geomap", "figure"),
+    Output("tweets_num_picked", "children"),
     Input("geomap", "selectedData"),
     Input("histo", "selectedData"),
 )
@@ -164,9 +166,11 @@ def display_selected_data(geomap_selection, histo_selection):
             selected_indices = np.intersect1d(selected_indices, selected_indices_fig)
 
     data = df_global[df_global.index.isin(selected_indices)]
+    tweets_num_picked = f"Number of tweets picked: {len(data)}"
     return [
         generate_table(data[["id", "text"]]),
         get_geomap(data),
+        tweets_num_picked,
     ]
 
 
