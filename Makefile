@@ -1,17 +1,19 @@
-.PHONY: notebook docs
-.EXPORT_ALL_VARIABLES:
+install: setup_env install_corpora
 
-install_spacy_packages: 
-	@echo "Installing..."
+setup_env:
 	poetry install
 	poetry run pre-commit install
-	python -m spacy download en_core_web_sm
-
-pull_data:
-	python -m dvc pull
 
 test:
 	python -m pytest
+
+install_corpora: 
+	python -m spacy download en_core_web_sm
+	python -m nltk.downloader omw-1.4 -d ./nltk_data
+	python -m nltk.downloader wordnet -d ./nltk_data
+
+pull_data:
+	python -m dvc pull
 
 train_flood_classifier:
 	dvc exp run train --set-param 'datasets=${supervisor.processed}' -f

@@ -28,14 +28,14 @@ df = df[df["relevant"] == 1]
 # Count word frequencies
 
 frequency = defaultdict(int)
-for text in df["raw_text"].values:
+for text in df["text_raw"].values:
     for token in text.split():
         frequency[token] += 1
 
 # Only keep words that appear more than once
 processed_corpus = [
     [token for token in text.split() if frequency[token] > 1]
-    for text in df["raw_text"].values
+    for text in df["text_raw"].values
 ]
 
 
@@ -59,14 +59,14 @@ tfidf = models.TfidfModel(bow_corpus)
 # print(list(enumerate(sims)))
 
 # %%
+
+# %%
 # Lemmatize the documents.
 
-nltk.download("wordnet", download_dir="./nltk_data")
-nltk.download("omw-1.4", download_dir="./nltk_data")
 lemmatizer = WordNetLemmatizer()
 docs = [
     [lemmatizer.lemmatize(token) for token in doc]
-    for doc in df["raw_text"].apply(lambda x: x.split()).values
+    for doc in df["text_raw"].apply(lambda x: x.split()).values
 ]
 
 # %%

@@ -193,6 +193,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "cachelib"
+version = "0.9.0"
+description = "A collection of cache libraries in the same API interface."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "cachetools"
 version = "5.2.0"
 description = "Extensible memoizing collections and decorators"
@@ -481,12 +489,37 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "dash-extensions"
+version = "0.1.6"
+description = "Extensions for Plotly Dash."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4"
+
+[package.dependencies]
+dash = ">=2.6.1"
+Flask-Caching = "2.0.0"
+jsbeautifier = ">=1.14.3,<2.0.0"
+more-itertools = ">=8.12.0,<9.0.0"
+
+[[package]]
 name = "dash-html-components"
 version = "2.0.0"
 description = "Vanilla HTML components for Dash"
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "dash-leaflet"
+version = "0.1.23"
+description = "Leaflet component for Dash"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+geobuf = "*"
 
 [[package]]
 name = "dash-table"
@@ -829,6 +862,14 @@ tf = ["tensorflow"]
 xgb = ["xgboost"]
 
 [[package]]
+name = "editorconfig"
+version = "0.12.3"
+description = "EditorConfig File Locator and Interpreter for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "exceptiongroup"
 version = "1.0.0rc9"
 description = "Backport of PEP 654 (exception groups)"
@@ -866,7 +907,7 @@ pyflakes = ">=2.5.0,<2.6.0"
 
 [[package]]
 name = "flask"
-version = "2.2.2"
+version = "2.1.2"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -876,11 +917,23 @@ python-versions = ">=3.7"
 click = ">=8.0"
 itsdangerous = ">=2.0"
 Jinja2 = ">=3.0"
-Werkzeug = ">=2.2.2"
+Werkzeug = ">=2.0"
 
 [package.extras]
 async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
+
+[[package]]
+name = "flask-caching"
+version = "2.0.0"
+description = "Adds caching support to Flask applications."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+cachelib = ">=0.9.0"
+Flask = "<=2.1.2"
 
 [[package]]
 name = "flask-compress"
@@ -1016,6 +1069,22 @@ distributed = ["Pyro4 (>=4.27)"]
 docs = ["Pyro4", "Pyro4 (>=4.27)", "annoy", "cython", "matplotlib", "memory-profiler", "mock", "nltk", "nmslib", "pandas", "pyemd", "pytest", "pytest-cov", "sphinx", "sphinx-gallery", "sphinxcontrib-napoleon", "sphinxcontrib.programoutput", "statsmodels", "testfixtures", "visdom (>=0.1.8,!=0.1.8.7)"]
 test = ["cython", "mock", "nmslib", "pyemd", "pytest", "pytest-cov", "testfixtures", "visdom (>=0.1.8,!=0.1.8.7)"]
 test-win = ["cython", "mock", "nmslib", "pyemd", "pytest", "pytest-cov", "testfixtures"]
+
+[[package]]
+name = "geobuf"
+version = "1.1.1"
+description = "Geobuf is a compact binary geospatial format for lossless compression of GeoJSON and TopoJSON data."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+click = "*"
+protobuf = "*"
+six = "*"
+
+[package.extras]
+test = ["pytest"]
 
 [[package]]
 name = "geographiclib"
@@ -1357,6 +1426,18 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "jsbeautifier"
+version = "1.14.7"
+description = "JavaScript unobfuscator and beautifier."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+editorconfig = ">=0.12.2"
+six = ">=1.13.0"
+
+[[package]]
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -1451,6 +1532,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "more-itertools"
+version = "8.14.0"
+description = "More routines for operating on iterables, beyond itertools"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "multidict"
 version = "6.0.2"
 description = "multidict implementation"
@@ -1499,6 +1588,28 @@ developer = ["mypy (>=0.981)", "pre-commit (>=2.20)"]
 doc = ["nb2plots (>=0.6)", "numpydoc (>=1.4)", "pillow (>=9.1)", "pydata-sphinx-theme (>=0.9)", "sphinx (>=5)", "sphinx-gallery (>=0.10)", "texext (>=0.6.6)"]
 extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.9)", "sympy (>=1.10)"]
 test = ["codecov (>=2.1)", "pytest (>=7.1)", "pytest-cov (>=3.0)"]
+
+[[package]]
+name = "nltk"
+version = "3.7"
+description = "Natural Language Toolkit"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+click = "*"
+joblib = "*"
+regex = ">=2021.8.3"
+tqdm = "*"
+
+[package.extras]
+all = ["matplotlib", "numpy", "pyparsing", "python-crfsuite", "requests", "scikit-learn", "scipy", "twython"]
+corenlp = ["requests"]
+machine-learning = ["numpy", "python-crfsuite", "scikit-learn", "scipy"]
+plot = ["matplotlib"]
+tgrep = ["pyparsing"]
+twitter = ["twython"]
 
 [[package]]
 name = "nodeenv"
@@ -2892,7 +3003,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "d801b229048e9decc0955a804485342f88ac2b1f9f057d2f5d096d47486564e7"
+content-hash = "9247267b9735b15635565d44fed889f6f65d29ac33d5d793ef136a7b1dc30c02"
 
 [metadata.files]
 aiohttp = [
@@ -3128,6 +3239,10 @@ brotli = [
     {file = "Brotli-1.0.9-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:9749a124280a0ada4187a6cfd1ffd35c350fb3af79c706589d98e088c5044267"},
     {file = "Brotli-1.0.9-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:76ffebb907bec09ff511bb3acc077695e2c32bc2142819491579a695f77ffd4d"},
     {file = "Brotli-1.0.9.zip", hash = "sha256:4d1b810aa0ed773f81dceda2cc7b403d01057458730e309856356d4ef4188438"},
+]
+cachelib = [
+    {file = "cachelib-0.9.0-py3-none-any.whl", hash = "sha256:811ceeb1209d2fe51cd2b62810bd1eccf70feba5c52641532498be5c675493b3"},
+    {file = "cachelib-0.9.0.tar.gz", hash = "sha256:38222cc7c1b79a23606de5c2607f4925779e37cdcea1c2ad21b8bae94b5425a5"},
 ]
 cachetools = [
     {file = "cachetools-5.2.0-py3-none-any.whl", hash = "sha256:f9f17d2aec496a9aa6b76f53e3b614c965223c061982d434d160f930c698a9db"},
@@ -3395,9 +3510,17 @@ dash-core-components = [
     {file = "dash_core_components-2.0.0-py3-none-any.whl", hash = "sha256:52b8e8cce13b18d0802ee3acbc5e888cb1248a04968f962d63d070400af2e346"},
     {file = "dash_core_components-2.0.0.tar.gz", hash = "sha256:c6733874af975e552f95a1398a16c2ee7df14ce43fa60bb3718a3c6e0b63ffee"},
 ]
+dash-extensions = [
+    {file = "dash-extensions-0.1.6.tar.gz", hash = "sha256:6dbbe95c719b30474ea60fdc10086c74ea7d01ef3685178594eb4c43845edb71"},
+    {file = "dash_extensions-0.1.6-py3-none-any.whl", hash = "sha256:239c9f1947d679208ee871dbac593028e86375d3187e2d7341e356361d773d84"},
+]
 dash-html-components = [
     {file = "dash_html_components-2.0.0-py3-none-any.whl", hash = "sha256:b42cc903713c9706af03b3f2548bda4be7307a7cf89b7d6eae3da872717d1b63"},
     {file = "dash_html_components-2.0.0.tar.gz", hash = "sha256:8703a601080f02619a6390998e0b3da4a5daabe97a1fd7a9cebc09d015f26e50"},
+]
+dash-leaflet = [
+    {file = "dash_leaflet-0.1.23-py3-none-any.whl", hash = "sha256:484159bc543c0899bde2e4c9518143494876b9d51b64b2b2eab312c9ed7a9058"},
+    {file = "dash_leaflet-0.1.23.tar.gz", hash = "sha256:260c81e63f73d47bf71f634810a62736512aca38b29cb3427d024ee4c93820b5"},
 ]
 dash-table = [
     {file = "dash_table-5.0.0-py3-none-any.whl", hash = "sha256:19036fa352bb1c11baf38068ec62d172f0515f73ca3276c79dee49b95ddc16c9"},
@@ -3500,6 +3623,10 @@ dvclive = [
     {file = "dvclive-0.12.1-py3-none-any.whl", hash = "sha256:3e6fbdab5752527f37a62d873b9133e156e720836c76e1fc7c750b477d4c3e12"},
     {file = "dvclive-0.12.1.tar.gz", hash = "sha256:9f615e712a7ee1ffcc1d5b5e71680a01b67cc20cd8515478054c4a82ab3301a4"},
 ]
+editorconfig = [
+    {file = "EditorConfig-0.12.3-py3-none-any.whl", hash = "sha256:6b0851425aa875b08b16789ee0eeadbd4ab59666e9ebe728e526314c4a2e52c1"},
+    {file = "EditorConfig-0.12.3.tar.gz", hash = "sha256:57f8ce78afcba15c8b18d46b5170848c88d56fd38f05c2ec60dbbfcb8996e89e"},
+]
 exceptiongroup = [
     {file = "exceptiongroup-1.0.0rc9-py3-none-any.whl", hash = "sha256:2e3c3fc1538a094aab74fad52d6c33fc94de3dfee3ee01f187c0e0c72aec5337"},
     {file = "exceptiongroup-1.0.0rc9.tar.gz", hash = "sha256:9086a4a21ef9b31c72181c77c040a074ba0889ee56a7b289ff0afb0d97655f96"},
@@ -3513,8 +3640,12 @@ flake8 = [
     {file = "flake8-5.0.4.tar.gz", hash = "sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db"},
 ]
 flask = [
-    {file = "Flask-2.2.2-py3-none-any.whl", hash = "sha256:b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526"},
-    {file = "Flask-2.2.2.tar.gz", hash = "sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b"},
+    {file = "Flask-2.1.2-py3-none-any.whl", hash = "sha256:fad5b446feb0d6db6aec0c3184d16a8c1f6c3e464b511649c8918a9be100b4fe"},
+    {file = "Flask-2.1.2.tar.gz", hash = "sha256:315ded2ddf8a6281567edb27393010fe3406188bafbfe65a3339d5787d89e477"},
+]
+flask-caching = [
+    {file = "Flask-Caching-2.0.0.tar.gz", hash = "sha256:3300efccda359d69ce0e6824b90cb571ff895a3907c31266c0342cca4bc40340"},
+    {file = "Flask_Caching-2.0.0-py3-none-any.whl", hash = "sha256:e5ff99af4a0208bd93a24fe48b24e9b47a77236c38c5d6a6aa3d688334040027"},
 ]
 flask-compress = [
     {file = "Flask-Compress-1.13.tar.gz", hash = "sha256:ee96f18bf9b00f2deb4e3406ca4a05093aa80e2ef0578525a3b4d32ecdff129d"},
@@ -3622,6 +3753,11 @@ gensim = [
     {file = "gensim-4.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:8ff2c9e8e7470701b26b994d29fdf4d77bb3b290b6303dee61859a776bfeeeee"},
     {file = "gensim-4.2.0.tar.gz", hash = "sha256:995ebd2970a31d47c100aaac10212f47e2bf12e2b06536d38883c951ff34eef1"},
 ]
+geobuf = [
+    {file = "geobuf-1.1.1-py2-none-any.whl", hash = "sha256:e6298e0608b2fcb4fc23530760fbe03862449f44ac5f5065aeb9304ce3d23299"},
+    {file = "geobuf-1.1.1-py3-none-any.whl", hash = "sha256:a6b81a0a09505996ee23b6caa303cde8c0d2f75d31826241a452a19bf675f8c2"},
+    {file = "geobuf-1.1.1.tar.gz", hash = "sha256:9c645a2ef7c0a8679b1088981e286357823a2291322de6d0b9ee523212933e9a"},
+]
 geographiclib = [
     {file = "geographiclib-1.52-py3-none-any.whl", hash = "sha256:8f441c527b0b8a26cd96c965565ff0513d1e4d9952b704bf449409e5015c77b7"},
     {file = "geographiclib-1.52.tar.gz", hash = "sha256:ac400d672b8954b0306bca890b088bb8ba2a757dc8133cca0b878f34b33b2740"},
@@ -3723,6 +3859,9 @@ jmespath = [
 joblib = [
     {file = "joblib-1.2.0-py3-none-any.whl", hash = "sha256:091138ed78f800342968c523bdde947e7a305b8594b910a0fea2ab83c3c6d385"},
     {file = "joblib-1.2.0.tar.gz", hash = "sha256:e1cee4a79e4af22881164f218d4311f60074197fb707e082e803b61f6d137018"},
+]
+jsbeautifier = [
+    {file = "jsbeautifier-1.14.7.tar.gz", hash = "sha256:77993254db1ff6f84eb6e1d75e3b6b72cba2ef20813a585b2d81e8e5e3c713c6"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
@@ -3895,6 +4034,10 @@ mccabe = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
     {file = "mccabe-0.7.0.tar.gz", hash = "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325"},
 ]
+more-itertools = [
+    {file = "more-itertools-8.14.0.tar.gz", hash = "sha256:c09443cd3d5438b8dafccd867a6bc1cb0894389e90cb53d227456b0b0bccb750"},
+    {file = "more_itertools-8.14.0-py3-none-any.whl", hash = "sha256:1bc4f91ee5b1b31ac7ceacc17c09befe6a40a503907baf9c839c229b5095cfd2"},
+]
 multidict = [
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:0b9e95a740109c6047602f4db4da9949e6c5945cefbad34a1299775ddc9a62e2"},
     {file = "multidict-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ac0e27844758d7177989ce406acc6a83c16ed4524ebc363c1f748cba184d89d3"},
@@ -4015,6 +4158,10 @@ nanotime = [
 networkx = [
     {file = "networkx-2.8.7-py3-none-any.whl", hash = "sha256:15cdf7f7c157637107ea690cabbc488018f8256fa28242aed0fb24c93c03a06d"},
     {file = "networkx-2.8.7.tar.gz", hash = "sha256:815383fd52ece0a7024b5fd8408cc13a389ea350cd912178b82eed8b96f82cd3"},
+]
+nltk = [
+    {file = "nltk-3.7-py3-none-any.whl", hash = "sha256:ba3de02490308b248f9b94c8bc1ac0683e9aa2ec49ee78536d8667afb5e3eec8"},
+    {file = "nltk-3.7.zip", hash = "sha256:d6507d6460cec76d70afea4242a226a7542f85c669177b9c7f562b7cf1b05502"},
 ]
 nodeenv = [
     {file = "nodeenv-1.7.0-py2.py3-none-any.whl", hash = "sha256:27083a7b96a25f2f5e1d8cb4b6317ee8aeda3bdd121394e5ac54e498028a042e"},

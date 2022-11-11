@@ -34,6 +34,10 @@ sagemaker = "^2.116.0"
 datasets = {version = "2.5.2", extras = ["s3"]}
 torch = "^1.13.0"
 imblearn = "^0.0"
+dash-leaflet = "^0.1.23"
+dash-extensions = "^0.1.6"
+geobuf = "^1.1.1"
+nltk = "^3.7"
 
 
 [tool.poetry.group.dev.dependencies]

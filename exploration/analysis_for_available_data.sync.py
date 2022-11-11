@@ -22,6 +22,11 @@ with open(supervisor_tweets_path, "r") as file:
     tweets_json = json.load(file)
 df = pd.json_normalize(list(tweets_json.values()))
 
+api_tweets_path: str = abspath(
+    "./" + cfg.twitter_api.processed_geo + "_[2021, 8, 17]_to_[2021, 8, 23].json"
+)
+df_api = pd.read_csv(api_tweets_path)
+
 # %%
 df.head()
 
@@ -85,11 +90,16 @@ print(df_gb.get_group("2015-07-12 00:00:00+00:00").sort_values(by="created_at"))
 
 # %%
 
+# There are tweets only for the 19th in that week
 df_ = df[
     (df["created_at"] >= "2021-08-18")
     & (df["created_at"] <= "2021-08-23")
     & (df["Explicit location in Sweden"] == 1)
     & (df["On Topic"] == 1)
 ]
-# df_
+
 visidata.vd.view_pandas(df_)
+
+# %%
+
+visidata.vd.view_pandas(df_api[["created_at"]])
