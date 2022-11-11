@@ -12,7 +12,7 @@ from shapely.geometry import Point
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, pipeline
 
-from flood_detection.data.preprocess import remove_not_needed_elements_from_string
+from flood_detection.data.preprocess import Preprocess
 
 # from tqdm.notebook import tqdm
 
@@ -49,8 +49,11 @@ geolocater: Nominatim = Nominatim(user_agent="flood_detection")
 
 
 # %%
+preprocess = Preprocess()
+
+
 def get_location_entities(text: str):
-    text = remove_not_needed_elements_from_string(text, remove_numbers=False)
+    text = preprocess.remove_not_needed_elements_from_string(text, remove_numbers=False)
     tokens = nlp(text)
     merged_tokens = []
     for token in tokens:

@@ -25,95 +25,106 @@ args:
 """
 
 
-def remove_not_needed_elements_from_string(text: str, remove_numbers=True) -> str:
-    """
-    Remove URLs/Mentions/Hashtags/new lines/numbers
+class Preprocess(object):
 
-    :param text str: to be processed text
-    :rtype str: processed text
-    """
-    regex = (
-        "((www.[^s]+)"
-        "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
-        "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
-        "|(@[a-zA-Z0-9_]*)"
-        "|\n"
-    )
-    if remove_numbers:
-        regex += "|([0-9]+)"
-    regex += ")"
+    # Possible languages en, sv
+    def __init__(self, language="en") -> None:
+        if language == "sv":
+            self.nlp = spacy.load("sv_core_news_sm")
+        elif language == "en":
+            self.nlp = spacy.load("en_core_web_sm")
+        else:
+            raise Exception(f"{language} is not supported")
 
-    processed_text = re.sub(regex, " ", text)
+    def remove_not_needed_elements_from_string(
+        self, text: str, remove_numbers=True
+    ) -> str:
+        """
+        Remove URLs/Mentions/Hashtags/new lines/numbers
 
-    return processed_text
-
-
-def clean_text(text_list: Union[list, str]) -> list[str]:
-    """
-    Clean text of tweet by removing URLs,mentions,hashtag signs,new lines, and numbers
-
-    :param text_list Union[list, str]: A string of text or a list of them
-    :rtype list[str]: processed list of strings
-    """
-
-    sp = spacy.load("en_core_web_sm")
-    stopwords = sp.Defaults.stop_words
-
-    if isinstance(text_list, str):
-        text_list = [text_list]
-
-    for id, text in enumerate(text_list):
-
-        # Remove URLs/Mentions/Hashtags/new lines/numbers
-        text = remove_not_needed_elements_from_string(text)
-        # Remove stopwords
-        text = " ".join([word for word in str(text).split() if word not in stopwords])
-        # Remove punctuation
-        text = "".join([char for char in text if char not in string.punctuation])
-        # Remove Emojis
-        emoji_pattern: re.Pattern[str] = re.compile(
-            "["
-            "\U0001F600-\U0001F64F"  # emoticons
-            "\U0001F300-\U0001F5FF"  # symbols & pictographs
-            "\U0001F680-\U0001F6FF"  # transport & map symbols
-            # flags (iOS)
-            "\U0001F1E0-\U0001F1FF" "]+",
-            flags=re.UNICODE,
+        :param text str: to be processed text
+        :rtype str: processed text
+        """
+        regex = (
+            "((www.[^s]+)"
+            "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
+            "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
+            "|(@[a-zA-Z0-9_]*)"
+            "|\n"
         )
-        text = emoji_pattern.sub(r"", text)
-        # Lower case
-        text = text.lower()
-        text_list[id] = text
+        if remove_numbers:
+            regex += "|([0-9]+)"
+        regex += ")"
 
-    return text_list
+        processed_text = re.sub(regex, " ", text)
 
+        return processed_text
 
-def translate_text_list(text_list: list[str]):
-    return GoogleTranslator(source="auto", target="en").translate_batch(text_list)
+    def clean_text(self, text_list: Union[list, str]) -> list[str]:
+        """
+        Clean text of tweet by removing URLs,mentions,hashtag signs,new lines, and numbers
 
+        :param text_list Union[list, str]: A string of text or a list of them
+        :rtype list[str]: processed list of strings
+        """
 
-def clean_dataframe(df) -> pd.DataFrame:
-    """
-    Remove retweets, duplicate tweets and clean text
+        stopwords = self.nlp.Defaults.stop_words
 
-    :param df pd.DataFrame
-    """
-    print("Cleaning dataframe")
-    # Drop tweets that has same text
-    df = df[~df["text"].duplicated()]
-    # Remove retweets
-    df = df.drop(df[df["text"].str.startswith("RT")].index)
+        if isinstance(text_list, str):
+            text_list = [text_list]
 
-    df["text_raw"] = df["text"]
-    print("Translating text")
-    df["text_translated"] = translate_text_list(df["text"].tolist())
+        for id, text in enumerate(text_list):
+            # Lower case
+            text = text.lower()
 
-    print("Cleaning text")
-    # Clean text
-    df["text"] = clean_text(df["text_translated"].to_numpy())
-    df = df[(df["text"] != "") & df["text"].notnull()]
+            # Remove URLs/Mentions/Hashtags/new lines/numbers
+            text = self.remove_not_needed_elements_from_string(text)
+            # Remove stopwords
+            text = " ".join(
+                [word for word in str(text).split() if word not in stopwords]
+            )
+            # Remove punctuation
+            text = "".join([char for char in text if char not in string.punctuation])
+            # Remove Emojis
+            emoji_pattern: re.Pattern[str] = re.compile(
+                "["
+                "\U0001F600-\U0001F64F"  # emoticons
+                "\U0001F300-\U0001F5FF"  # symbols & pictographs
+                "\U0001F680-\U0001F6FF"  # transport & map symbols
+                # flags (iOS)
+                "\U0001F1E0-\U0001F1FF" "]+",
+                flags=re.UNICODE,
+            )
+            text = emoji_pattern.sub(r"", text)
+            text_list[id] = text
 
-    return df
+        return text_list
+
+    def translate_text_list(self, text_list: list[str]):
+        return GoogleTranslator(source="auto", target="en").translate_batch(text_list)
+
+    def clean_dataframe(self, df) -> pd.DataFrame:
+        """
+        Remove retweets, duplicate tweets and clean text
+
+        :param df pd.DataFrame
+        """
+        print("Cleaning dataframe")
+        # Drop tweets that has same text
+        df = df[~df["text"].duplicated()]
+        # Remove retweets
+        df = df.drop(df[df["text"].str.startswith("RT")].index)
+
+        df["text_raw"] = df["text"]
+        print("Translating text")
+        df["text_translated"] = self.translate_text_list(df["text"].tolist())
+
+        print("Cleaning text")
+        # Clean text
+        df["text"] = self.clean_text(df["text_translated"].to_numpy())
+        df = df[(df["text"] != "") & df["text"].notnull()]
+
+        return df
 
 
 def preprocess_crisis_dataset(path) -> pd.DataFrame:
@@ -233,7 +244,8 @@ def main() -> None:
     else:
         raise Exception(f"{path} file not found")
 
-    df = clean_dataframe(df)
+    preprocess = Preprocess()
+    df = preprocess.clean_dataframe(df)
     df.to_csv(output, index=False)
 
 

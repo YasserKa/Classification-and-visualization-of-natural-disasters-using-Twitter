@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 from tqdm import tqdm
 from transformers import pipeline
 
-from flood_detection.data.preprocess import remove_not_needed_elements_from_string
+from flood_detection.data.preprocess import Preprocess
 
 """
 Extract locations from swedish text
@@ -43,9 +43,12 @@ class Transform:
             # Default ignore list is ["O"] which are tokens needed to extract locations
             ignore_labels=[],
         )
+        self.__preprocess = Preprocess()
 
     def get_tokens(self, text: str):
-        text = remove_not_needed_elements_from_string(text, remove_numbers=False)
+        text = self.__preprocess.remove_not_needed_elements_from_string(
+            text, remove_numbers=False
+        )
         tokens = self.__nlp(text)
         merged_tokens = []
         for token in tokens:

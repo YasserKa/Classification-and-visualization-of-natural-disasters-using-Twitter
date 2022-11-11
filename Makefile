@@ -9,6 +9,7 @@ test:
 
 install_corpora: 
 	python -m spacy download en_core_web_sm
+	python -m spacy download sv_core_news_sm
 	python -m nltk.downloader omw-1.4 -d ./nltk_data
 	python -m nltk.downloader wordnet -d ./nltk_data
 
