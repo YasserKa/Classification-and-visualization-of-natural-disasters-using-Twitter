@@ -23,7 +23,7 @@ with open(supervisor_tweets_path, "r") as file:
 df = pd.json_normalize(list(tweets_json.values()))
 
 api_tweets_path: str = abspath(
-    "./" + cfg.twitter_api.processed_geo + "_[2021, 8, 17]_to_[2021, 8, 23].json"
+    "./" + cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23.csv"
 )
 df_api = pd.read_csv(api_tweets_path)
 

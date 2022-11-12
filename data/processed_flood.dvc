@@ -1,5 +1,5 @@
 outs:
-- md5: 58e44265ce943fdaff1056bb498e8ba6.dir
-  size: 2537220
-  nfiles: 2
+- md5: 681d82f86c03e8990dc9b54e9b405bbd.dir
+  size: 10032397
+  nfiles: 3
   path: processed_flood

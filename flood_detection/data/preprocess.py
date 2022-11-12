@@ -121,7 +121,7 @@ class Preprocess(object):
 
         print("Cleaning text")
         # Clean text
-        df["text"] = self.clean_text(df["text_translated"].to_numpy())
+        df["text"] = self.clean_text(df["text_translated"].tolist())
         df = df[(df["text"] != "") & df["text"].notnull()]
 
         return df
@@ -227,7 +227,8 @@ def main() -> None:
         output: str = abspath("./" + cfg.supervisor.processed)
         df = preprocess_supervisor_dataset(path)
     elif path.startswith(abspath(cfg.twitter_api.tweets)):
-        output_file_name = os.path.basename(path)
+        # Use csv extension instead of json
+        output_file_name = os.path.basename(path).split(".")[0] + ".csv"
         output: str = abspath(
             "./" + os.path.dirname(cfg.twitter_api.processed) + "/" + output_file_name
         )

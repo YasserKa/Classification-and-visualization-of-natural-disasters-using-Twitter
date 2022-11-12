@@ -28,9 +28,10 @@ def main(to_date, from_date) -> None:
         cfg: DictConfig = compose(config_name="config")
 
     twitter: TwitterFacade = TwitterFacade()
+
+    output_path: str = f"{cfg.paths.tweets}/twitter_api_{from_date}_to_{to_date}.json"
     to_date = list(map(lambda x: int(x), to_date.split("-")))
     from_date = list(map(lambda x: int(x), from_date.split("-")))
-    output_path: str = f"{cfg.paths.tweets}/twitter_api_{from_date}_to_{to_date}.json"
 
     query: str = (
         '"atmosfärisk flod" OR "hög vatten" OR åskskur'

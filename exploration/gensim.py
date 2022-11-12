@@ -22,7 +22,7 @@ with initialize_config_module(version_base=None, config_module="conf"):
     cfg: DictConfig = compose(config_name="config")
 
 path_to_data = abspath(
-    cfg.twitter_api.processed_flood + "_[2021, 8, 17]_to_[2021, 8, 23].json"
+    cfg.twitter_api.processed_flood + "_2021-08-17_to_2021-08-23.csv"
 )
 
 df = pd.read_csv(path_to_data)
