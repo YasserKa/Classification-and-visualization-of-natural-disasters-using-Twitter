@@ -454,6 +454,9 @@ cymem==2.0.7 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:e156788d32ad8f7141330913c5d5d2aa67182fca8f15ae22645e9f379abe8a4c \
     --hash=sha256:e6034badb5dd4e10344211c81f16505a55553a7164adc314c75bd80cf07e57a8 \
     --hash=sha256:f165d7bce55d6730930e29d8294569788aa127f1be8d1642d9550ed96223cb37
+dash-bootstrap-components==1.2.1 ; python_version >= "3.10" and python_version < "3.11" \
+    --hash=sha256:249b28d3240d64274e2cc18aee39a03e44c35e0920ec810e5ed4c1359272e063 \
+    --hash=sha256:e52d94d2340e19bf35d7c89cbf4d95f30709ddc6e24d25cff4a5163ea7fd015b
 dash-core-components==2.0.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:52b8e8cce13b18d0802ee3acbc5e888cb1248a04968f962d63d070400af2e346 \
     --hash=sha256:c6733874af975e552f95a1398a16c2ee7df14ce43fa60bb3718a3c6e0b63ffee

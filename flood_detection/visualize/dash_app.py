@@ -7,6 +7,7 @@ histogram
 import ast
 
 import click
+import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -14,7 +15,7 @@ import plotly.graph_objects as go
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 
-app = Dash(__name__)
+app = Dash(external_stylesheets=[dbc.themes.YETI])
 
 data_needed = [
     "class",
@@ -75,10 +76,10 @@ def get_geomap(df):
 
     df_agg = df_group.agg(
         {
-            "name": "first",
+            "location": "first",
             "count": "sum",
             "id": lambda x: list(x),
-            "text": lambda x: list(x),
+            "processed": lambda x: list(x),
         }
     )
     indecies = df_group.groups.values()
@@ -87,7 +88,7 @@ def get_geomap(df):
         lat="lat",
         lon="lon",
         size="count",
-        hover_name=df_agg["name"],
+        hover_name=df_agg["location"],
         mapbox_style="carto-positron",
         height=600,
         zoom=3,
@@ -129,33 +130,83 @@ def get_histo(df):
 
 def plot(df, app):
     global df_global
+    df = df.rename(
+        columns={
+            "name": "location",
+            "text": "processed",
+            "text_raw": "raw",
+            "text_translated": "translated",
+        }
+    )
     df_global = df
 
     geomap = get_geomap(df)
     histo = get_histo(df)
-
+    meta_data_html = get_meta_data_html(df)
+    CONTENT_STYLE = {
+        "margin-top": "2rem",
+        "margin-left": "2rem",
+        "margin-right": "2rem",
+    }
+    wanted_columns = ["id", "raw", "processed", "translated", "location", "created_at"]
+    selected_columns = ["id", "raw", "processed", "translated"]
+    options = [{"label": column, "value": column} for column in wanted_columns]
     app.layout = html.Div(
-        className="row",
-        children=[
-            html.H1(children="Flood Detection"),
-            html.Div(children=f"Total number of tweets: {len(df)}"),
-            html.Div(id="tweets_num_picked"),
-            dcc.Graph(id="geomap", figure=geomap),
+        [
+            html.H1("Flood Detection"),
+            html.Hr(),
+            html.P(id="standalone-radio-check-output"),
+            html.Div(
+                [
+                    dbc.Card(
+                        dbc.CardBody(
+                            [
+                                html.H3("Meta Data", className="card-title"),
+                                html.P(
+                                    meta_data_html,
+                                    id="meta_data",
+                                    className="card-text",
+                                ),
+                            ]
+                        ),
+                        style={
+                            "width": "40rem",
+                            "height": "40rem",
+                            "margin-right": "auto",
+                            "margin-left": "auto",
+                        },
+                    ),
+                    dcc.Graph(
+                        id="geomap",
+                        figure=geomap,
+                        style={"width": "50rem", "height": "40rem"},
+                    ),
+                ],
+                style={"display": "flex"},
+            ),
             dcc.Graph(id="histo", figure=histo),
             dcc.Markdown(children="### Tweets Selected"),
+            dbc.Checklist(
+                id="checklist-inline-input",
+                inline=True,
+                options=options,
+                value=selected_columns,
+            ),
             html.Div(id="tweets"),
         ],
+        style=CONTENT_STYLE,
     )
 
 
 @app.callback(
     Output("tweets", "children"),
     Output("geomap", "figure"),
-    Output("tweets_num_picked", "children"),
+    Output("meta_data", "children"),
     Input("geomap", "selectedData"),
     Input("histo", "selectedData"),
+    Input("checklist-inline-input", "value"),
 )
-def display_selected_data(geomap_selection, histo_selection):
+def display_selected_data(geomap_selection, histo_selection, checkbox_checked):
     selected_indices = df_global.index
 
     for selected_data_fig in [geomap_selection, histo_selection]:
@@ -165,27 +216,55 @@ def display_selected_data(geomap_selection, histo_selection):
             )
             selected_indices = np.intersect1d(selected_indices, selected_indices_fig)
 
-    data = df_global[df_global.index.isin(selected_indices)]
-    tweets_num_picked = f"Number of tweets picked: {len(data)}"
+    data_selected = df_global[df_global.index.isin(selected_indices)]
+    meta_data_html = get_meta_data_html(data_selected)
+
     return [
-        generate_table(data[["id", "text"]]),
-        get_geomap(data),
-        tweets_num_picked,
+        generate_table(data_selected[checkbox_checked]),
+        get_geomap(data_selected),
+        meta_data_html,
+    ]
+
+
+def get_meta_data_html(data_selected):
+    total_data_num = len(df_global)
+    created_at_series = pd.to_datetime(data_selected["created_at"]).sort_values()
+    oldest_time = created_at_series.iloc[0]
+    newest_time = created_at_series.iloc[-1]
+    locations_selected = data_selected["location"].unique()
+    locations_selected_num = len(locations_selected)
+
+    if locations_selected_num > 60:
+        selected_locations_str = ", ".join(locations_selected[:60]) + ", ..."
+    else:
+        selected_locations_str = ", ".join(locations_selected)
+
+    STYLE = {"margin-top": "0rem", "margin-bottom": "0rem"}
+    meta_data = {
+        "Total tweets": str(total_data_num),
+        "Selected tweets": str(len(data_selected)),
+        "Number of selected locations": str(len(locations_selected)),
+        "Selected locations": selected_locations_str,
+        "Tweets span from": str(oldest_time)[:-6],
+        "Tweets span to": str(newest_time)[:-6],
+    }
+    return [
+        html.P([html.B(key), ": ", value], style=STYLE)
+        for key, value in meta_data.items()
     ]
 
 
 def generate_table(df, max_rows=20):
-    return html.Table(
-        [
-            html.Thead(html.Tr([html.Th(col) for col in df.columns])),
-            html.Tbody(
-                [
-                    html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
-                    for i in range(min(len(df), max_rows))
-                ]
-            ),
-        ]
-    )
+    table = [
+        html.Thead(html.Tr([html.Th(col) for col in df.columns])),
+        html.Tbody(
+            [
+                html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
+                for i in range(min(len(df), max_rows))
+            ]
+        ),
+    ]
+    return dbc.Table(table, striped=True, bordered=True, hover=True)
 
 
 @click.command()
