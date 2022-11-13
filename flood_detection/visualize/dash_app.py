@@ -101,7 +101,6 @@ def get_geomap(df):
 
 def get_histo(df):
     # Group by day
-    df["created_at"] = pd.to_datetime(df["created_at"])
     df_agg_day = df.groupby(
         [
             pd.Grouper(
@@ -148,8 +147,8 @@ def plot(df, app):
         "margin-left": "2rem",
         "margin-right": "2rem",
     }
-    wanted_columns = ["id", "raw", "processed", "translated", "location", "created_at"]
-    selected_columns = ["id", "raw", "processed", "translated"]
+    wanted_columns = ["id", "raw", "translated", "processed", "location", "created_at"]
+    selected_columns = ["id", "raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
     app.layout = html.Div(
         [
@@ -270,14 +269,33 @@ def generate_table(df, max_rows=20):
 @click.command()
 @click.argument("path_to_data", nargs=-1)
 def main(path_to_data):
-    df = pd.read_csv(path_to_data[0], converters={"locations": ast.literal_eval})
+    df = pd.read_csv(
+        path_to_data[0],
+        converters={"locations": ast.literal_eval, "user": ast.literal_eval},
+    )
     df["locations_info"] = df["locations"].apply(get_from_raw_loc)
     df["loc_smalled_bounding_box"] = df["locations_info"].apply(
         get_location_with_lowest_parameter
     )
     df = get_smallest_loc_info(df)
 
-    plot(df, app)
+    df["user_id"] = df["user"].apply(lambda x: x["id"])
+
+    df["created_at"] = pd.to_datetime(df["created_at"])
+    # Use first tweet for each user per week only
+    df_group = df.groupby(
+        [
+            "user_id",
+            pd.Grouper(
+                key="created_at",
+                freq="1W",
+            ),
+        ],
+    )
+    df_user_week_uniq = df_group.agg("first")
+    df_user_week_uniq.reset_index(inplace=True)
+
+    plot(df_user_week_uniq, app)
     app.run_server(debug=True)
 
 

@@ -22,7 +22,13 @@ train_flood_classifier:
 evaluation:
 	dvc exp show --drop '.*' --keep "(Experiment|Created|eval_accuracy|eval_f1|eval_precision|eval_recall)" -n 2
 
-extract_from_api:
+pipeline_for_supervisor:
+	python ./flood_detection/data/preprocess.py "./data/tweets/supervisor_annotated_tweets.json"
+	python ./flood_detection/predict/predict_floods.py --dataset_path "./data/tweets/supervisor_annotated_tweets.json.csv"
+	python ./flood_detection/predict/extract_location.py "./data/tweets/supervisor_annotated_tweets.json.csv" 
+	python ./flood_detection/visualize/dash_app.py "./data/tweets/supervisor_annotated_tweets.json.csv" 
+
+pipline_from_api:
 	python ./flood_detection/data/extract_tweets_from_api.py --from $(from) --to $(to)
 	python ./flood_detection/data/preprocess.py "data/tweets/twitter_api_$(from)_to_$(to).json"
 	python ./flood_detection/predict/predict_floods.py --dataset_path "data/processed/twitter_api_$(from)_to_$(to).csv"
