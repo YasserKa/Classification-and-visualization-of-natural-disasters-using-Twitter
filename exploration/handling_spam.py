@@ -2,13 +2,13 @@ import ast
 
 import pandas as pd
 import visidata
-from hydra import compose, initialize
+from hydra import compose, initialize_config_module
 from hydra.utils import to_absolute_path as abspath
 from omegaconf import DictConfig
 
 # %%
 
-with initialize(version_base=None, config_path="../conf"):
+with initialize_config_module(version_base=None, config_module="conf"):
     cfg: DictConfig = compose(config_name="config")
 
 supervisor_proc_geo_path: str = abspath("./" + cfg.supervisor.processed_geo)

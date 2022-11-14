@@ -24,9 +24,9 @@ evaluation:
 
 pipeline_for_supervisor:
 	python ./flood_detection/data/preprocess.py "./data/tweets/supervisor_annotated_tweets.json"
-	python ./flood_detection/predict/predict_floods.py --dataset_path "./data/tweets/supervisor_annotated_tweets.json.csv"
-	python ./flood_detection/predict/extract_location.py "./data/tweets/supervisor_annotated_tweets.json.csv" 
-	python ./flood_detection/visualize/dash_app.py "./data/tweets/supervisor_annotated_tweets.json.csv" 
+	python ./flood_detection/predict/predict_floods.py --dataset_path "./data/processed/supervisor_annotated_tweets.csv"
+	python ./flood_detection/predict/extract_location.py "./data/processed_flood/supervisor_annotated_tweets.csv" 
+	python ./flood_detection/visualize/dash_app.py "./data/processed_geo/supervisor_annotated_tweets.csv" 
 
 pipline_from_api:
 	python ./flood_detection/data/extract_tweets_from_api.py --from $(from) --to $(to)
