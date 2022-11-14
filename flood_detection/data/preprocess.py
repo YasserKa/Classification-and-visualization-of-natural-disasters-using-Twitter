@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import ast
 import json
 import os
 import re
@@ -79,12 +80,12 @@ class Preprocess(object):
 
             # Remove URLs/Mentions/Hashtags/new lines/numbers
             text = self.remove_not_needed_elements_from_string(text)
+            # Remove punctuation
+            text = "".join([char for char in text if char not in string.punctuation])
             # Remove stopwords
             text = " ".join(
                 [word for word in str(text).split() if word not in stopwords]
             )
-            # Remove punctuation
-            text = "".join([char for char in text if char not in string.punctuation])
             # Remove Emojis
             emoji_pattern: re.Pattern[str] = re.compile(
                 "["
@@ -125,6 +126,35 @@ class Preprocess(object):
         df = df[(df["text"] != "") & df["text"].notnull()]
 
         return df
+
+    def get_one_tweet_for_each_user_per_week(
+        self, df, per_location=False
+    ) -> pd.DataFrame:
+        """
+        Keep only one tweet for each user in a certain week (optionally for each location)
+        Used to reduce spammers
+                 df Dataframe
+                 per_location boolean
+
+             Returns:
+                 Dataframe
+        """
+        df["user"] = df["user"].apply(lambda x: ast.literal_eval(x))
+        df["user_id"] = df["user"].apply(lambda x: x["id"])
+
+        df["created_at"] = pd.to_datetime(df["created_at"])
+        group_by_keys = [
+            "user_id",
+            pd.Grouper(key="created_at", freq="1W"),
+        ]
+        if per_location:
+            group_by_keys += ["loc_name"]
+
+        # Use first tweet for each user per week only
+        df_group = df.groupby(group_by_keys)
+        df_user_week_uniq = df_group.agg("first")
+        df_user_week_uniq.reset_index(inplace=True)
+        return df_user_week_uniq
 
 
 def preprocess_crisis_dataset(path) -> pd.DataFrame:

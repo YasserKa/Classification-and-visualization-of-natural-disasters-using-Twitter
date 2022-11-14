@@ -38,11 +38,10 @@ def get_values(row):
 
 
 df_sup[rows_needed_names] = df_sup["user"].apply(get_values).tolist()
-# visidata.vd.view_pandas(x)
-# {', 'end': 122, 'expanded_url': 'http://dn.se/dn-i-sociala-m', 'start': 99, 'url': 'https://t.co/oR28flGF0h'}]}, 'url': {'urls': [{'display_url': 'dn.se', 'end': 23, 'expanded_url': 'http://www.dn.se', 'start': 0, 'url': 'https://t.co/HnfyqYX0Ko'}]}}, 'id': '592490041', 'name': 'Dagens Nyheter', 'profile_image_url': 'https://pbs.twimg.com/profile_images/1162358512535707650/AW8XtZqx_normal.jpg', 'protected': False, 'url': 'https://t.co/HnfyqYX0Ko', 'username': 'dagensnyheter', 'verified': True}
 
 # %%
 
+# Aggregation over users
 df_sup["count"] = 1
 df_group = df_sup.groupby(["user_id"], as_index=True)
 df_agg = df_group.agg(
@@ -58,7 +57,6 @@ df_agg = df_group.agg(
 visidata.vd.view_pandas(df_agg)
 # %%
 
-df_users = df_sup[df_sup["user_id"].isin(["912854161", "898442239"])]
 # Use first tweet for each user per week only
 df_group = df_sup.groupby(
     [
@@ -70,10 +68,4 @@ df_group = df_sup.groupby(
     ],
     group_keys=True,
 )
-print(df_group.agg({"id": "first"}))
-print(len(df_sup))
-
-# %%
-# Username: sverigevarning -> Sweden Warning
-# https://twitter.com/sverigevarning
-# Not sure if this bot is affiliated with SMHI
+print(df_group.agg("first"))

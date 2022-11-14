@@ -15,6 +15,8 @@ import plotly.graph_objects as go
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 
+from flood_detection.data.preprocess import Preprocess
+
 app = Dash(external_stylesheets=[dbc.themes.YETI])
 
 data_needed = [
@@ -51,7 +53,7 @@ def get_smallest_loc_info(df):
     # Separate each data in column
     df.loc[:, data_needed] = df["locations_info"].tolist()
 
-    df.loc[:, "name"] = df["display_name"].apply(lambda x: x.split(",")[0])
+    df.loc[:, "loc_name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
 
 
@@ -76,7 +78,7 @@ def get_geomap(df):
 
     df_agg = df_group.agg(
         {
-            "location": "first",
+            "loc_name": "first",
             "count": "sum",
             "id": lambda x: list(x),
             "processed": lambda x: list(x),
@@ -88,7 +90,7 @@ def get_geomap(df):
         lat="lat",
         lon="lon",
         size="count",
-        hover_name=df_agg["location"],
+        hover_name=df_agg["loc_name"],
         mapbox_style="carto-positron",
         height=600,
         zoom=3,
@@ -131,7 +133,6 @@ def plot(df, app):
     global df_global
     df = df.rename(
         columns={
-            "name": "location",
             "text": "processed",
             "text_raw": "raw",
             "text_translated": "translated",
@@ -147,7 +148,7 @@ def plot(df, app):
         "margin-left": "2rem",
         "margin-right": "2rem",
     }
-    wanted_columns = ["id", "raw", "translated", "processed", "location", "created_at"]
+    wanted_columns = ["id", "raw", "translated", "processed", "loc_name", "created_at"]
     selected_columns = ["id", "raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
     app.layout = html.Div(
@@ -230,7 +231,7 @@ def get_meta_data_html(data_selected):
     created_at_series = pd.to_datetime(data_selected["created_at"]).sort_values()
     oldest_time = created_at_series.iloc[0]
     newest_time = created_at_series.iloc[-1]
-    locations_selected = data_selected["location"].unique()
+    locations_selected = data_selected["loc_name"].unique()
     locations_selected_num = len(locations_selected)
 
     if locations_selected_num > 60:
@@ -271,7 +272,7 @@ def generate_table(df, max_rows=20):
 def main(path_to_data):
     df = pd.read_csv(
         path_to_data[0],
-        converters={"locations": ast.literal_eval, "user": ast.literal_eval},
+        converters={"locations": ast.literal_eval},
     )
     df["locations_info"] = df["locations"].apply(get_from_raw_loc)
     df["loc_smalled_bounding_box"] = df["locations_info"].apply(
@@ -279,21 +280,10 @@ def main(path_to_data):
     )
     df = get_smallest_loc_info(df)
 
-    df["user_id"] = df["user"].apply(lambda x: x["id"])
-
-    df["created_at"] = pd.to_datetime(df["created_at"])
-    # Use first tweet for each user per week only
-    df_group = df.groupby(
-        [
-            "user_id",
-            pd.Grouper(
-                key="created_at",
-                freq="1W",
-            ),
-        ],
+    preprocess = Preprocess()
+    df_user_week_uniq = preprocess.get_one_tweet_for_each_user_per_week(
+        df, per_location=True
     )
-    df_user_week_uniq = df_group.agg("first")
-    df_user_week_uniq.reset_index(inplace=True)
 
     plot(df_user_week_uniq, app)
     app.run_server(debug=True)
