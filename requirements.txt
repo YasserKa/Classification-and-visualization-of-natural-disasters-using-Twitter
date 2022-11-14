@@ -1470,6 +1470,9 @@ pyyaml==6.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:dbad0e9d368bb989f4515da330b88a057617d16b6a8245084f1b05400f24609f \
     --hash=sha256:e61ceaab6f49fb8bdfaa0f92c4b57bcfbea54c09277b1b4f7ac376bfb7a7c174 \
     --hash=sha256:f84fbc98b019fef2ee9a1cb3ce93e3187a6df0b2538a651bfb890254ba9f90b5
+rake-nltk==1.0.6 ; python_version >= "3.10" and python_version < "3.11" \
+    --hash=sha256:1c1ffdb64cae8cb99d169d53a5ffa4635f1c4abd3a02c6e22d5d083136bdc5c1 \
+    --hash=sha256:7813d680b2ce77b51cdac1757f801a87ff47682c9dbd2982aea3b66730346122
 regex==2022.9.13 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:003a2e1449d425afc817b5f0b3d4c4aa9072dd5f3dfbf6c7631b8dc7b13233de \
     --hash=sha256:0385d66e73cdd4462f3cc42c76a6576ddcc12472c30e02a2ae82061bff132c32 \

@@ -200,7 +200,6 @@ def plot(df, app):
 
 @app.callback(
     Output("tweets", "children"),
-    Output("geomap", "figure"),
     Output("meta_data", "children"),
     Input("geomap", "selectedData"),
     Input("histo", "selectedData"),
@@ -221,7 +220,6 @@ def display_selected_data(geomap_selection, histo_selection, checkbox_checked):
 
     return [
         generate_table(data_selected[checkbox_checked]),
-        get_geomap(data_selected),
         meta_data_html,
     ]
 
