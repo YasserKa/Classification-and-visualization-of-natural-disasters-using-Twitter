@@ -62,32 +62,81 @@ def get_location_with_lowest_parameter(row):
     return curr_location
 
 
+# def get_geomap(df):
+#     df["count"] = 1
+#     df_group = df.groupby(["lon", "lat"], as_index=False, group_keys=True)
+
+#     df_agg = df_group.agg(
+#         {
+#             "loc_name": "first",
+#             "count": "sum",
+#             "id": lambda x: list(x),
+#             "processed": lambda x: list(x),
+#         }
+#     )
+#     indecies = df_group.groups.values()
+#     fig = px.scatter_mapbox(
+#         df_agg,
+#         lat="lat",
+#         lon="lon",
+#         size="count",
+#         hover_name=df_agg["loc_name"],
+#         mapbox_style="carto-positron",
+#         height=600,
+#         zoom=3,
+#         center={"lat": 63.333112, "lon": 16.007205},
+#     )
+#     fig.update_traces(customdata=list(indecies))
+#     fig.update_layout(clickmode="event+select")
+#     return fig
+
+
 def get_geomap(df):
-    df["count"] = 1
-    df_group = df.groupby(["lon", "lat"], as_index=False, group_keys=True)
+    df_group = df_global.groupby(["lon", "lat"], as_index=False, group_keys=True)
 
     df_agg = df_group.agg(
         {
             "loc_name": "first",
             "count": "sum",
+            "selected": "sum",
             "id": lambda x: list(x),
             "processed": lambda x: list(x),
         }
     )
-    indecies = df_group.groups.values()
-    fig = px.scatter_mapbox(
-        df_agg,
-        lat="lat",
-        lon="lon",
-        size="count",
-        hover_name=df_agg["loc_name"],
-        mapbox_style="carto-positron",
-        height=600,
-        zoom=3,
-        center={"lat": 63.333112, "lon": 16.007205},
+
+    import dash_leaflet as dl
+
+    lisst = []
+    # print(df_agg)
+    for index, row in df_agg.iterrows():
+        lisst.append(
+            dl.Minichart(
+                lat=row["lat"],
+                lon=row["lon"],
+                width=10,
+                height=10,
+                data=[
+                    row["count"] - row["selected"],
+                    row["selected"],
+                ],
+                type="pie",
+                id=index,
+                labels=["bl", "df"],
+            ),
+        )
+
+    fig = dl.Map(
+        center=[63.333112, 16.007205],
+        zoom=4,
+        children=[dl.TileLayer(), *lisst],
+        style={
+            "width": "100%",
+            "height": "50vh",
+            "margin": "auto",
+            "display": "block",
+        },
+        id="map",
     )
-    fig.update_traces(customdata=list(indecies))
-    fig.update_layout(clickmode="event+select")
     return fig
 
 
@@ -129,8 +178,9 @@ def plot(df, app):
         }
     )
     df_global = df
+    df_global["count"] = 1
+    df_global["selected"] = 1
 
-    geomap = get_geomap(df)
     histo = get_histo(df)
     meta_data_html = get_meta_data_html(df)
     CONTENT_STYLE = {
@@ -166,9 +216,9 @@ def plot(df, app):
                             "margin-left": "auto",
                         },
                     ),
-                    dcc.Graph(
+                    html.Div(
                         id="geomap",
-                        figure=geomap,
+                        # figure=geomap,
                         style={"width": "50rem", "height": "40rem"},
                     ),
                 ],
@@ -190,8 +240,9 @@ def plot(df, app):
 
 @app.callback(
     Output("tweets", "children"),
+    Output("geomap", "children"),
     Output("meta_data", "children"),
-    Input("geomap", "selectedData"),
+    Input("geomap", "map"),
     Input("histo", "selectedData"),
     Input("checklist-inline-input", "value"),
 )
@@ -206,10 +257,12 @@ def display_selected_data(geomap_selection, histo_selection, checkbox_checked):
             selected_indices = np.intersect1d(selected_indices, selected_indices_fig)
 
     data_selected = df_global[df_global.index.isin(selected_indices)]
+    df_global["selected"] = df_global.index.isin(selected_indices)
     meta_data_html = get_meta_data_html(data_selected)
 
     return [
         generate_table(data_selected[checkbox_checked]),
+        get_geomap(data_selected),
         meta_data_html,
     ]
 
