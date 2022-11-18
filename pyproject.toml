@@ -41,6 +41,8 @@ nltk = "^3.7"
 dash-bootstrap-components = "^1.2.1"
 sentence-transformers = "^2.2.2"
 rake-nltk = "^1.0.6"
+pillow = "^9.3.0"
+cryptography = "^38.0.3"
 
 
 [tool.poetry.group.dev.dependencies]
