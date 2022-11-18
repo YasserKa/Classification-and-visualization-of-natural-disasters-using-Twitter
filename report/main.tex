@@ -1,9 +1,19 @@
 \documentclass[a4paper, 12pt]{article}
 \usepackage[toc,page]{appendix} 
-\usepackage[colorlinks]{hyperref}
+% For hyperlinks
+\usepackage{hyperref}
+
+ \hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=black,        % color of links to bibliography
+    filecolor=magenta,      
+    urlcolor=blue,
+}
 \usepackage[printonlyused,withpage]{acronym}
 \usepackage{geometry}
 \usepackage{scrlayer} % Needed for left blank page
+\emergencystretch=1em % Resolves bibliography overflow
 
 \DeclareNewLayer[
     foreground,
@@ -77,6 +87,5 @@ abstract page.
 \newpage
 
 \input{sections/appendix}
-
 
 \end{document}
