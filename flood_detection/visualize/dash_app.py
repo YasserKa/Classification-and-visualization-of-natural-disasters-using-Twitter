@@ -8,6 +8,7 @@ import ast
 
 import click
 import dash_bootstrap_components as dbc
+import dash_leaflet as dl
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -17,7 +18,12 @@ from dash.dependencies import Input, Output
 
 from flood_detection.data.preprocess import Preprocess
 
+# OPTIMIZE: Use global state instead of calculating the repatitive values
+# (e.g. length of dataframe )
+
 app = Dash(external_stylesheets=[dbc.themes.YETI])
+
+MAX_NUM_META_DATA_LOCATIONS = 5
 
 data_needed = [
     "class",
@@ -103,8 +109,6 @@ def get_geomap(df):
             "processed": lambda x: list(x),
         }
     )
-
-    import dash_leaflet as dl
 
     lisst = []
     # print(df_agg)
@@ -211,8 +215,8 @@ def plot(df, app):
                             ]
                         ),
                         style={
-                            "width": "40rem",
-                            "height": "40rem",
+                            "width": "32rem",
+                            "height": "12rem",
                             "margin-right": "auto",
                             "margin-left": "auto",
                         },
@@ -270,30 +274,84 @@ def display_selected_data(histo_selection, checkbox_checked):
 
 def get_meta_data_html(data_selected):
     total_data_num = len(df_global)
+    total_loc_num = len(df_global["loc_name"].unique())
     created_at_series = pd.to_datetime(data_selected["created_at"]).sort_values()
     oldest_time = created_at_series.iloc[0]
     newest_time = created_at_series.iloc[-1]
-    locations_selected = data_selected["loc_name"].unique()
-    locations_selected_num = len(locations_selected)
 
-    if locations_selected_num > 60:
-        selected_locations_str = ", ".join(locations_selected[:60]) + ", ..."
-    else:
-        selected_locations_str = ", ".join(locations_selected)
+    locations_selected_agg = (
+        data_selected.groupby(["loc_name"])
+        .count()
+        .sort_values(by=["count"], ascending=False)
+    )
+    locations_selected_num = len(locations_selected_agg)
+
+    # Surround number with parenthesis
+    def repl(m):
+        return f"({m.group(0)})"
+
+    locations_selected_agg["count"] = (
+        locations_selected_agg["count"]
+        .astype("string")
+        .str.replace(r"[0-9]+", repl, regex=True)
+    )
+
+    locations_selected = locations_selected_agg.index.str.cat(
+        locations_selected_agg["count"], join="left", sep=" "
+    ).array
 
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem"}
     meta_data = {
-        "Total tweets": str(total_data_num),
-        "Selected tweets": str(len(data_selected)),
-        "Number of selected locations": str(len(locations_selected)),
-        "Selected locations": selected_locations_str,
-        "Tweets span from": str(oldest_time)[:-6],
-        "Tweets span to": str(newest_time)[:-6],
+        "Tweets": f"Total - {str(total_data_num)}, Selected - {str(len(data_selected))}",
+        "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
+        "Locations": f"Total - {str(total_loc_num)}, Selected - {str(locations_selected_num)}",
+        "Selected locations": "",
     }
-    return [
-        html.P([html.B(key), ": ", value], style=STYLE)
-        for key, value in meta_data.items()
-    ]
+    meta_data_els = []
+    for key, value in meta_data.items():
+        if key == "Selected locations":
+            if locations_selected_num <= MAX_NUM_META_DATA_LOCATIONS:
+                meta_data_els.append(
+                    html.P(
+                        ", ".join(locations_selected),
+                    )
+                )
+            else:
+                meta_data_els.append(
+                    html.Div(
+                        [
+                            html.P(
+                                [
+                                    ", ".join(
+                                        locations_selected[:MAX_NUM_META_DATA_LOCATIONS]
+                                    )
+                                    + ",",
+                                ],
+                                style={**STYLE, "display": "inline"},
+                            ),
+                            dbc.Button(
+                                "etc.",
+                                id="other-locations-popover",
+                                className="me-1",
+                                color="link",
+                            ),
+                            dbc.Popover(
+                                dbc.PopoverBody(
+                                    ", ".join(
+                                        locations_selected[MAX_NUM_META_DATA_LOCATIONS:]
+                                    )
+                                ),
+                                target="other-locations-popover",
+                                trigger="click",
+                                style={"max-width": "50%"},
+                            ),
+                        ]
+                    )
+                )
+        else:
+            meta_data_els.append(html.P([html.B(key), ": ", value], style=STYLE))
+
+    return meta_data_els
 
 
 def generate_table(df, max_rows=20):
