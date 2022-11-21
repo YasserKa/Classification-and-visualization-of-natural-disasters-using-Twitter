@@ -120,7 +120,7 @@ def get_geomap(df):
                     row["selected"],
                 ],
                 type="pie",
-                id=index,
+                id=str(index),
                 labels=["bl", "df"],
             ),
         )
@@ -182,6 +182,7 @@ def plot(df, app):
     df_global["selected"] = 1
 
     histo = get_histo(df)
+    geomap = get_geomap(df)
     meta_data_html = get_meta_data_html(df)
     CONTENT_STYLE = {
         "margin-top": "2rem",
@@ -218,7 +219,7 @@ def plot(df, app):
                     ),
                     html.Div(
                         id="geomap",
-                        # figure=geomap,
+                        children=[geomap],
                         style={"width": "50rem", "height": "40rem"},
                     ),
                 ],
@@ -242,14 +243,14 @@ def plot(df, app):
     Output("tweets", "children"),
     Output("geomap", "children"),
     Output("meta_data", "children"),
-    Input("geomap", "map"),
+    # Input("geomap", "map"),
     Input("histo", "selectedData"),
     Input("checklist-inline-input", "value"),
 )
-def display_selected_data(geomap_selection, histo_selection, checkbox_checked):
+def display_selected_data(histo_selection, checkbox_checked):
     selected_indices = df_global.index
 
-    for selected_data_fig in [geomap_selection, histo_selection]:
+    for selected_data_fig in [histo_selection]:
         if selected_data_fig and selected_data_fig["points"]:
             selected_indices_fig = sum(
                 [p["customdata"] for p in selected_data_fig["points"]], []
