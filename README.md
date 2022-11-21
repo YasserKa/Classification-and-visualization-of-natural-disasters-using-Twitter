@@ -15,13 +15,16 @@ until to give you permission to complete this step.
 
 ### Usage
 
-To train the flood classifier `make train_flood_classifier`
+To **train the flood classifier** `make train_flood_classifier`
 
 The pipeline runs on AWS Sagemaker by default, to run it locally, use the
 following:
 
 `dvc exp run train --set-param 'datasets=${supervisor.processed}' --set-param 'env=${envs.locally}'`
 
-To show the metric for experiments: `make evaluation`
+To **show the metric for experiments run through DVC**: `make evaluation`
 
 To be able to leverage twitter's API, create `.env` to store the credentials with a similar format of `.env.template`.
+
+To **run a pipeline** that extracts Swedish tweets between two dates, classify them, extract locations,
+and show the visualization `make extract_from_api from="$FROM" to="$TO"`
