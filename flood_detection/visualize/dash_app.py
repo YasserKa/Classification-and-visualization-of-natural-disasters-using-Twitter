@@ -32,26 +32,16 @@ data_needed = [
 df_global = pd.DataFrame()
 
 
-def get_from_raw_loc(row):
-    locations = {}
-    for name, value in row.items():
-        if len(value["swedish_loc_info"]) > 0:
-            location_info = {
-                data: value["swedish_loc_info"][data] for data in data_needed
-            }
-            locations[name] = location_info
-    return locations
-
-
 def get_smallest_loc_info(df):
     # Create a row for each location
-    df["locations_info"] = df["loc_smalled_bounding_box"].apply(
-        lambda x: list(x.values())
+    df["locations_info"] = df["loc_smallest_param"].apply(
+        lambda x: [x[key] for key in data_needed]
     )
 
-    df = df[df["locations_info"].str.len() > 0]
     # Separate each data in column
-    df.loc[:, data_needed] = df["locations_info"].tolist()
+    df_loc = pd.DataFrame(df["locations_info"].tolist(), columns=data_needed)
+
+    df = pd.concat([df, df_loc], axis=1)
 
     df.loc[:, "loc_name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
@@ -270,12 +260,16 @@ def generate_table(df, max_rows=20):
 def main(path_to_data):
     df = pd.read_csv(
         path_to_data[0],
-        converters={"locations": ast.literal_eval},
+        converters={
+            "locations": ast.literal_eval,
+            "swedish_locations": ast.literal_eval,
+        },
     )
-    df["locations_info"] = df["locations"].apply(get_from_raw_loc)
-    df["loc_smalled_bounding_box"] = df["locations_info"].apply(
+    df["loc_smallest_param"] = df["swedish_locations"].apply(
         get_location_with_lowest_parameter
     )
+    df = df[df["loc_smallest_param"].str.len() > 0].reset_index()
+
     df = get_smallest_loc_info(df)
 
     preprocess = Preprocess()

@@ -94,14 +94,11 @@ class GeoCoder:
         return loc
 
     def get_swedish_location(self, locations: dict[str, dict]) -> dict[str, dict]:
-        swedish_locations = locations.copy()
+        swedish_locations = {}
         for name in locations:
             swedish_location = self.__get_location(name)
-
             if swedish_location is not None:
-                swedish_locations[name]["swedish_loc_info"] = swedish_location.raw
-            else:
-                swedish_locations[name]["swedish_loc_info"] = {}
+                swedish_locations[name] = swedish_location.raw
 
         return swedish_locations
 
@@ -145,9 +142,12 @@ def main(model_name, geocoder_name, path_to_data):
 
     tqdm.pandas(desc="NER NLP")
     df["tokens"] = df["text_raw"].progress_apply(model.get_tokens)
-    df["locations"] = df["tokens"].apply(model.get_location_tokens)
+    df["locations_tokens"] = df["tokens"].apply(model.get_location_tokens)
     tqdm.pandas(desc="Swedish locations")
-    df["locations"] = df["locations"].progress_apply(geocoder.get_swedish_location)
+    df["swedish_locations"] = df["locations_tokens"].progress_apply(
+        geocoder.get_swedish_location
+    )
+
     df.to_csv(output_path, index=False)
 
 

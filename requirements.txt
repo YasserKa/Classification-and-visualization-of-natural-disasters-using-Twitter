@@ -1929,9 +1929,9 @@ torchvision==0.14.0 ; python_version >= "3.10" and python_version < "3.11" \
 tqdm==4.64.1 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:5f4f682a004951c1b450bc753c710e9280c5746ce6ffedee253ddbcbf54cf1e4 \
     --hash=sha256:6fee160d6ffcd1b1c68c65f14c829c22832bc401726335ce92c52d395944a6a1
-transformers==4.23.1 ; python_version >= "3.10" and python_version < "3.11" \
-    --hash=sha256:51bf21775296945bb665f8669c44cbacc1c61a9964c3d8aa2030fd30f940427b \
-    --hash=sha256:f91085a31634efee509bcb0588d95b57713dcb990e516ffbe7c9a1813be14552
+transformers==4.24.0 ; python_version >= "3.10" and python_version < "3.11" \
+    --hash=sha256:486f353a8e594002e48be0e2aba723d96eda839e63bfe274702a4b5eda85559b \
+    --hash=sha256:b7ab50039ef9bf817eff14ab974f306fd20a72350bdc9df3a858fd009419322e
 tweepy==4.11.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:34009393c4b88df09311a0951d87fb15c583dc6eaab65fc04cce64118a46fb16 \
     --hash=sha256:bec6a4583484f9a16706bb24120423e247b62604a2749e42444bd9aabe72da64
