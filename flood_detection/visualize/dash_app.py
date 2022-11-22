@@ -190,7 +190,8 @@ def plot(df, app):
                                             id="meta_data",
                                             className="card-text",
                                         ),
-                                    ]
+                                    ],
+                                    style={"padding": "0px"},
                                 ),
                                 style={"padding": "0px"},
                             ),
@@ -200,7 +201,7 @@ def plot(df, app):
                                 options=options,
                                 value=selected_columns,
                             ),
-                            html.Div(id="tweets", style={"height": "85vh"}),
+                            html.Div(id="tweets", style={"height": "90vh"}),
                         ],
                         style={
                             "width": "50%",
