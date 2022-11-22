@@ -68,35 +68,6 @@ def get_location_with_lowest_parameter(row):
     return curr_location
 
 
-# def get_geomap(df):
-#     df["count"] = 1
-#     df_group = df.groupby(["lon", "lat"], as_index=False, group_keys=True)
-
-#     df_agg = df_group.agg(
-#         {
-#             "loc_name": "first",
-#             "count": "sum",
-#             "id": lambda x: list(x),
-#             "processed": lambda x: list(x),
-#         }
-#     )
-#     indecies = df_group.groups.values()
-#     fig = px.scatter_mapbox(
-#         df_agg,
-#         lat="lat",
-#         lon="lon",
-#         size="count",
-#         hover_name=df_agg["loc_name"],
-#         mapbox_style="carto-positron",
-#         height=600,
-#         zoom=3,
-#         center={"lat": 63.333112, "lon": 16.007205},
-#     )
-#     fig.update_traces(customdata=list(indecies))
-#     fig.update_layout(clickmode="event+select")
-#     return fig
-
-
 def get_geomap(df):
     df_group = df_global.groupby(["lon", "lat"], as_index=False, group_keys=True)
 
@@ -189,55 +160,58 @@ def plot(df, app):
     geomap = get_geomap(df)
     meta_data_html = get_meta_data_html(df)
     CONTENT_STYLE = {
-        "margin-top": "2rem",
-        "margin-left": "2rem",
-        "margin-right": "2rem",
+        "margin": "0rem",
     }
     wanted_columns = ["id", "raw", "translated", "processed", "loc_name", "created_at"]
-    selected_columns = ["id", "raw", "translated", "processed"]
+    selected_columns = ["raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
     app.layout = html.Div(
         [
-            html.H1("Flood Detection"),
-            html.Hr(),
-            html.P(id="standalone-radio-check-output"),
             html.Div(
                 [
-                    dbc.Card(
-                        dbc.CardBody(
-                            [
-                                html.H3("Meta Data", className="card-title"),
-                                html.P(
-                                    meta_data_html,
-                                    id="meta_data",
-                                    className="card-text",
+                    html.Div(
+                        [
+                            dbc.Card(
+                                dbc.CardBody(
+                                    [
+                                        # html.H3("Meta Data", className="card-title"),
+                                        html.P(
+                                            meta_data_html,
+                                            id="meta_data",
+                                            className="card-text",
+                                        ),
+                                    ]
                                 ),
-                            ]
-                        ),
+                                style={"padding": "0px"},
+                            ),
+                            dbc.Checklist(
+                                id="checklist-inline-input",
+                                inline=True,
+                                options=options,
+                                value=selected_columns,
+                            ),
+                            html.Div(id="tweets", style={"height": "85vh"}),
+                        ],
                         style={
-                            "width": "32rem",
-                            "height": "12rem",
-                            "margin-right": "auto",
-                            "margin-left": "auto",
+                            "width": "50%",
                         },
                     ),
                     html.Div(
-                        id="geomap",
-                        children=[geomap],
-                        style={"width": "50rem", "height": "40rem"},
+                        [
+                            html.Div(
+                                id="geomap",
+                                children=[geomap],
+                                style={"height": "auto"},
+                            ),
+                            dcc.Graph(id="histo", figure=histo),
+                        ],
+                        style={
+                            "width": "50%",
+                        },
                     ),
                 ],
                 style={"display": "flex"},
             ),
-            dcc.Graph(id="histo", figure=histo),
-            dcc.Markdown(children="### Tweets Selected"),
-            dbc.Checklist(
-                id="checklist-inline-input",
-                inline=True,
-                options=options,
-                value=selected_columns,
-            ),
-            html.Div(id="tweets"),
         ],
         style=CONTENT_STYLE,
     )
@@ -300,40 +274,37 @@ def get_meta_data_html(data_selected):
         locations_selected_agg["count"], join="left", sep=" "
     ).array
 
-    STYLE = {"margin-top": "0rem", "margin-bottom": "0rem"}
+    STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
-        "Tweets": f"Total - {str(total_data_num)}, Selected - {str(len(data_selected))}",
-        "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
-        "Locations": f"Total - {str(total_loc_num)}, Selected - {str(locations_selected_num)}",
+        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} ",
+        " Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
+        "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
     }
     meta_data_els = []
     for key, value in meta_data.items():
         if key == "Selected locations":
             if locations_selected_num <= MAX_NUM_META_DATA_LOCATIONS:
-                meta_data_els.append(
-                    html.P(
-                        ", ".join(locations_selected),
-                    )
-                )
+                meta_data_els.append(html.Div(", ".join(locations_selected) + " | "))
             else:
                 meta_data_els.append(
                     html.Div(
                         [
-                            html.P(
+                            html.Div(
                                 [
                                     ", ".join(
                                         locations_selected[:MAX_NUM_META_DATA_LOCATIONS]
                                     )
                                     + ",",
+                                    dbc.Button(
+                                        " etc.",
+                                        id="other-locations-popover",
+                                        className="me-1",
+                                        color="link",
+                                        style={"padding": "0px"},
+                                    ),
                                 ],
                                 style={**STYLE, "display": "inline"},
-                            ),
-                            dbc.Button(
-                                "etc.",
-                                id="other-locations-popover",
-                                className="me-1",
-                                color="link",
                             ),
                             dbc.Popover(
                                 dbc.PopoverBody(
@@ -349,7 +320,7 @@ def get_meta_data_html(data_selected):
                     )
                 )
         else:
-            meta_data_els.append(html.P([html.B(key), ": ", value], style=STYLE))
+            meta_data_els.append(html.Div([html.B(key), ": ", value], style=STYLE))
 
     return meta_data_els
 
@@ -364,7 +335,18 @@ def generate_table(df, max_rows=20):
             ]
         ),
     ]
-    return dbc.Table(table, striped=True, bordered=True, hover=True)
+    return dbc.Table(
+        table,
+        striped=True,
+        bordered=True,
+        hover=True,
+        size="sm",
+        style={
+            "height": "100%",
+            "overflow-y": "scroll",
+            "display": "block",
+        },
+    )
 
 
 @click.command()
