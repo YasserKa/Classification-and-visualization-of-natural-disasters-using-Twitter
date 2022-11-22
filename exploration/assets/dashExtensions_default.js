@@ -7,6 +7,7 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
                 style,
                 colorProp
             } = context.props.hideout; // get props from hideout
+            console.log(feature);
             const value = feature.properties[colorProp]; // get value the determines the color
             for (let i = 0; i < classes.length; ++i) {
                 if (value > classes[i]) {
