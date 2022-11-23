@@ -82,9 +82,13 @@ class Preprocess(object):
             text = self.remove_not_needed_elements_from_string(text)
             # Remove punctuation
             text = "".join([char for char in text if char not in string.punctuation])
-            # Remove stopwords
+            # Remove stopwords and very long words
             text = " ".join(
-                [word for word in str(text).split() if word not in stopwords]
+                [
+                    word
+                    for word in str(text).split()
+                    if word not in stopwords and len(word) <= 28
+                ]
             )
             # Remove Emojis
             emoji_pattern: re.Pattern[str] = re.compile(
