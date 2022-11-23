@@ -117,11 +117,19 @@ def get_geomap(df):
 
 def get_histo(df):
     # Group by day
+    created_at = df["created_at"].sort_values()
+    time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
+
+    if time_interval >= 30:
+        freq = "W"
+    else:
+        freq = "D"
+
     df_agg_day = df.groupby(
         [
             pd.Grouper(
                 key="created_at",
-                freq="W",
+                freq=freq,
             )
         ],
         group_keys=True,
@@ -164,13 +172,27 @@ def plot(df, app):
     df_global["count"] = 1
     df_global["selected"] = 1
 
+    df_global["hashtags"] = df_global["raw"].apply(
+        lambda text: ", ".join(
+            [word for word in str(text).split() if word.startswith("#")]
+        )
+    )
+
     histo = get_histo(df)
     geomap = get_geomap(df)
     meta_data_html = get_meta_data_html(df)
     CONTENT_STYLE = {
         "margin": "0rem",
     }
-    wanted_columns = ["id", "raw", "translated", "processed", "loc_name", "created_at"]
+    wanted_columns = [
+        "id",
+        "raw",
+        "translated",
+        "processed",
+        "hashtags",
+        "loc_name",
+        "created_at",
+    ]
     selected_columns = ["raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
     app.layout = html.Div(
@@ -334,13 +356,13 @@ def get_meta_data_html(data_selected):
     return meta_data_els
 
 
-def generate_table(df, max_rows=20):
+def generate_table(df):
     table = [
         html.Thead(html.Tr([html.Th(col) for col in df.columns])),
         html.Tbody(
             [
                 html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
-                for i in range(min(len(df), max_rows))
+                for i in range(20)
             ]
         ),
     ]
