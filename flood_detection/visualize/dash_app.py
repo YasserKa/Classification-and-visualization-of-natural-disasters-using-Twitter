@@ -136,8 +136,16 @@ def get_histo(df):
                 x=list(dates),
                 y=df_agg_day.count()["count"],
                 customdata=list(indices),
-            )
-        ]
+            ),
+        ],
+        layout={
+            "margin": go.layout.Margin(
+                l=5,  # left margin
+                r=5,  # right margin
+                b=0,  # bottom margin
+                t=0,  # top margin
+            ),
+        },
     )
     histo.update_layout(clickmode="event+select")
     return histo
@@ -171,27 +179,14 @@ def plot(df, app):
                 [
                     html.Div(
                         [
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        # html.H3("Meta Data", className="card-title"),
-                                        html.P(
-                                            meta_data_html,
-                                            id="meta_data",
-                                            className="card-text",
-                                        ),
-                                    ],
-                                    style={"padding": "0px"},
-                                ),
-                                style={"padding": "0px"},
-                            ),
                             dbc.Checklist(
                                 id="checklist-inline-input",
                                 inline=True,
                                 options=options,
                                 value=selected_columns,
+                                style={"text-align": "center"},
                             ),
-                            html.Div(id="tweets", style={"height": "90vh"}),
+                            html.Div(id="tweets", style={"height": "97vh"}),
                         ],
                         style={
                             "width": "50%",
@@ -203,6 +198,19 @@ def plot(df, app):
                                 id="geomap",
                                 children=[geomap],
                                 style={"height": "auto"},
+                            ),
+                            dbc.Card(
+                                dbc.CardBody(
+                                    [
+                                        html.P(
+                                            meta_data_html,
+                                            id="meta_data",
+                                            className="card-text",
+                                        ),
+                                    ],
+                                    style={"padding": "0px"},
+                                ),
+                                style={"padding": "0px"},
                             ),
                             dcc.Graph(id="histo", figure=histo),
                         ],
@@ -277,8 +285,8 @@ def get_meta_data_html(data_selected):
 
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
-        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} ",
-        " Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
+        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} -",
+        "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
         "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
     }
