@@ -1,5 +1,5 @@
 outs:
-- md5: ac18d273275eb235c9253b7dcc7c08e5.dir
-  size: 5577287
-  nfiles: 3
+- md5: 250cea6a1588c76ff040745fd872e8df.dir
+  size: 5047786
+  nfiles: 2
   path: processed_geo
