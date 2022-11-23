@@ -9,7 +9,7 @@ devastating natural disaster that threatens the lively hood of people and the in
 communities around the world \cite{Floodlist2021}.
 
 To facilitate the process of emergency management during these hazardous events, early warning
-systems analyze their risk, monitor and warn the public while ensuring their readiness
+systems analyse their risk, monitor and warn the public while ensuring their readiness
 \cite{contributorsEarlyWarningSystem2022}. Traditionally, meteorologists forecast the weather by
 relying on tools such as gauges, satellites, and radars for data extraction. The emergence of social
 media platforms such as twitter provide individuals a public space to share their experience,
@@ -23,20 +23,17 @@ victims in real time, locate their physical location, and communicate the inform
 teams \cite{singhEventClassificationLocation2019c}. After the threat subsides, emergency
 managers can use relevant tweets to assess the impact and plan the recovery phase
 \cite{barkerDevelopmentNationalscaleRealtime2019}. To prepare for future floods, authoritative
-entities can make informed actions by analyzing historical data and determine the locations
-suffering from recurrent calamity. This new acquired knowledge is able to augment weather warning systems'
-pipelines improving their accuracy \cite{nesetAI4ClimateAdaptation}.
-
-This thesis project implements a pipeline that provides a visual representation of tweets related to
-flood events in Sweden. First, relevant tweets are pulled, processed, and classified from the twitter
-API using data mining techniques. Second, physical locations are extracted from tweets mentioning flood
-events employing \ac{NER} and gazetteer. Finally, the identified locations with
-relevant information from tweets are presented on a spatio-temporal visualization. For verification
-purposes, the pipeline is applied on a week worth of tweets after past flood events.
+entities can make informed actions by analysing historical data and determine the locations
+suffering from recurrent calamity. This new acquired knowledge is able to augment weather warning
+systems' pipelines improving their accuracy such as \ac{SMHI}, a Swedish expert authority with a
+global perspective and a vital task in predicting changes in weather, water and climate \cite{SMHI2021}.
 
 
- % \begin{figure}[ht]
- %    \centering
- %    \caption{Dummy figure} 
-% \end{figure}
-
+This thesis project is a part of a research project, AI for Climate Adaptation
+\cite{nesetAI4ClimateAdaptation} at \ac{LiU} in collaboration with the \ac{SMHI}. It implements a
+pipeline that provides a visual representation of tweets related to flood events in Sweden. First,
+relevant tweets are pulled, processed, and classified from the twitter API using data mining
+techniques. Second, physical locations are extracted from tweets mentioning flood events employing
+\ac{NER} and gazetteers. Finally, the identified locations with relevant information from tweets are
+presented on a spatio-temporal visualization. For verification purposes, the pipeline is applied on
+a week worth of tweets after past flood events.
