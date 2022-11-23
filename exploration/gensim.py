@@ -35,7 +35,7 @@ path_to_data = abspath(cfg.supervisor.processed_flood)
 df_sup = pd.read_csv(path_to_data)
 
 df = df_api
-df = df[df["predicted_label"] == 1]
+df = df[df["predicted_label"] == 1].reset_index(drop=True)
 
 language = "en"
 
