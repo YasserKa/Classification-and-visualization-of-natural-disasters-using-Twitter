@@ -2,9 +2,9 @@
 
 import itertools
 import logging
-import os
 from pprint import pprint
 
+import nltk
 import numpy as np
 import pandas as pd
 import spacy
@@ -149,7 +149,7 @@ docs_without_flood_sentences = list(map(lambda x: " ".join(x), docs_without_floo
 # Uses stopwords for english from NLTK, and all puntuation characters by
 # default
 
-os.environ["NLTK_DATA"] = "./nltk_data"
+nltk.data.path = ["./nltk_data"]
 r = Rake()
 # Extraction given the list of strings where each string is a sentence.
 # r.extract_keywords_from_sentences(list(map(lambda x: " ".join(x), docs)))
