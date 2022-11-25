@@ -23,17 +23,27 @@ from flood_detection.classes.twitter_facade import TwitterFacade
     required=True,
     help="Extract tweets till this date YYYY-MM-DD format",
 )
-def main(to_date, from_date) -> None:
+@click.option(
+    "--additional_query",
+    help="Add to current Twitter API query: (<query>) OR ",
+)
+def main(to_date, from_date, additional_query) -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
 
     twitter: TwitterFacade = TwitterFacade()
 
-    output_path: str = f"{cfg.paths.tweets}/twitter_api_{from_date}_to_{to_date}.json"
+    now = datetime.now()
+
+    current_time = now.strftime("%Y-%m-%d_%H:%M:%S")
+    output_path: str = (
+        f"{cfg.paths.tweets}/twitter_api_{from_date}_to_{to_date}__{current_time}.json"
+    )
     to_date = list(map(lambda x: int(x), to_date.split("-")))
     from_date = list(map(lambda x: int(x), from_date.split("-")))
 
     query: str = (
+        f" ({additional_query}) OR "
         '"atmosfärisk flod" OR "hög vatten" OR åskskur'
         ' OR regnskur OR dagvattensystem OR dränering OR "höga vågor"'
         ' OR "höga flöden" OR dämmor'
