@@ -27,7 +27,7 @@ from flood_detection.classes.twitter_facade import TwitterFacade
     "--additional_query",
     help="Add to current Twitter API query: (<query>) OR ",
 )
-def main(to_date, from_date, additional_query) -> None:
+def main(to_date, from_date, additional_query="") -> None:
     with initialize(version_base=None, config_path="../../conf"):
         cfg: DictConfig = compose(config_name="config")
 
@@ -42,8 +42,11 @@ def main(to_date, from_date, additional_query) -> None:
     to_date = list(map(lambda x: int(x), to_date.split("-")))
     from_date = list(map(lambda x: int(x), from_date.split("-")))
 
+    if additional_query != "":
+        additional_query = f"({additional_query}) "
+
     query: str = (
-        f" ({additional_query}) OR "
+        f"{additional_query} "
         '"atmosfärisk flod" OR "hög vatten" OR åskskur'
         ' OR regnskur OR dagvattensystem OR dränering OR "höga vågor"'
         ' OR "höga flöden" OR dämmor'
