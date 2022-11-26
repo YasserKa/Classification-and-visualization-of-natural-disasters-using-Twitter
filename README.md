@@ -1,7 +1,10 @@
 ### Description
 
-The project focuses on extracting context related to flooding events in Sweden and present them
-using spatio-temporal plots.
+The project focuses on the following tasks:
+
+- Extracting tweets related to floods
+- Identifying geographical locations to the flood events
+- Present the results using spatio-temporal plots.
 
 ### Setting up the environment
 
@@ -9,22 +12,22 @@ using spatio-temporal plots.
 
 **Install corpora** from spacy and nltk for NLP tasks `make install_corpora`
 
-To **get the data**, execute `dvc pull`. A web page will open that will require you
+To **get the data** used, execute `dvc pull`. A web page will open that will require you
 to get permission for the directory containing the data. You will have to wait
-until to give you permission to complete this step.
+until I give you permission.
 
 ### Usage
 
 To **train the flood classifier** `make train_flood_classifier`
 
-The pipeline runs on AWS Sagemaker by default, to run it locally, use the
+The pipeline runs on AWS Sagemaker by default; to run it locally, use the
 following:
 
 `dvc exp run train --set-param 'datasets=${supervisor.processed}' --set-param 'env=${envs.locally}'`
 
-To **show the metric for experiments run through DVC**: `make evaluation`
+To **show metrics for DVC experiments**: `make evaluation`
 
-To be able to leverage twitter's API, create `.env` to store the credentials with a similar format of `.env.template`.
+To use twitter's API, create `.env` to store the credentials with a similar format of `.env.template`.
 
-To **run a pipeline** that extracts Swedish tweets between two dates, classify them, extract locations,
-and show the visualization `make extract_from_api from="$FROM" to="$TO"`
+To **run the pipeline** that extracts Swedish tweets from Twitter API between two dates, classify them, extract locations,
+and show the visualization `make pipeline_from_api from="$FROM" to="$TO"`
