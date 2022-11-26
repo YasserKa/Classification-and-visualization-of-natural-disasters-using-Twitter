@@ -31,3 +31,19 @@ To use twitter's API, create `.env` to store the credentials with a similar form
 
 To **run the pipeline** that extracts Swedish tweets from Twitter API between two dates, classify them, extract locations,
 and show the visualization `make pipeline_from_api from="$FROM" to="$TO"`
+
+### Examples
+
+This is still a WIP in **visualization** branch.
+
+The following an example of the using the pipeline on the flooding events in Gävleborg at 18th of August 2021 (1
+week worth of tweets)
+
+[Sweden – Flash Floods in Dalarna and Gävleborg After Record Rainfall – FloodList](https://floodlist.com/europe/central-sweden-floods-august-2021)
+
+The following dash app shows the selected tweets in tabular, time series, and geographical representations.
+The tweets are anonymized for privacy reasons. ![visualization](./doc/visualization.jpg)
+
+This a proof of concept for geographical representation using clusters and selection using different
+levels regions (counties, municipalities)
+![proof_of_concept_geo](./doc/proof_concept_geo.gif)
