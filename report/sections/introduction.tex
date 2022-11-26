@@ -3,7 +3,7 @@
 
 Earlier in this century, floods around Lake Vänern and Arvika have costed Sweden an estimate of 11.1
 billions Swedish Krona for damages and repairs \cite{RiverFloodsSweden2022}. Counties of Dalarna and
-Gävleborg has suffered from flash floods in 2021 disturbing the daily life of their citizens and
+Gävleborg suffered from flash floods in 2021 disturbing the daily life of their citizens and
 damaging public and private properties \cite{daviesSwedenFlashFloods2021}.  Flooding is a
 devastating natural disaster that threatens the lively hood of people and the infrastructure of
 communities around the world \cite{Floodlist2021}.
@@ -12,27 +12,27 @@ To facilitate the process of emergency management during these hazardous events,
 systems analyse their risk, monitor and warn the public while ensuring their readiness
 \cite{contributorsEarlyWarningSystem2022}. Traditionally, meteorologists forecast the weather by
 relying on tools such as gauges, satellites, and radars for data extraction. The emergence of social
-media platforms such as twitter provide individuals a public space to share their experience,
+media platforms such as Twitter provide individuals with a public space to share their experience,
 effectively creating another potential source of data.
 
 Researchers started harnessing this new wealth of information to aid the disaster management
 procedure.  Twitter's stream API makes it possible to create a monitoring system for early event
 detection on a global \cite{debruijnGlobalDatabaseHistoric2019b} and local
 \cite{barkerDevelopmentNationalscaleRealtime2019} scales. Another use for it would be identifying
-victims in real time, locate their physical location, and communicate the information to rescue
+victims in real-time, locating their physical location, and communicating the information to rescue
 teams \cite{singhEventClassificationLocation2019c}. After the threat subsides, emergency
 managers can use relevant tweets to assess the impact and plan the recovery phase
 \cite{barkerDevelopmentNationalscaleRealtime2019}. To prepare for future floods, authoritative
-entities can make informed actions by analysing historical data and determine the locations
-suffering from recurrent calamity. This new acquired knowledge is able to augment weather warning
-systems' pipelines improving their accuracy such as \ac{SMHI}, a Swedish expert authority with a
-global perspective and a vital task in predicting changes in weather, water and climate \cite{SMHI2021}.
+entities can make informed actions by analysing historical data and determining the locations
+suffering from recurrent calamities. This newly acquired knowledge can augment weather warning
+systems' pipelines improving their accuracies such as \ac{SMHI}, a Swedish expert authority with a
+global perspective and a vital task in predicting changes in weather, water, and climate \cite{SMHI2021}.
 
 
 This thesis project is a part of a research project, AI for Climate Adaptation
 \cite{nesetAI4ClimateAdaptation} at \ac{LiU} in collaboration with the \ac{SMHI}. It implements a
 pipeline that provides a visual representation of tweets related to flood events in Sweden. First,
-relevant tweets are pulled, processed, and classified from the twitter API using data mining
+relevant tweets are pulled, processed, and classified from the Twitter API using data mining
 techniques. Second, physical locations are extracted from tweets mentioning flood events employing
 \ac{NER} and gazetteers. Finally, the identified locations with relevant information from tweets are
 presented on a spatio-temporal visualization. For verification purposes, the pipeline is applied on
