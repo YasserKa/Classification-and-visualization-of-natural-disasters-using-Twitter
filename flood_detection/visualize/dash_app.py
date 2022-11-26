@@ -45,9 +45,9 @@ def get_smallest_loc_info(df):
     )
 
     # Separate each data in column
-    df_loc = pd.DataFrame(df["locations_info"].tolist(), columns=data_needed)
-
-    df = pd.concat([df, df_loc], axis=1)
+    df = df[df["locations_info"].str.len() > 0]
+    # Separate each data in column
+    df.loc[:, data_needed] = df["locations_info"].tolist()
 
     df.loc[:, "loc_name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
@@ -208,7 +208,7 @@ def plot(df, app):
                                 value=selected_columns,
                                 style={"text-align": "center"},
                             ),
-                            html.Div(id="tweets", style={"height": "97vh"}),
+                            html.Div(id="tweets", style={"height": "96vh"}),
                         ],
                         style={
                             "width": "50%",
@@ -234,7 +234,9 @@ def plot(df, app):
                                 ),
                                 style={"padding": "0px"},
                             ),
-                            dcc.Graph(id="histo", figure=histo),
+                            dcc.Graph(
+                                id="histo", figure=histo, style={"height": "41%"}
+                            ),
                         ],
                         style={
                             "width": "50%",
@@ -307,7 +309,7 @@ def get_meta_data_html(data_selected):
 
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
-        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} -",
+        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} ,",
         "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
         "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
