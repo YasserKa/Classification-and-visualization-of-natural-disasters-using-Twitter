@@ -43,8 +43,8 @@ def get_from_raw_loc(row):
 
 def get_smallest_loc_info(df):
     # Create a row for each location
-    df["locations_info"] = df["loc_smalled_bounding_box"].apply(
-        lambda x: list(x.values())
+    df["locations_info"] = df["loc_smallest_param"].apply(
+        lambda x: [x[key] for key in data_needed]
     )
 
     df = df[df["locations_info"].str.len() > 0]
@@ -81,14 +81,20 @@ data_needed = [
 ]
 
 df_global = pd.read_csv(
-    "./data/processed_geo/supervisor_annotated_tweets.csv",
-    converters={"locations": ast.literal_eval},
+    "./data/processed_geo/twitter_api_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv",
+    converters={
+        "locations": ast.literal_eval,
+        "swedish_locations": ast.literal_eval,
+    },
 )
 
-df_global["locations_info"] = df_global["locations"].apply(get_from_raw_loc)
-df_global["loc_smalled_bounding_box"] = df_global["locations_info"].apply(
+
+df_global["loc_smallest_param"] = df_global["swedish_locations"].apply(
     get_location_with_lowest_parameter
 )
+df_global = df_global[df_global["loc_smallest_param"].str.len() > 0].reset_index()
+
+
 df_global = get_smallest_loc_info(df_global)
 
 preprocess = Preprocess()
@@ -172,7 +178,7 @@ with open(selected_region_type, "r") as file:
 def get_choropleth():
     return dl.GeoJSON(
         url=selected_region_type,
-        zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
+        zoomToBounds=False,  # when true, zooms to bounds when data changes (e.g. on load)
         zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
         hoverStyle=arrow_function(dict(weight=5, color="#666", dashArray="")),
         id="choropleth",
