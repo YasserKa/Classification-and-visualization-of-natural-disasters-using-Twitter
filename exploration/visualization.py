@@ -255,14 +255,42 @@ def radio_region_level_update(value):
     return get_choropleth()
 
 
+def get_cluster_points(cluster_point):
+    global df_global
+    print(cluster_point)
+    coord = cluster_point["geometry"]["coordinates"]
+    if not cluster_point["properties"]["cluster"]:
+        return df_global[
+            (df_global["lon"] == coord[0]) & (df_global["lat"] == coord[1])
+        ]
+    cluster_size = cluster_point["properties"]["point_count"]
+
+    df_global["distance"] = (df_global["lon"] - coord[0]) ** 2 + (
+        df_global["lat"] - coord[1]
+    ) ** 2
+
+    return df_global.sort_values(by=["distance"]).iloc[:cluster_size]
+
+
 @app.callback(
     Output("cluster_parent", "children"),
     Output("selected_info", "children"),
-    [Input("choropleth", "click_feature")],
+    [
+        Input("choropleth", "click_feature"),
+        Input("cluster", "click_feature"),
+    ],
 )
-def choropleth_click(feature):
-    intersected_points = get_intersected_points(feature)
-    return [get_cluster(intersected_points), get_selected_region_info(feature)]
+def choropleth_click(choropleth_selection, cluster_selection):
+    if cluster_selection is not None:
+        intersected_points = get_cluster_points(cluster_selection)
+    elif choropleth_selection is not None:
+        intersected_points = get_intersected_points(choropleth_selection)
+    else:
+        raise Exception("No points got selected")
+    return [
+        get_cluster(intersected_points),
+        get_selected_region_info(choropleth_selection),
+    ]
 
 
 if __name__ == "__main__":
