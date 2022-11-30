@@ -26,6 +26,11 @@ class Region_level(Enum):
 
 DEFAULT_REGION_TYPE = Region_level.COUNTIES
 
+ZOOM_CONFIG = dict(
+    center=[63.333112, 16.007205],
+    zoom=4,
+)
+
 selected_region_type = DEFAULT_REGION_TYPE.value
 selected_geo = None
 
@@ -218,21 +223,43 @@ radio_region_levels = html.Div(
     style={"position": "absolute", "top": "60px", "right": "10px", "zIndex": "1000"},
 )
 
+# resets zoom and selection
+reset_button = html.Div(
+    [
+        dbc.Button(
+            "Reset",
+            outline=True,
+            color="secondary",
+            className="me-1",
+            id="reset_button",
+        ),
+    ],
+    style={"position": "absolute", "top": "130px", "right": "10px", "zIndex": "1000"},
+)
+
+
+def get_map(choropleth, cluster):
+    return dl.Map(
+        **ZOOM_CONFIG,
+        children=[
+            dl.TileLayer(),
+            html.Div([choropleth], id="choropleth_parent"),
+            html.Div([cluster], id="cluster_parent"),
+            hover_info,
+            selected_info,
+            radio_region_levels,
+            reset_button,
+        ],
+    )
+
+
 # Create app.
 app = Dash(prevent_initial_callbacks=True)
+
+
+map = get_map(choropleth, cluster)
 app.layout = html.Div(
-    [
-        dl.Map(
-            children=[
-                dl.TileLayer(),
-                html.Div([choropleth], id="choropleth_parent"),
-                html.Div([cluster], id="cluster_parent"),
-                hover_info,
-                selected_info,
-                radio_region_levels,
-            ]
-        )
-    ],
+    [map],
     style={"width": "100%", "height": "50vh", "margin": "auto", "display": "block"},
     id="map",
 )
@@ -257,7 +284,6 @@ def radio_region_level_update(value):
 
 def get_cluster_points(cluster_point):
     global df_global
-    print(cluster_point)
     coord = cluster_point["geometry"]["coordinates"]
     if not cluster_point["properties"]["cluster"]:
         return df_global[
@@ -270,6 +296,17 @@ def get_cluster_points(cluster_point):
     ) ** 2
 
     return df_global.sort_values(by=["distance"]).iloc[:cluster_size]
+
+
+@app.callback(
+    Output("map", "children"),
+    [
+        Input("reset_button", "n_clicks"),
+    ],
+)
+def reset_button_click():
+    global df_global
+    return [get_map(get_choropleth(), get_cluster(df_global))]
 
 
 @app.callback(
