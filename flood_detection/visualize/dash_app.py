@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import Dash, dcc, html
+from dash import Dash, dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
 
@@ -321,27 +321,42 @@ def get_meta_data_html(data_selected):
     return meta_data_els
 
 
-def generate_table(df):
-    table = [
-        html.Thead(html.Tr([html.Th(col) for col in df.columns])),
-        html.Tbody(
-            [
-                html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
-                for i in range(min(20, len(df)))
-            ]
-        ),
-    ]
-    return dbc.Table(
-        table,
-        striped=True,
-        bordered=True,
-        hover=True,
-        size="sm",
-        style={
-            "height": "100%",
-            "overflow-y": "scroll",
-            "display": "block",
+@app.callback(Output("tweets", "children"), [Input("checklist-inline-input", "value")])
+def generate_table(checkbox_checked):
+    global df_global
+    PAGE_SIZE = 20
+
+    return dash_table.DataTable(
+        df_global[checkbox_checked].iloc[:PAGE_SIZE].to_dict("records"),
+        id="datatable-paging",
+        columns=[{"name": i, "id": i} for i in sorted(checkbox_checked)],
+        page_current=0,
+        page_size=PAGE_SIZE,
+        page_action="custom",
+        style_table={
+            "height": "90vh",
+            "overflowY": "auto",
         },
+        style_cell={
+            "textAlign": "left",
+            "border": "1px solid black",
+        },
+        style_header={
+            "backgroundColor": "white",
+            "fontWeight": "bold",
+            "border": "1px solid black",
+        },
+        style_cell_conditional=[{"if": {"column_id": "Region"}, "textAlign": "left"}],
+        style_data={"whiteSpace": "normal", "height": "auto"},
+        style_data_conditional=[
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "lightcyan",
+            }
+        ],
+        sort_action="custom",
+        sort_mode="single",
+        sort_by=[],
     )
 
 
@@ -483,7 +498,7 @@ def plot(df, app):
                             ),
                             html.Div(
                                 children=[
-                                    generate_table(df_global[selected_columns]),
+                                    generate_table(selected_columns),
                                 ],
                                 id="tweets",
                                 style={"height": "96vh"},
@@ -618,20 +633,34 @@ def update_map(selected_data):
 
 
 @app.callback(
-    Output("tweets", "children"),
+    Output("datatable-paging", "data"),
     [
         Input("selected_data", "data"),
+        Input("datatable-paging", "page_current"),
+        Input("datatable-paging", "page_size"),
+        Input("datatable-paging", "sort_by"),
         Input("checklist-inline-input", "value"),
     ],
 )
-def update_table(selected_data, checkbox_checked):
+def update_table(selected_data, page_current, page_size, sort_by, columns_selected):
     global df_global
     if selected_data is not None:
         selected_data = pd.read_json(selected_data, orient="split")
     else:
         selected_data = df_global
 
-    return generate_table(selected_data[checkbox_checked])
+    if len(sort_by):
+        selected_data = selected_data.sort_values(
+            sort_by[0]["column_id"],
+            ascending=sort_by[0]["direction"] == "asc",
+            inplace=False,
+        )
+
+    return (
+        selected_data[columns_selected]
+        .iloc[page_current * page_size : (page_current + 1) * page_size]
+        .to_dict("records")
+    )
 
 
 @click.command()
