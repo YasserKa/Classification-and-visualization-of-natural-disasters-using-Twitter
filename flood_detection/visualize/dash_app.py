@@ -5,23 +5,51 @@ histogram
 
 
 import ast
+from enum import Enum
 
 import click
 import dash_bootstrap_components as dbc
 import dash_leaflet as dl
+import dash_leaflet.express as dlx
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
+from dash_extensions.javascript import arrow_function
 
 from flood_detection.data.preprocess import Preprocess
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
 
-app = Dash(external_stylesheets=[dbc.themes.YETI])
+app = Dash(external_stylesheets=[dbc.themes.YETI], prevent_initial_callbacks=True)
+
+
+class Region_level(Enum):
+    MUNICIPALITIES = "./assets/sweden-municipalities.geojson"
+    COUNTIES = "./assets/sweden-counties.geojson"
+
+
+DEFAULT_REGION_TYPE = Region_level.COUNTIES
+INFO_STYLE = {"margin": "0px"}
+
+ZOOM_CONFIG = dict(
+    center=[63.333112, 16.007205],
+    zoom=4,
+)
+
+selected_region_type = DEFAULT_REGION_TYPE.value
+# Global state to check if histo selection data got changed
+global_histo_selection = {}
+
+# Number of times reset button got clicked
+# Plotly only provides the number of times a button got clicked, so a global
+# state is needed to check if a button is clicked
+current_clicks = 0
+
 
 MAX_NUM_META_DATA_LOCATIONS = 5
 
@@ -37,6 +65,10 @@ data_needed = [
 
 df_global = pd.DataFrame()
 
+# When region level changes, this function gets triggered, return
+# previous intersected_points
+intersected_points = pd.DataFrame()
+
 
 def get_smallest_loc_info(df):
     # Create a row for each location
@@ -45,9 +77,9 @@ def get_smallest_loc_info(df):
     )
 
     # Separate each data in column
-    df = df[df["locations_info"].str.len() > 0]
-    # Separate each data in column
-    df.loc[:, data_needed] = df["locations_info"].tolist()
+    df_loc = pd.DataFrame(df["locations_info"].tolist(), columns=data_needed)
+
+    df = pd.concat([df, df_loc], axis=1)
 
     df.loc[:, "loc_name"] = df["display_name"].apply(lambda x: x.split(",")[0])
     return df.astype({"lon": "float", "lat": "float"})
@@ -68,215 +100,146 @@ def get_location_with_lowest_parameter(row):
     return curr_location
 
 
-def get_geomap(df):
-    df_group = df_global.groupby(["lon", "lat"], as_index=False, group_keys=True)
+def get_hovered_region_info(feature=None):
+    if not feature:
+        return [html.P("Hover over a region", style=INFO_STYLE)]
 
-    df_agg = df_group.agg(
-        {
-            "loc_name": "first",
-            "count": "sum",
-            "selected": "sum",
-            "id": lambda x: list(x),
-            "processed": lambda x: list(x),
-        }
-    )
-
-    lisst = []
-    # print(df_agg)
-    for index, row in df_agg.iterrows():
-        lisst.append(
-            dl.Minichart(
-                lat=row["lat"],
-                lon=row["lon"],
-                width=10,
-                height=10,
-                data=[
-                    row["count"] - row["selected"],
-                    row["selected"],
-                ],
-                type="pie",
-                id=str(index),
-                labels=["bl", "df"],
-            ),
-        )
-
-    fig = dl.Map(
-        center=[63.333112, 16.007205],
-        zoom=4,
-        children=[dl.TileLayer(), *lisst],
-        style={
-            "width": "100%",
-            "height": "50vh",
-            "margin": "auto",
-            "display": "block",
-        },
-        id="map",
-    )
-    return fig
-
-
-def get_histo(df):
-    # Group by day
-    created_at = df["created_at"].sort_values()
-    time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
-
-    if time_interval >= 30:
-        freq = "W"
+    if selected_region_type == Region_level.COUNTIES.value:
+        region_name = feature["properties"]["name"]
     else:
-        freq = "D"
+        region_name = feature["properties"]["kom_namn"]
 
-    df_agg_day = df.groupby(
-        [
-            pd.Grouper(
-                key="created_at",
-                freq=freq,
-            )
-        ],
-        group_keys=True,
-    )
-
-    dates = df_agg_day.groups.keys()
-    indices = df_agg_day.groups.values()
-
-    histo = go.Figure(
-        [
-            go.Bar(
-                x=list(dates),
-                y=df_agg_day.count()["count"],
-                customdata=list(indices),
-            ),
-        ],
-        layout={
-            "margin": go.layout.Margin(
-                l=5,  # left margin
-                r=5,  # right margin
-                b=0,  # bottom margin
-                t=0,  # top margin
-            ),
-        },
-    )
-    histo.update_layout(clickmode="event+select")
-    return histo
+    return html.B(f"{region_name}")
 
 
-def plot(df, app):
+def get_selected_region_info(feature=None):
+    if not feature:
+        return [html.P("Select a region", style=INFO_STYLE)]
+
+    if selected_region_type == Region_level.COUNTIES.value:
+        region_name = feature["properties"]["name"]
+    else:
+        region_name = feature["properties"]["kom_namn"]
+
+    return html.B(f"{region_name}")
+
+
+def get_intersected_points(feature=None):
     global df_global
-    df = df.rename(
-        columns={
-            "text": "processed",
-            "text_raw": "raw",
-            "text_translated": "translated",
-        }
-    )
-    df_global = df
-    df_global["count"] = 1
-    df_global["selected"] = 1
+    if feature is None:
+        return df_global
 
-    df_global["hashtags"] = df_global["raw"].apply(
-        lambda text: ", ".join(
-            [word for word in str(text).split() if word.startswith("#")]
+    sweden_geo_df = gpd.GeoDataFrame.from_features([feature])
+
+    df = df_global.copy()
+    geometry = gpd.points_from_xy(df["lon"], df["lat"])
+
+    gdf_traces = gpd.GeoDataFrame(df, geometry=geometry)
+
+    joined_df = gpd.sjoin(
+        gdf_traces, sweden_geo_df, how="inner", predicate="intersects"
+    ).rename(columns={"created_at_left": "created_at"})
+
+    return pd.DataFrame(joined_df.drop(columns="geometry"))
+
+
+def get_choropleth():
+    return dl.GeoJSON(
+        url=selected_region_type,
+        zoomToBounds=False,  # when true, zooms to bounds when data changes (e.g. on load)
+        zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
+        hoverStyle=arrow_function(dict(weight=5, color="#666", dashArray="")),
+        id="choropleth",
+    )
+
+
+def get_cluster(df):
+    geojson_list = []
+
+    for _, row in df.iterrows():
+        geojson_list.append(
+            {
+                "lat": row["lat"],
+                "lon": row["lon"],
+                "tooltip": row["loc_name"],
+            }
         )
+
+    cluster = dl.GeoJSON(
+        data=dlx.dicts_to_geojson(geojson_list),
+        cluster=True,
+        zoomToBoundsOnClick=True,
+        superClusterOptions={"radius": 50},
+        id="cluster",
     )
-
-    histo = get_histo(df)
-    geomap = get_geomap(df)
-    meta_data_html = get_meta_data_html(df)
-    CONTENT_STYLE = {
-        "margin": "0rem",
-    }
-    wanted_columns = [
-        "id",
-        "raw",
-        "translated",
-        "processed",
-        "hashtags",
-        "loc_name",
-        "created_at",
-    ]
-    selected_columns = ["raw", "translated", "processed"]
-    options = [{"label": column, "value": column} for column in wanted_columns]
-    app.layout = html.Div(
-        [
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            dbc.Checklist(
-                                id="checklist-inline-input",
-                                inline=True,
-                                options=options,
-                                value=selected_columns,
-                                style={"text-align": "center"},
-                            ),
-                            html.Div(id="tweets", style={"height": "96vh"}),
-                        ],
-                        style={
-                            "width": "50%",
-                        },
-                    ),
-                    html.Div(
-                        [
-                            html.Div(
-                                id="geomap",
-                                children=[geomap],
-                                style={"height": "auto"},
-                            ),
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        html.P(
-                                            meta_data_html,
-                                            id="meta_data",
-                                            className="card-text",
-                                        ),
-                                    ],
-                                    style={"padding": "0px"},
-                                ),
-                                style={"padding": "0px"},
-                            ),
-                            dcc.Graph(
-                                id="histo", figure=histo, style={"height": "41%"}
-                            ),
-                        ],
-                        style={
-                            "width": "50%",
-                        },
-                    ),
-                ],
-                style={"display": "flex"},
-            ),
-        ],
-        style=CONTENT_STYLE,
-    )
+    return cluster
 
 
-@app.callback(
-    Output("tweets", "children"),
-    Output("geomap", "children"),
-    Output("meta_data", "children"),
-    # Input("geomap", "map"),
-    Input("histo", "selectedData"),
-    Input("checklist-inline-input", "value"),
+def get_cluster_points(cluster_point):
+    global df_global
+    coord = cluster_point["geometry"]["coordinates"]
+    if not cluster_point["properties"]["cluster"]:
+        return df_global[
+            (df_global["lon"] == coord[0]) & (df_global["lat"] == coord[1])
+        ]
+    cluster_size = cluster_point["properties"]["point_count"]
+
+    df_global["distance"] = (df_global["lon"] - coord[0]) ** 2 + (
+        df_global["lat"] - coord[1]
+    ) ** 2
+
+    return df_global.sort_values(by=["distance"]).iloc[:cluster_size]
+
+
+# Create info control.
+hover_info = html.Div(
+    children=get_hovered_region_info(),
+    id="hovered_info",
+    className="info",
+    style={"position": "absolute", "top": "0px", "right": "10px", "zIndex": "1000"},
 )
-def display_selected_data(histo_selection, checkbox_checked):
-    selected_indices = df_global.index
 
-    for selected_data_fig in [histo_selection]:
-        if selected_data_fig and selected_data_fig["points"]:
-            selected_indices_fig = sum(
-                [p["customdata"] for p in selected_data_fig["points"]], []
-            )
-            selected_indices = np.intersect1d(selected_indices, selected_indices_fig)
+selected_info = html.Div(
+    children=get_selected_region_info(),
+    id="selected_info",
+    className="info",
+    style={"position": "absolute", "top": "30px", "right": "10px", "zIndex": "1000"},
+)
 
-    data_selected = df_global[df_global.index.isin(selected_indices)]
-    df_global["selected"] = df_global.index.isin(selected_indices)
-    meta_data_html = get_meta_data_html(data_selected)
+radio_region_levels = html.Div(
+    [
+        dbc.Label("Regions level"),
+        dbc.RadioItems(
+            options=[
+                {"label": "Counties", "value": Region_level.COUNTIES.value},
+                {"label": "municipalities", "value": Region_level.MUNICIPALITIES.value},
+            ],
+            value=selected_region_type,
+            id="radio_selected_region",
+        ),
+    ],
+    className="info",
+    style={"position": "absolute", "top": "60px", "right": "10px", "zIndex": "1000"},
+)
 
-    return [
-        generate_table(data_selected[checkbox_checked]),
-        get_geomap(data_selected),
-        meta_data_html,
-    ]
+# resets zoom and selection
+reset_button = html.Div(
+    [
+        dbc.Button(
+            "Reset",
+            color="light",
+            className="me-1",
+            id="reset_button",
+        ),
+    ],
+    style={
+        "position": "absolute",
+        "top": "160px",
+        "right": "10px",
+        "zIndex": "1000",
+        "padding": "2px",
+    },
+)
 
 
 def get_meta_data_html(data_selected):
@@ -364,7 +327,7 @@ def generate_table(df):
         html.Tbody(
             [
                 html.Tr([html.Td(str(df.iloc[i][col])) for col in df.columns])
-                for i in range(20)
+                for i in range(min(20, len(df)))
             ]
         ),
     ]
@@ -380,6 +343,295 @@ def generate_table(df):
             "display": "block",
         },
     )
+
+
+def get_map(choropleth, cluster):
+    return dl.Map(
+        **ZOOM_CONFIG,
+        children=[
+            dl.TileLayer(),
+            html.Div([choropleth], id="choropleth_parent"),
+            html.Div([cluster], id="cluster_parent"),
+            hover_info,
+            selected_info,
+            radio_region_levels,
+            reset_button,
+        ],
+    )
+
+
+def get_histo(df):
+    # Group by day
+    created_at = df["created_at"].sort_values()
+    time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
+
+    selected_df = df_global[df_global.index.isin(df.index)]
+    not_selected_df = df_global[~df_global.index.isin(df.index)]
+
+    if time_interval >= 30:
+        freq = "W"
+    else:
+        freq = "D"
+
+    df_agg_day_selected = selected_df.groupby(
+        [
+            pd.Grouper(
+                key="created_at",
+                freq=freq,
+            )
+        ],
+        group_keys=True,
+    )
+    df_agg_day_not_selected = not_selected_df.groupby(
+        [
+            pd.Grouper(
+                key="created_at",
+                freq=freq,
+            )
+        ],
+        group_keys=True,
+    )
+
+    dates_selected = df_agg_day_selected.groups.keys()
+    indices_selected = df_agg_day_selected.groups.values()
+    dates_not_selected = df_agg_day_not_selected.groups.keys()
+    indices_not_selected = df_agg_day_not_selected.groups.values()
+
+    histo = go.Figure(
+        data=[
+            go.Bar(
+                name="selected",
+                x=list(dates_selected),
+                y=df_agg_day_selected.count()["count"],
+                customdata=list(indices_selected),
+            ),
+            go.Bar(
+                name="not selected",
+                x=list(dates_not_selected),
+                y=df_agg_day_not_selected.count()["count"],
+                customdata=list(indices_not_selected),
+            ),
+        ],
+        layout={
+            "margin": go.layout.Margin(
+                l=5,  # left margin
+                r=5,  # right margin
+                b=0,  # bottom margin
+                t=0,  # top margin
+            ),
+        },
+    )
+    histo.update_layout(clickmode="event+select", barmode="stack")
+    return histo
+
+
+def plot(df, app):
+    global df_global
+    global intersected_points
+    df = df.rename(
+        columns={
+            "text": "processed",
+            "text_raw": "raw",
+            "text_translated": "translated",
+        }
+    )
+    df_global = df
+
+    intersected_points = df
+
+    df_global["count"] = 1
+    df_global["selected"] = 1
+
+    df_global["hashtags"] = df_global["raw"].apply(
+        lambda text: ", ".join(
+            [word for word in str(text).split() if word.startswith("#")]
+        )
+    )
+
+    histo = get_histo(df)
+
+    cluster = get_cluster(df_global)
+    choropleth = get_choropleth()
+    map = get_map(choropleth, cluster)
+    meta_data_html = get_meta_data_html(df)
+    CONTENT_STYLE = {
+        "margin": "0rem",
+    }
+    wanted_columns = [
+        "id",
+        "raw",
+        "translated",
+        "processed",
+        "hashtags",
+        "loc_name",
+        "created_at",
+    ]
+    selected_columns = ["raw", "translated", "processed"]
+    options = [{"label": column, "value": column} for column in wanted_columns]
+    app.layout = html.Div(
+        [
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            dbc.Checklist(
+                                id="checklist-inline-input",
+                                inline=True,
+                                options=options,
+                                value=selected_columns,
+                                style={"text-align": "center"},
+                            ),
+                            html.Div(
+                                children=[
+                                    generate_table(df_global[selected_columns]),
+                                ],
+                                id="tweets",
+                                style={"height": "96vh"},
+                            ),
+                        ],
+                        style={
+                            "width": "50%",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                id="map",
+                                children=[map],
+                                style={
+                                    "width": "100%",
+                                    "height": "50vh",
+                                    "margin": "auto",
+                                    "display": "block",
+                                },
+                            ),
+                            dbc.Card(
+                                dbc.CardBody(
+                                    [
+                                        html.P(
+                                            meta_data_html,
+                                            id="meta_data",
+                                            className="card-text",
+                                        ),
+                                    ],
+                                    style={"padding": "0px"},
+                                ),
+                                style={"padding": "0px"},
+                            ),
+                            dcc.Graph(
+                                id="histo", figure=histo, style={"height": "41%"}
+                            ),
+                        ],
+                        style={
+                            "width": "50%",
+                        },
+                    ),
+                    dcc.Store(id="selected_data"),
+                ],
+                style={"display": "flex"},
+            ),
+        ],
+        style=CONTENT_STYLE,
+    )
+
+
+@app.callback(
+    Output("hovered_info", "children"), [Input("choropleth", "hover_feature")]
+)
+def info_hover_select(feature):
+    return get_hovered_region_info(feature)
+
+
+@app.callback(
+    Output("choropleth_parent", "children"),
+    [Input("radio_selected_region", "value")],
+)
+def radio_region_level_update(value):
+    global selected_region_type
+    selected_region_type = value
+    return [get_choropleth()]
+
+
+@app.callback(
+    Output("selected_data", "data"),
+    Output("selected_info", "children"),
+    [
+        Input("histo", "selectedData"),
+        Input("choropleth", "click_feature"),
+        Input("cluster", "click_feature"),
+        Input("reset_button", "n_clicks"),
+    ],
+)
+def display_selected_data(
+    histo_selection, choropleth_selection, cluster_selection, n_clicks
+):
+    global df_global
+    global current_clicks
+    global global_histo_selection
+    global selected_data
+    selected_indices = df_global.index
+
+    if n_clicks is not None and n_clicks > current_clicks:
+        selected_data = df_global
+        current_clicks = n_clicks
+    elif histo_selection not in [None, global_histo_selection]:
+        for selected_data_fig in [histo_selection]:
+            if selected_data_fig and selected_data_fig["points"]:
+                selected_indices_fig = sum(
+                    [p["customdata"] for p in selected_data_fig["points"]], []
+                )
+                selected_indices = np.intersect1d(
+                    selected_indices, selected_indices_fig
+                )
+                selected_data = df_global[df_global.index.isin(selected_indices)]
+        global_histo_selection = histo_selection
+    elif cluster_selection is not None:
+        selected_data = get_cluster_points(cluster_selection)
+    elif choropleth_selection is not None:
+        selected_data = get_intersected_points(choropleth_selection)
+
+    df_global["selected"] = df_global.index.isin(selected_data)
+
+    return [
+        selected_data.to_json(date_format="iso", orient="split"),
+        get_selected_region_info(choropleth_selection),
+    ]
+
+
+@app.callback(
+    Output("cluster_parent", "children"),
+    Output("histo", "figure"),
+    Output("meta_data", "children"),
+    [
+        Input("selected_data", "data"),
+    ],
+)
+def update_map(selected_data):
+    global df_global
+    if selected_data is not None:
+        selected_data = pd.read_json(selected_data, orient="split")
+    else:
+        selected_data = df_global
+    meta_data_html = get_meta_data_html(selected_data)
+
+    return [get_cluster(selected_data), get_histo(selected_data), meta_data_html]
+
+
+@app.callback(
+    Output("tweets", "children"),
+    [
+        Input("selected_data", "data"),
+        Input("checklist-inline-input", "value"),
+    ],
+)
+def update_table(selected_data, checkbox_checked):
+    global df_global
+    if selected_data is not None:
+        selected_data = pd.read_json(selected_data, orient="split")
+    else:
+        selected_data = df_global
+
+    return generate_table(selected_data[checkbox_checked])
 
 
 @click.command()
