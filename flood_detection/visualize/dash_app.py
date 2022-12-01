@@ -14,7 +14,6 @@ import dash_leaflet.express as dlx
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dash_table, dcc, html
 from dash.dependencies import Input, Output
@@ -44,6 +43,8 @@ ZOOM_CONFIG = dict(
 selected_region_type = DEFAULT_REGION_TYPE.value
 # Global state to check if histo selection data got changed
 global_histo_selection = {}
+num_tweets_location = 0
+num_tweets_mentioning_sweden = 0
 
 # Number of times reset button got clicked
 # Plotly only provides the number of times a button got clicked, so a global
@@ -86,9 +87,16 @@ def get_smallest_loc_info(df):
 
 
 def get_location_with_lowest_parameter(row):
+    global num_tweets_mentioning_sweden
     lowest_param = 999
     curr_location = {}
     for location in row.values():
+        # This term means county in swedish and doesn't imply a geographic location
+        if "Lan" in location["display_name"].split(","):
+            continue
+        if "Sweden" == location["display_name"].split(",")[0]:
+            num_tweets_mentioning_sweden += 1
+            continue
         bounding_box = location["boundingbox"]
         param = abs(float(bounding_box[0]) - float(bounding_box[1])) + abs(
             float(bounding_box[2]) - float(bounding_box[3])
@@ -243,11 +251,17 @@ reset_button = html.Div(
 
 
 def get_meta_data_html(data_selected):
+    global num_tweets_location
+    global num_tweets_mentioning_sweden
     total_data_num = len(df_global)
     total_loc_num = len(df_global["loc_name"].unique())
     created_at_series = pd.to_datetime(data_selected["created_at"]).sort_values()
-    oldest_time = created_at_series.iloc[0]
-    newest_time = created_at_series.iloc[-1]
+    if len(data_selected) > 0:
+        oldest_time = created_at_series.iloc[0]
+        newest_time = created_at_series.iloc[-1]
+    else:
+        oldest_time = ""
+        newest_time = ""
 
     locations_selected_agg = (
         data_selected.groupby(["loc_name"])
@@ -266,13 +280,18 @@ def get_meta_data_html(data_selected):
         .str.replace(r"[0-9]+", repl, regex=True)
     )
 
-    locations_selected = locations_selected_agg.index.str.cat(
-        locations_selected_agg["count"], join="left", sep=" "
-    ).array
+    if len(data_selected) > 0:
+        locations_selected = locations_selected_agg.index.str.cat(
+            locations_selected_agg["count"], join="left", sep=" "
+        ).array
+    else:
+        locations_selected = [""]
 
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
-        "Tweets": f"Total: {str(total_data_num)}, Selected: {str(len(data_selected))} ,",
+        "Tweets": f"With location: {str(total_data_num)}, Selected: "
+        f"{str(len(data_selected))}, Total: "
+        f"{str(num_tweets_location)}, Has word Sweden: {str(num_tweets_mentioning_sweden)} ,",
         "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
         "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
@@ -280,41 +299,33 @@ def get_meta_data_html(data_selected):
     meta_data_els = []
     for key, value in meta_data.items():
         if key == "Selected locations":
-            if locations_selected_num <= MAX_NUM_META_DATA_LOCATIONS:
-                meta_data_els.append(html.Div(", ".join(locations_selected) + " | "))
-            else:
-                meta_data_els.append(
-                    html.Div(
-                        [
-                            html.Div(
-                                [
-                                    ", ".join(
-                                        locations_selected[:MAX_NUM_META_DATA_LOCATIONS]
-                                    )
-                                    + ",",
-                                    dbc.Button(
-                                        " etc.",
-                                        id="other-locations-popover",
-                                        className="me-1",
-                                        color="link",
-                                        style={"padding": "0px"},
-                                    ),
-                                ],
-                                style={**STYLE, "display": "inline"},
-                            ),
-                            dbc.Popover(
-                                dbc.PopoverBody(
-                                    ", ".join(
-                                        locations_selected[MAX_NUM_META_DATA_LOCATIONS:]
-                                    )
-                                ),
-                                target="other-locations-popover",
-                                trigger="click",
-                                style={"max-width": "50%"},
-                            ),
-                        ]
-                    )
+            div = [
+                ", ".join(
+                    locations_selected[
+                        : min(len(locations_selected), MAX_NUM_META_DATA_LOCATIONS)
+                    ]
                 )
+            ]
+            if locations_selected_num > MAX_NUM_META_DATA_LOCATIONS:
+                div += [
+                    ",",
+                    dbc.Button(
+                        " etc.",
+                        id="other-locations-popover",
+                        className="me-1",
+                        color="link",
+                        style={"padding": "0px"},
+                    ),
+                    dbc.Popover(
+                        dbc.PopoverBody(
+                            ", ".join(locations_selected[MAX_NUM_META_DATA_LOCATIONS:])
+                        ),
+                        target="other-locations-popover",
+                        trigger="click",
+                        style={"max-width": "50%"},
+                    ),
+                ]
+            meta_data_els.append(html.Div(div, style={**STYLE, "display": "inline"}))
         else:
             meta_data_els.append(html.Div([html.B(key), ": ", value], style=STYLE))
 
@@ -378,7 +389,10 @@ def get_map(choropleth, cluster):
 def get_histo(df):
     # Group by day
     created_at = df["created_at"].sort_values()
-    time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
+    if len(created_at) > 0:
+        time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
+    else:
+        time_interval = 0
 
     selected_df = df_global[df_global.index.isin(df.index)]
     not_selected_df = df_global[~df_global.index.isin(df.index)]
@@ -583,7 +597,6 @@ def display_selected_data(
     global df_global
     global current_clicks
     global global_histo_selection
-    global selected_data
     selected_indices = df_global.index
 
     if n_clicks is not None and n_clicks > current_clicks:
@@ -623,13 +636,17 @@ def display_selected_data(
 )
 def update_map(selected_data):
     global df_global
+
     if selected_data is not None:
         selected_data = pd.read_json(selected_data, orient="split")
     else:
         selected_data = df_global
-    meta_data_html = get_meta_data_html(selected_data)
 
-    return [get_cluster(selected_data), get_histo(selected_data), meta_data_html]
+    return [
+        get_cluster(selected_data),
+        get_histo(selected_data),
+        get_meta_data_html(selected_data),
+    ]
 
 
 @app.callback(
@@ -666,6 +683,8 @@ def update_table(selected_data, page_current, page_size, sort_by, columns_select
 @click.command()
 @click.argument("path_to_data", nargs=-1)
 def main(path_to_data):
+    global num_tweets_location
+
     df = pd.read_csv(
         path_to_data[0],
         converters={
@@ -676,6 +695,7 @@ def main(path_to_data):
     df["loc_smallest_param"] = df["swedish_locations"].apply(
         get_location_with_lowest_parameter
     )
+    num_tweets_location = len(df)
     df = df[df["loc_smallest_param"].str.len() > 0].reset_index()
 
     df = get_smallest_loc_info(df)
