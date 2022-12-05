@@ -91,6 +91,10 @@ def get_location_with_lowest_parameter(row):
     lowest_param = 999
     curr_location = {}
     for location in row.values():
+        location = location["swedish_loc_info"]
+        # Not a swedish location
+        if len(location) == 0:
+            continue
         # This term means county in swedish and doesn't imply a geographic location
         if "Lan" in location["display_name"].split(","):
             continue
@@ -695,7 +699,6 @@ def main(path_to_data):
     df = pd.read_csv(
         path_to_data[0],
         converters={
-            "locations": ast.literal_eval,
             "swedish_locations": ast.literal_eval,
         },
     )
