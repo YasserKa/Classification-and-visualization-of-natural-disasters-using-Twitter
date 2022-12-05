@@ -289,9 +289,9 @@ def get_meta_data_html(data_selected):
 
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
-        "Tweets": f"With location: {str(total_data_num)}, Selected: "
-        f"{str(len(data_selected))}, Total: "
-        f"{str(num_tweets_location)}, Has word Sweden: {str(num_tweets_mentioning_sweden)} ,",
+        "Tweets": f"Total: {str(num_tweets_location)}, With location: {str(total_data_num)}, Selected: "
+        f"{str(len(data_selected))}, "
+        f"Has word Sweden: {str(num_tweets_mentioning_sweden)} ,",
         "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
         "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
@@ -362,7 +362,7 @@ def generate_table(checkbox_checked):
         style_data_conditional=[
             {
                 "if": {"row_index": "odd"},
-                "backgroundColor": "lightcyan",
+                "backgroundColor": "#eee",
             }
         ],
         sort_action="custom",
@@ -388,7 +388,7 @@ def get_map(choropleth, cluster):
 
 def get_histo(df):
     # Group by day
-    created_at = df["created_at"].sort_values()
+    created_at = df_global["created_at"].sort_values()
     if len(created_at) > 0:
         time_interval = (created_at.iloc[-1] - created_at.iloc[0]).days
     else:
@@ -398,7 +398,7 @@ def get_histo(df):
     not_selected_df = df_global[~df_global.index.isin(df.index)]
 
     if time_interval >= 30:
-        freq = "W"
+        freq = "M"
     else:
         freq = "D"
 
@@ -450,7 +450,11 @@ def get_histo(df):
             ),
         },
     )
-    histo.update_layout(clickmode="event+select", barmode="stack")
+    histo.update_layout(
+        clickmode="event+select",
+        barmode="stack",
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+    )
     return histo
 
 
@@ -493,6 +497,7 @@ def plot(df, app):
         "processed",
         "hashtags",
         "loc_name",
+        "softmax",
         "created_at",
     ]
     selected_columns = ["raw", "translated", "processed"]
@@ -617,6 +622,8 @@ def display_selected_data(
         selected_data = get_cluster_points(cluster_selection)
     elif choropleth_selection is not None:
         selected_data = get_intersected_points(choropleth_selection)
+    else:
+        selected_data = df_global
 
     df_global["selected"] = df_global.index.isin(selected_data)
 
@@ -696,6 +703,7 @@ def main(path_to_data):
         get_location_with_lowest_parameter
     )
     num_tweets_location = len(df)
+
     df = df[df["loc_smallest_param"].str.len() > 0].reset_index()
 
     df = get_smallest_loc_info(df)
