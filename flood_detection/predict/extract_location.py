@@ -93,8 +93,8 @@ class GeoCoder:
                 raise Exception(f"{self.__geocoder_name} geocoder isn't available")
         return loc
 
-    def get_swedish_location(self, locations: dict[str, dict]) -> dict[str, dict]:
-        swedish_locations = {}
+    def get_swedish_locations(self, locations: dict[str, dict]) -> dict[str, dict]:
+        swedish_locations = locations.copy()
         for name in locations:
             swedish_location = self.__get_location(name)
             if swedish_location is not None:
@@ -144,10 +144,9 @@ def main(model_name, geocoder_name, path_to_data):
     df["tokens"] = df["text_raw"].progress_apply(model.get_tokens)
     df["locations_tokens"] = df["tokens"].apply(model.get_location_tokens)
     tqdm.pandas(desc="Swedish locations")
-    df["swedish_locations"] = df["locations_tokens"].progress_apply(
-        geocoder.get_swedish_location
+    df["swedish_locations"] = df["locations"].progress_apply(
+        geocoder.get_swedish_locations
     )
-
     df.to_csv(output_path, index=False)
 
 
