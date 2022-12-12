@@ -82,9 +82,13 @@ class Preprocess(object):
             text = self.remove_not_needed_elements_from_string(text)
             # Remove punctuation
             text = "".join([char for char in text if char not in string.punctuation])
-            # Remove stopwords
+            # Remove stopwords and very long words
             text = " ".join(
-                [word for word in str(text).split() if word not in stopwords]
+                [
+                    word
+                    for word in str(text).split()
+                    if word not in stopwords and len(word) <= 28
+                ]
             )
             # Remove Emojis
             emoji_pattern: re.Pattern[str] = re.compile(
@@ -151,8 +155,11 @@ class Preprocess(object):
             group_by_keys += ["loc_name"]
 
         # Use first tweet for each user per week only
-        df_group = df.groupby(group_by_keys)
-        df_user_week_uniq = df_group.agg("first")
+        df_group = df.groupby(
+            group_by_keys,
+            group_keys=False,
+        )
+        df_user_week_uniq = df_group.apply(lambda x: x)
         df_user_week_uniq.reset_index(inplace=True)
         return df_user_week_uniq
 

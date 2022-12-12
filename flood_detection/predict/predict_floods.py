@@ -67,7 +67,11 @@ def main(dataset_path):
         with torch.no_grad():
             output = model(**inputs)
             pred_label = torch.argmax(output.logits, axis=-1)
+            softmax, _ = torch.max(
+                torch.nn.functional.softmax(output.logits, dim=1), dim=1
+            )
             return {
+                "softmax": softmax.cpu().numpy(),
                 "predicted_label": pred_label.cpu().numpy(),
             }
 
