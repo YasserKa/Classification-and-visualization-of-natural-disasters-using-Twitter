@@ -22,6 +22,10 @@ train_flood_classifier:
 evaluation:
 	dvc exp show --drop '.*' --keep "(Experiment|Created|eval_accuracy|eval_f1|eval_precision|eval_recall)" -n 2
 
+push_data:
+	dvc add data/!(*dvc)
+	dvc push
+
 pipeline_for_supervisor:
 	python ./flood_detection/data/preprocess.py "./data/tweets/supervisor_annotated_tweets.json"
 	python ./flood_detection/predict/predict_floods.py --dataset_path "./data/processed/supervisor_annotated_tweets.csv"
