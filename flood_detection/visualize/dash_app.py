@@ -15,11 +15,12 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Dash, dash_table, dcc, html
+from dash import Dash, State, dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
 
-from flood_detection.data.preprocess import Preprocess
+from flood_detection.data.preprocess import Language, Preprocess
+from flood_detection.predict.text_analysis import get_preprocessed_docs, perform_LDA
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
@@ -50,6 +51,8 @@ num_tweets_mentioning_sweden = 0
 # Plotly only provides the number of times a button got clicked, so a global
 # state is needed to check if a button is clicked
 current_clicks = 0
+modal_close_current_clicks = 0
+text_current_clicks = 0
 
 
 MAX_NUM_META_DATA_LOCATIONS = 5
@@ -65,6 +68,7 @@ data_needed = [
 ]
 
 df_global = pd.DataFrame()
+selected_data = pd.DataFrame()
 
 # When region level changes, this function gets triggered, return
 # previous intersected_points
@@ -252,6 +256,41 @@ reset_button = html.Div(
         "padding": "2px",
     },
 )
+text_analysis_button = html.Div(
+    [
+        dbc.Button(
+            [
+                dbc.Spinner(html.Div(id="loading-output", children="LDA"), size="sm"),
+            ],
+            color="light",
+            className="me-1",
+            id="text_analysis_button",
+        ),
+    ],
+    style={
+        "position": "absolute",
+        "top": "210px",
+        "right": "10px",
+        "zIndex": "1000",
+        "padding": "2px",
+    },
+)
+
+modal = html.Div(
+    [
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Result for LDA")),
+                dbc.ModalBody("This is the content of the modal", id="modal-body-id"),
+                dbc.ModalFooter(
+                    dbc.Button("Close", id="close", className="ms-auto", n_clicks=0)
+                ),
+            ],
+            id="modal",
+            is_open=False,
+        ),
+    ]
+)
 
 
 def get_meta_data_html(data_selected):
@@ -386,6 +425,7 @@ def get_map(choropleth, cluster):
             selected_info,
             radio_region_levels,
             reset_button,
+            text_analysis_button,
         ],
     )
 
@@ -510,6 +550,7 @@ def plot(df, app):
         [
             html.Div(
                 [
+                    modal,
                     html.Div(
                         [
                             dbc.Checklist(
@@ -591,6 +632,33 @@ def radio_region_level_update(value):
 
 
 @app.callback(
+    Output("modal", "is_open"),
+    Output("modal-body-id", "children"),
+    Output("loading-output", "children"),
+    [
+        Input("close", "n_clicks"),
+        Input("text_analysis_button", "n_clicks"),
+    ],
+)
+def text_anlaysis_button(n_close, text_n_clicks):
+    global text_current_clicks
+    global modal_close_current_clicks
+    global selected_data
+
+    if n_close is not None and n_close > modal_close_current_clicks:
+        modal_close_current_clicks = n_close
+        return [False, html.Div(len(selected_data)), "LDA"]
+
+    if text_n_clicks is not None and text_n_clicks > text_current_clicks:
+        text_current_clicks = text_n_clicks
+
+        df = selected_data.rename(columns={"processed": "text"})
+        docs = get_preprocessed_docs(df, Language.ENGLISH)
+        results = perform_LDA(docs)
+        return [True, html.Div(str(results)), "LDA"]
+
+
+@app.callback(
     Output("selected_data", "data"),
     Output("selected_info", "children"),
     [
@@ -604,6 +672,7 @@ def display_selected_data(
     histo_selection, choropleth_selection, cluster_selection, n_clicks
 ):
     global df_global
+    global selected_data
     global current_clicks
     global global_histo_selection
     selected_indices = df_global.index
@@ -695,6 +764,7 @@ def update_table(selected_data, page_current, page_size, sort_by, columns_select
 @click.argument("path_to_data", nargs=-1)
 def main(path_to_data):
     global num_tweets_location
+    global selected_data
 
     df = pd.read_csv(
         path_to_data[0],
@@ -716,6 +786,7 @@ def main(path_to_data):
         df, per_location=True
     )
 
+    selected_data = df_user_week_uniq
     plot(df_user_week_uniq, app)
     app.run_server(debug=True)
 

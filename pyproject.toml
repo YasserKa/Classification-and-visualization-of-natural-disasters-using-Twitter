@@ -45,6 +45,7 @@ pillow = "^9.3.0"
 cryptography = "^38.0.3"
 geopandas = "^0.12.1"
 rtree = "^1.0.1"
+keybert = {extras = ["gensim"], version = "^0.7.0"}
 
 
 [tool.poetry.group.dev.dependencies]

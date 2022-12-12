@@ -24,6 +24,7 @@ twitter_api:
   processed: data/processed/twitter_api
   processed_flood: data/processed_flood/twitter_api
   processed_geo: data/processed_geo/twitter_api
+  text_analysis: data/text_analysis/twitter_api
 
 supervisor:
   raw: data/raw/supervisor_annotated_tweets.csv
@@ -31,6 +32,7 @@ supervisor:
   processed: data/processed/supervisor_annotated_tweets.csv
   processed_flood: data/processed_flood/supervisor_annotated_tweets.csv
   processed_geo: data/processed_geo/supervisor_annotated_tweets.csv
+  text_analysis: data/text_analysis/supervisor_annotated_tweets.csv
 
 crisis:
   raw: data/raw/crisis_nlp_task_dmg.tsv

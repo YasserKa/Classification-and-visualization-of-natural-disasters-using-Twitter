@@ -1,5 +1,6 @@
 # %%
 
+import ast
 import itertools
 import logging
 from pprint import pprint
@@ -7,80 +8,254 @@ from pprint import pprint
 import nltk
 import numpy as np
 import pandas as pd
-import spacy
+import visidata
 from gensim import corpora
-from gensim.models import LdaModel
+from gensim.models import LdaModel, Phrases
 from hydra import compose, initialize_config_module
 from hydra.utils import to_absolute_path as abspath
-from nltk.stem.snowball import SnowballStemmer
+from keybert import KeyBERT
 from omegaconf import DictConfig
 from rake_nltk import Rake
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, util
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from flood_detection.data.preprocess import Preprocess
+from flood_detection.data.preprocess import Language, Preprocess
+
+# importlib.reload(preprocess)
+LANGUAGE = Language.ENGLISH
+preprocess = Preprocess(language=LANGUAGE)
 
 # %%
 
 with initialize_config_module(version_base=None, config_module="conf"):
     cfg: DictConfig = compose(config_name="config")
 
-path_to_data = abspath(
-    cfg.twitter_api.processed_flood + "_2021-08-17_to_2021-08-23.csv"
-)
+# path_to_data = abspath(
+#     cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv"
+# )
+path_to_data = abspath(cfg.queensland.processed)
+
 df_api = pd.read_csv(path_to_data)
 
 path_to_data = abspath(cfg.supervisor.processed_flood)
 df_sup = pd.read_csv(path_to_data)
 
 df = df_api
-df = df[df["predicted_label"] == 1].reset_index(drop=True)
+# df = df[df["predicted_label"] == 1].reset_index(drop=True).astype({"id": "str"})
+df = df[df["relevant"] == 1].reset_index(drop=True).astype({"id": "str"})
 
-language = "en"
+# %%
+# docs_ = list(map(lambda x: " ".join(x), df['text']))
+# extracted_keywords = kw_model.extract_keywords(
+#     docs_, keyphrase_ngram_range=(1, 1), stop_words=None
+# )
 
-preprocess = Preprocess(language=language)
+# x = df["text"].apply(lambda x: x.split(" ")).explode().value_counts()
+# z = pd.DataFrame(data={"count": x, "word": x.index})
+# visidata.vd.view_pandas(z)
+# print(df["text"].str.replace(z))
+# y = x.groupby(by="text").count()
+# print(y)
+# print(counts)
+# Counter({'apple': 3, 'egg': 2, 'banana': 1})
 
+# visidata.vd.view_pandas(y)
+
+list_disclude = [
+    "flood",
+    "floods",
+    "floods",
+    "queensland",
+    "australia",
+    "crisis",
+    "rises",
+    "queenslands",
+    "australian",
+]
+# print(preprocess.clean_text(df["text"].to_list(), not_needed_words=list_disclude))
+# print(df["text"])
+
+
+# df['docs'] = preprocess.clean_text(df["text"].tolist(), not_needed_words=list_disclude)
+df = preprocess.clean_dataframe(df, translate=False)
+# print(docs)
+
+# %%
+# Extract tweets that only mention these locations
+terms_locations_needed = ["Gävle", "Gävleborgs"]
+df["swedish_locations_keys"] = df["swedish_locations"].apply(
+    lambda x: list(ast.literal_eval(x).keys())
+)
+mask = df["swedish_locations_keys"].apply(
+    lambda x: len(set(x).intersection(set(terms_locations_needed)))
+)
+
+df = df[mask > 0]
+
+# %%
 # Remove potential spam
-df = preprocess.get_one_tweet_for_each_user_per_week(df)
+# df = preprocess.get_one_tweet_for_each_user_per_week(df)
+
+
+# Using cosine similarity
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+
+preprocess = Preprocess(language=Language.ENGLISH)
+# df = df_[:30]
+df["text_processed"] = preprocess.clean_text(df["text"].tolist())
+df["embeddings"] = df["text_processed"].apply(
+    lambda x: model.encode(x, convert_to_tensor=True)
+)
+
+df["similar"] = 0
+for index, row in df.iterrows():
+    for index1, row1 in df.iloc[index + 1 :].iterrows():
+        cosine_scores = util.cos_sim(row["embeddings"], row1["embeddings"])
+        if cosine_scores > 0.8:
+            df.loc[index1, "similar"] = 1
+df = df[df["similar"] != 1]
+
+# %%
+
+# NER
+
+from flood_detection.predict.extract_location import Transform
+
+swedish_ner_model = "KBLab/bert-base-swedish-cased-ner"
+english_ner_model = "dslim/bert-base-NER"
+
+model = Transform(english_ner_model)
+from tqdm import tqdm
+
+tqdm.pandas(desc="Extracting NER")
+s = df["docs"].progress_apply(model.get_tokens)
+
+
+# NOTE: can filter using score of entities
+x = s.apply(
+    lambda entities_row: [(entity["entity"], entity["word"]) for entity in entities_row]
+)
+
+b = x.explode().value_counts()
+
+z = pd.DataFrame(data={"count": b, "b": b.index})
+visidata.vd.view_pandas(z)
+
 # %%
 
 # Clean the text
-if language == "sv":
+if LANGUAGE == Language.SWEDISH:
     docs = preprocess.clean_text(df["text_raw"].tolist())
-    nlp = spacy.load("sv_core_news_sm")
-    stemmer = SnowballStemmer(language="swedish")
-elif language == "en":
-    docs = preprocess.clean_text(df["text_translated"].tolist())
-    nlp = spacy.load("en_core_web_sm")
-    stemmer = SnowballStemmer(language="english")
+elif LANGUAGE == Language.ENGLISH:
+    docs = preprocess.clean_text(df["docs"].tolist())
 else:
-    raise Exception(f"{language} is not supported")
+    raise Exception(f"{LANGUAGE.value} is not supported")
+
+
+# docs = list(map(lambda x: preprocess.stem(x), docs))
+
+docs = list(map(lambda x: preprocess.lemmatize(x), docs))
+
+docs = [[token for token in doc.split(" ") if len(token) > 1] for doc in docs]
 
 
 # %%
-def stem(sentence):
-    return " ".join([stemmer.stem(word) for word in sentence.split(" ")])
-
-
-docs = list(map(lambda x: stem(x), docs))
-
-
-# %%
-def lemmatize(text):
-    doc = nlp(text)
-    return [token.lemma_ for token in doc]
-
-
-docs = list(map(lambda x: lemmatize(x), docs))
-
-docs = [[token for token in doc if len(token) > 1] for doc in docs]
-
-# %%
-docs = preprocess.clean_text(list(map(lambda x: " ".join(x), docs)))
+docs = preprocess.clean_text(
+    list(map(lambda x: " ".join(x), docs)), ["flood", "gävle", "gävleborgs", "alberta"]
+)
 docs = list(map(lambda x: x.split(" "), docs))
 
+
 # %%
+
+# Add bigrams and trigrams to docs (only ones that appear 20 times or more).
+bigram = Phrases(docs, min_count=20)
+for idx in range(len(docs)):
+    for token in bigram[docs[idx]]:
+        if "_" in token:
+            # Token is a bigram, add to document.
+            docs[idx].append(token)
+
+# %%
+# TF-IDF scores
+from collections import defaultdict
+
+from gensim import corpora
+
+# remove words that appear only once
+frequency = defaultdict(int)
+for text in docs:
+    for token in text:
+        frequency[token] += 1
+
+dictionary = corpora.Dictionary(docs)
+corpus = [dictionary.doc2bow(text) for text in docs]
+
+from gensim import models
+
+tfidf = models.TfidfModel(corpus)  # step 1 -- initialize a model
+
+
+# %%
+corpus_tfidf = tfidf[corpus]
+for doc in corpus_tfidf:
+    print(doc)
+
+# %%
+lsi_model = models.LsiModel(
+    corpus_tfidf, id2word=dictionary, num_topics=2
+)  # initialize an LSI transformation
+corpus_lsi = lsi_model[
+    corpus_tfidf
+]  # create a double wrapper over the original corpus: bow->tfidf->fold-in-lsi
+
+# %%
+
+lsi_model.print_topics(1)
+# %%
+
+kw_model = KeyBERT()
+
+
+docs_ = list(map(lambda x: " ".join(x), docs))
+extracted_keywords = kw_model.extract_keywords(
+    docs_, keyphrase_ngram_range=(1, 1), stop_words=None
+)
+
+df_bert = (
+    pd.DataFrame(
+        [
+            sentence_keywords[0]
+            for sentence_keywords in extracted_keywords
+            if len(sentence_keywords) > 0
+        ],
+        columns=["keyword", "weight"],
+    )
+    .groupby("keyword", as_index=False)
+    .agg(
+        weight_mean=pd.NamedAgg(column="weight", aggfunc="mean"),
+        weight_count=pd.NamedAgg(column="keyword", aggfunc="count"),
+    )
+    .sort_values([("weight_count"), ("weight_mean")], ascending=False)
+)
+
+print(df_bert)
+# visidata.vd.view_pandas(df_bert)
+# %%
+print(df_bert)
+
+# %%
+print(docs_)
+
+# %%
+# for doc in docs_:
+#     if "bag_hoist" in doc:
+#         print(doc)
+
+# %%
+
 
 dictionary = corpora.Dictionary(docs)
 
@@ -137,12 +312,6 @@ print("Average topic coherence: %.4f." % avg_topic_coherence)
 pprint(top_topics)
 
 # %%
-docs_without_flood = list(map(lambda x: list(filter(lambda y: y != "flood", x)), docs))
-
-docs_without_flood_sentences = list(map(lambda x: " ".join(x), docs_without_flood))
-
-# %%
-
 # Keyword extraction
 # https://towardsdatascience.com/keyword-extraction-with-bert-724efca412ea
 
@@ -153,7 +322,7 @@ nltk.data.path = ["./nltk_data"]
 r = Rake()
 # Extraction given the list of strings where each string is a sentence.
 # r.extract_keywords_from_sentences(list(map(lambda x: " ".join(x), docs)))
-r.extract_keywords_from_sentences(docs_without_flood_sentences)
+r.extract_keywords_from_sentences(docs)
 
 # To get keyword phrases ranked highest to lowest.
 r.get_ranked_phrases()[:10]
@@ -167,16 +336,14 @@ n_gram_range = (5, 5)
 stop_words = "english"
 
 # Extract candidate words/phrases
-count = CountVectorizer(ngram_range=n_gram_range, stop_words=stop_words).fit(
-    docs_without_flood_sentences
-)
+count = CountVectorizer(ngram_range=n_gram_range, stop_words=stop_words).fit(docs)
 
 candidates = count.get_feature_names()
 
 # %%
 
 model = SentenceTransformer("distilbert-base-nli-mean-tokens")
-doc_embedding = model.encode(docs_without_flood_sentences)
+doc_embedding = model.encode(docs)
 candidate_embeddings = model.encode(candidates)
 
 # %%

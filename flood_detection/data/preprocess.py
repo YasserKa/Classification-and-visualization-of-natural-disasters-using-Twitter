@@ -12,6 +12,7 @@ import spacy
 from deep_translator import GoogleTranslator
 from hydra import compose, initialize
 from hydra.utils import to_absolute_path as abspath
+from nltk.stem.snowball import SnowballStemmer
 from omegaconf import DictConfig
 
 """ Transform datasets to be ready for training
@@ -25,17 +26,25 @@ args:
     1- str: datasetpath
 """
 
+from enum import Enum
+
+
+class Language(Enum):
+    ENGLISH = "english"
+    SWEDISH = "swedish"
+
 
 class Preprocess(object):
-
     # Possible languages en, sv
-    def __init__(self, language="en") -> None:
-        if language == "sv":
-            self.nlp = spacy.load("sv_core_news_sm")
-        elif language == "en":
+    def __init__(self, language=Language.ENGLISH) -> None:
+        if language == Language.ENGLISH:
             self.nlp = spacy.load("en_core_web_sm")
+            self.stemmer = SnowballStemmer(language="english")
+        elif language == Language.SWEDISH:
+            self.nlp = spacy.load("sv_core_news_sm")
+            self.stemmer = SnowballStemmer(language="swedish")
         else:
-            raise Exception(f"{language} is not supported")
+            raise Exception(f"{language.value} is not supported")
 
     def remove_not_needed_elements_from_string(
         self, text: str, remove_numbers=True
@@ -50,7 +59,8 @@ class Preprocess(object):
             "((www.[^s]+)"
             "|(https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\."
             "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*))"
-            "|(@[a-zA-Z0-9_]*)"
+            "|(@[a-zA-Z0-9_äöåÄÖÅ]*)"
+            "|(#[a-zA-Z0-9_äöåÄÖÅ]*)"
             "|\n"
         )
         if remove_numbers:
@@ -61,7 +71,13 @@ class Preprocess(object):
 
         return processed_text
 
-    def clean_text(self, text_list: Union[list, str]) -> list[str]:
+    def stem(self, text: str) -> str:
+        return " ".join([self.stemmer.stem(word) for word in text.split(" ")])
+
+    def lemmatize(self, text: str) -> str:
+        return " ".join([word.lemma_ for word in self.nlp(text)])
+
+    def clean_text(self, text_list: Union[list, str], not_needed_words=[]) -> list[str]:
         """
         Clean text of tweet by removing URLs,mentions,hashtag signs,new lines, and numbers
 
@@ -70,6 +86,7 @@ class Preprocess(object):
         """
 
         stopwords = self.nlp.Defaults.stop_words
+        not_needed_words += stopwords
 
         if isinstance(text_list, str):
             text_list = [text_list]
@@ -82,12 +99,14 @@ class Preprocess(object):
             text = self.remove_not_needed_elements_from_string(text)
             # Remove punctuation
             text = "".join([char for char in text if char not in string.punctuation])
-            # Remove stopwords and very long words
+            # Remove stopwords & not needed words
             text = " ".join(
                 [
                     word
                     for word in str(text).split()
-                    if word not in stopwords and len(word) <= 28
+                    if word not in stopwords
+                    and len(word) <= 28
+                    and word not in not_needed_words
                 ]
             )
             # Remove Emojis
@@ -108,7 +127,7 @@ class Preprocess(object):
     def translate_text_list(self, text_list: list[str]):
         return GoogleTranslator(source="auto", target="en").translate_batch(text_list)
 
-    def clean_dataframe(self, df) -> pd.DataFrame:
+    def clean_dataframe(self, df, translate=True) -> pd.DataFrame:
         """
         Remove retweets, duplicate tweets and clean text
 
@@ -121,8 +140,11 @@ class Preprocess(object):
         df = df.drop(df[df["text"].str.startswith("RT")].index)
 
         df["text_raw"] = df["text"]
-        print("Translating text")
-        df["text_translated"] = self.translate_text_list(df["text"].tolist())
+        if translate:
+            print("Translating text")
+            df["text_translated"] = self.translate_text_list(df["text"].tolist())
+        else:
+            df["text_translated"] = self.clean_text(df["text"].tolist())
 
         print("Cleaning text")
         # Clean text

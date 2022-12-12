@@ -114,7 +114,7 @@ class TwitterFacade:
             tweets_dict[id]["user"] = users[tweet["author_id"]]
             del tweets_dict[id]["author_id"]
             # Add place
-            if "geo" in tweet:
+            if "geo" in tweet and "place_id" in tweet["geo"]:
                 tweets_dict[id]["place"] = places[tweet["geo"]["place_id"]]
                 del tweets_dict[id]["geo"]
             # Attachments can be polls (not interested in)

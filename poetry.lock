@@ -1505,6 +1505,30 @@ editorconfig = ">=0.12.2"
 six = ">=1.13.0"
 
 [[package]]
+name = "keybert"
+version = "0.7.0"
+description = "KeyBERT performs keyword extraction with state-of-the-art transformer models."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+gensim = {version = ">=3.6.0", optional = true, markers = "extra == \"gensim\""}
+numpy = ">=1.18.5"
+rich = ">=10.4.0"
+scikit-learn = ">=0.22.2"
+sentence-transformers = ">=0.3.8"
+
+[package.extras]
+dev = ["black (>=19.3b0)", "flake8 (>=3.6.0)", "mkdocs (>=1.1)", "mkdocs-material (>=4.6.3)", "mkdocstrings (>=0.8.0)", "pre-commit (>=2.2.0)", "pytest (>=5.4.3)", "pytest-cov (>=2.6.1)"]
+docs = ["mkdocs (>=1.1)", "mkdocs-material (>=4.6.3)", "mkdocstrings (>=0.8.0)"]
+flair = ["flair (>=0.7)", "torch (>=1.4.0)", "transformers (>=3.5.1)"]
+gensim = ["gensim (>=3.6.0)"]
+spacy = ["spacy (>=3.0.1)"]
+test = ["black (>=19.3b0)", "flake8 (>=3.6.0)", "pre-commit (>=2.2.0)", "pytest (>=5.4.3)", "pytest-cov (>=2.6.1)"]
+use = ["tensorflow", "tensorflow_hub", "tensorflow_text"]
+
+[[package]]
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -4066,6 +4090,9 @@ joblib = [
 ]
 jsbeautifier = [
     {file = "jsbeautifier-1.14.7.tar.gz", hash = "sha256:77993254db1ff6f84eb6e1d75e3b6b72cba2ef20813a585b2d81e8e5e3c713c6"},
+]
+keybert = [
+    {file = "keybert-0.7.0.tar.gz", hash = "sha256:b5003d10a5bfa1f7db3cb86e04f33b59939ae09095c093228713bb08499f4555"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},

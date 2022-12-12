@@ -31,6 +31,7 @@ class Transform:
         if name not in [
             "KBLab/bert-base-swedish-cased-ner",
             "KB/bert-base-swedish-cased-ner",
+            "dslim/bert-base-NER",
         ]:
             raise Exception(f"{name} is not supported")
         self.__initialize_pipeline(name)
