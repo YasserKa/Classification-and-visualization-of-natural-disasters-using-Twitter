@@ -43,11 +43,11 @@ def main(to_date, from_date, additional_query="") -> None:
     from_date = list(map(lambda x: int(x), from_date.split("-")))
 
     if additional_query != "":
-        additional_query = f"({additional_query}) "
+        additional_query = f"({additional_query}) OR "
 
     query: str = (
-        f"{additional_query} "
-        '"atmosfärisk flod" OR "hög vatten" OR åskskur'
+        f"{additional_query}"
+        ' "atmosfärisk flod" OR "hög vatten" OR åskskur'
         ' OR regnskur OR dagvattensystem OR dränering OR "höga vågor"'
         ' OR "höga flöden" OR dämmor'
         " OR snösmältning OR blött OR oväder OR stormflod OR vattenstånd"
