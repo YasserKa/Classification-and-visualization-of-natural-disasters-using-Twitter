@@ -22,7 +22,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from flood_detection.data.preprocess import Language, Preprocess
 
-# importlib.reload(preprocess)
 LANGUAGE = Language.ENGLISH
 preprocess = Preprocess(language=LANGUAGE)
 
@@ -31,56 +30,23 @@ preprocess = Preprocess(language=LANGUAGE)
 with initialize_config_module(version_base=None, config_module="conf"):
     cfg: DictConfig = compose(config_name="config")
 
-# path_to_data = abspath(
-#     cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv"
-# )
-path_to_data = abspath(cfg.queensland.processed)
+path_to_data = abspath(
+    cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv"
+)
+# path_to_data = abspath(cfg.queensland.processed)
 
 df_api = pd.read_csv(path_to_data)
 
 path_to_data = abspath(cfg.supervisor.processed_flood)
 df_sup = pd.read_csv(path_to_data)
 
-df = df_api
-# df = df[df["predicted_label"] == 1].reset_index(drop=True).astype({"id": "str"})
-df = df[df["relevant"] == 1].reset_index(drop=True).astype({"id": "str"})
+df = df_sup
+df = df[df["predicted_label"] == 1].reset_index(drop=True).astype({"id": "str"})
+# df = df[df["relevant"] == 1].reset_index(drop=True).astype({"id": "str"})
 
 # %%
-# docs_ = list(map(lambda x: " ".join(x), df['text']))
-# extracted_keywords = kw_model.extract_keywords(
-#     docs_, keyphrase_ngram_range=(1, 1), stop_words=None
-# )
 
-# x = df["text"].apply(lambda x: x.split(" ")).explode().value_counts()
-# z = pd.DataFrame(data={"count": x, "word": x.index})
-# visidata.vd.view_pandas(z)
-# print(df["text"].str.replace(z))
-# y = x.groupby(by="text").count()
-# print(y)
-# print(counts)
-# Counter({'apple': 3, 'egg': 2, 'banana': 1})
-
-# visidata.vd.view_pandas(y)
-
-list_disclude = [
-    "flood",
-    "floods",
-    "floods",
-    "queensland",
-    "australia",
-    "crisis",
-    "rises",
-    "queenslands",
-    "australian",
-]
-# print(preprocess.clean_text(df["text"].to_list(), not_needed_words=list_disclude))
-# print(df["text"])
-
-
-# df['docs'] = preprocess.clean_text(df["text"].tolist(), not_needed_words=list_disclude)
 df = preprocess.clean_dataframe(df, translate=False)
-# print(docs)
-
 # %%
 # Extract tweets that only mention these locations
 terms_locations_needed = ["Gävle", "Gävleborgs"]
@@ -149,7 +115,7 @@ visidata.vd.view_pandas(z)
 if LANGUAGE == Language.SWEDISH:
     docs = preprocess.clean_text(df["text_raw"].tolist())
 elif LANGUAGE == Language.ENGLISH:
-    docs = preprocess.clean_text(df["docs"].tolist())
+    docs = preprocess.clean_text(df["text"].tolist())
 else:
     raise Exception(f"{LANGUAGE.value} is not supported")
 
@@ -165,7 +131,34 @@ docs = [[token for token in doc.split(" ") if len(token) > 1] for doc in docs]
 docs = preprocess.clean_text(
     list(map(lambda x: " ".join(x), docs)), ["flood", "gävle", "gävleborgs", "alberta"]
 )
-docs = list(map(lambda x: x.split(" "), docs))
+# docs = list(map(lambda x: x.split(" "), docs))
+
+# %%
+# import collections
+
+# doc_freq = list(map(lambda x: len(x.split(" ")), docs))
+
+# # print(doc_freq)
+# counter = collections.Counter(doc_freq)
+# print(counter)
+# print(len(list(filter(lambda x: len(x.split(" ")) > 3, docs))))
+docs_ = list(filter(lambda x: len(x.split(" ")) > 3, docs))
+
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
+from yellowbrick.text import TSNEVisualizer
+
+# Load the data and create document vectors
+tfidf = TfidfVectorizer()
+
+X = tfidf.fit_transform(docs)
+
+clusters = KMeans(n_clusters=5)
+clusters.fit(X)
+
+tsne = TSNEVisualizer()
+tsne.fit(X, ["c{}".format(c) for c in clusters.labels_])
+tsne.show()
 
 
 # %%
@@ -244,19 +237,6 @@ df_bert = (
 print(df_bert)
 # visidata.vd.view_pandas(df_bert)
 # %%
-print(df_bert)
-
-# %%
-print(docs_)
-
-# %%
-# for doc in docs_:
-#     if "bag_hoist" in doc:
-#         print(doc)
-
-# %%
-
-
 dictionary = corpora.Dictionary(docs)
 
 # Filter out words that occur less than 20 documents, or more than 50% of the documents.

@@ -148,7 +148,7 @@ def main(model_name, geocoder_name, path_to_data):
     df["tokens"] = df["text_raw"].progress_apply(model.get_tokens)
     df["locations"] = df["tokens"].apply(model.get_location_tokens)
     tqdm.pandas(desc="Swedish locations")
-    df["swedish_locations"] = df["locations"].progress_apply(
+    df["swedish_locations"] = df["locations_tokens"].progress_apply(
         geocoder.get_swedish_locations
     )
     df.to_csv(output_path, index=False)

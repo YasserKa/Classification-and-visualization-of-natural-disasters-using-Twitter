@@ -48,6 +48,7 @@ rtree = "^1.0.1"
 keybert = {extras = ["gensim"], version = "^0.7.0"}
 geopandas = "^0.12.1"
 rtree = "^1.0.1"
+yellowbrick = "^1.5"
 
 
 [tool.poetry.group.dev.dependencies]
