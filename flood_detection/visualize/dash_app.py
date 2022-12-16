@@ -785,6 +785,7 @@ def main(path_to_data):
     df_user_week_uniq = preprocess.get_one_tweet_for_each_user_per_week(
         df, per_location=True
     )
+    df_user_week_uniq = df_user_week_uniq.round(3)
 
     selected_data = df_user_week_uniq
     plot(df_user_week_uniq, app)
