@@ -20,8 +20,7 @@ from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
 
 from flood_detection.data.preprocess import Language, Preprocess
-from flood_detection.predict.text_analysis import (get_preprocessed_docs,
-                                                   perform_LDA)
+from flood_detection.predict.text_analysis import get_preprocessed_docs, perform_LDA
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
@@ -498,7 +497,7 @@ def get_histo(df):
     histo.update_layout(
         clickmode="event+select",
         barmode="stack",
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+        legend=dict(yanchor="top", orientation="h", y=0.99, xanchor="left", x=0.01),
     )
     return histo
 

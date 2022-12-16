@@ -43,8 +43,6 @@ sentence-transformers = "^2.2.2"
 rake-nltk = "^1.0.6"
 pillow = "^9.3.0"
 cryptography = "^38.0.3"
-geopandas = "^0.12.1"
-rtree = "^1.0.1"
 keybert = {extras = ["gensim"], version = "^0.7.0"}
 geopandas = "^0.12.1"
 rtree = "^1.0.1"
