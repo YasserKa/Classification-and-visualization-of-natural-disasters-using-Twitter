@@ -2253,9 +2253,6 @@ yarl==1.8.1 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:ed19b74e81b10b592084a5ad1e70f845f0aacb57577018d31de064e71ffa267a \
     --hash=sha256:f5af52738e225fcc526ae64071b7e5342abe03f42e0e8918227b38c9aa711e28 \
     --hash=sha256:fae37373155f5ef9b403ab48af5136ae9851151f7aacd9926251ab26b953118b
-yellowbrick==1.5 ; python_version >= "3.10" and python_version < "3.11" \
-    --hash=sha256:4bb2895cecf94a0e736398bbac6c5d72032ba3ff2273f49df660b14ef419305d \
-    --hash=sha256:99a6336dd2e7ce586a8cde67966b79c51b479d3759f3c083d7e19ffe949f6076
 zc-lockfile==2.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:307ad78227e48be260e64896ec8886edc7eae22d8ec53e4d528ab5537a83203b \
     --hash=sha256:cc33599b549f0c8a248cb72f3bf32d77712de1ff7ee8814312eb6456b42c015f

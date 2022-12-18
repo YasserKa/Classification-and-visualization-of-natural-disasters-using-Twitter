@@ -4,6 +4,10 @@ histogram
 """
 
 
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 import ast
 from enum import Enum
 
@@ -15,7 +19,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Dash, State, dash_table, dcc, html
+from dash import Dash, dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
 
@@ -46,6 +50,7 @@ selected_region_type = DEFAULT_REGION_TYPE.value
 global_histo_selection = {}
 num_tweets_location = 0
 num_tweets_mentioning_sweden = 0
+tsne_object = None
 
 # Number of times reset button got clicked
 # Plotly only provides the number of times a button got clicked, so a global
@@ -388,7 +393,7 @@ def generate_table(checkbox_checked):
         page_size=PAGE_SIZE,
         page_action="custom",
         style_table={
-            "height": "90vh",
+            "height": "45vh",
             "overflowY": "auto",
         },
         style_cell={
@@ -502,6 +507,49 @@ def get_histo(df):
     return histo
 
 
+class TSNE_class(object):
+    def __init__(self, df):
+        # Load the data and create document vectors
+        tfidf = TfidfVectorizer()
+
+        X = tfidf.fit_transform(df["text"])
+
+        self.X_embedded = TSNE(
+            n_components=2, learning_rate="auto", init="random", perplexity=3
+        ).fit_transform(X)
+
+        self.clusters = KMeans(n_clusters=5)
+        self.clusters.fit(X)
+
+
+def get_scatter(selected_points=[]):
+    global tsne_object
+    scatter = go.Figure(
+        data=[
+            go.Scatter(
+                x=tsne_object.X_embedded[:, 0],
+                y=tsne_object.X_embedded[:, 1],
+                mode="markers",
+                marker={
+                    "color": tsne_object.clusters.labels_,
+                },
+                opacity=0.7,
+                selectedpoints=selected_points,
+            )
+        ],
+        layout={
+            "margin": go.layout.Margin(
+                l=5,  # left margin
+                r=5,  # right margin
+                b=0,  # bottom margin
+                t=0,  # top margin
+            ),
+            "clickmode": "event+select",
+        },
+    )
+    return scatter
+
+
 def plot(df, app):
     global df_global
     global intersected_points
@@ -546,6 +594,8 @@ def plot(df, app):
     ]
     selected_columns = ["raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
+    scatter = get_scatter(df.index)
+
     app.layout = html.Div(
         [
             html.Div(
@@ -565,7 +615,11 @@ def plot(df, app):
                                     generate_table(selected_columns),
                                 ],
                                 id="tweets",
-                                style={"height": "96vh"},
+                            ),
+                            dcc.Graph(
+                                id="scatter",
+                                figure=scatter,
+                                style={"width": "50%"},
                             ),
                         ],
                         style={
@@ -663,13 +717,18 @@ def text_anlaysis_button(n_close, text_n_clicks):
     Output("selected_info", "children"),
     [
         Input("histo", "selectedData"),
+        Input("scatter", "selectedData"),
         Input("choropleth", "click_feature"),
         Input("cluster", "click_feature"),
         Input("reset_button", "n_clicks"),
     ],
 )
 def display_selected_data(
-    histo_selection, choropleth_selection, cluster_selection, n_clicks
+    histo_selection,
+    scatter_selection,
+    choropleth_selection,
+    cluster_selection,
+    n_clicks,
 ):
     global df_global
     global selected_data
@@ -691,6 +750,16 @@ def display_selected_data(
                 )
                 selected_data = df_global[df_global.index.isin(selected_indices)]
         global_histo_selection = histo_selection
+    elif scatter_selection is not None:
+        if len(scatter_selection["points"]) > 0:
+            selected_indices = [
+                point["pointIndex"] for point in scatter_selection["points"]
+            ]
+            selected_data = df_global[df_global.index.isin(selected_indices)]
+        # Selection on scatter triggers this function with no selected points,
+        # making this conditional needed
+        else:
+            pass
     elif cluster_selection is not None:
         selected_data = get_cluster_points(cluster_selection)
     elif choropleth_selection is not None:
@@ -709,6 +778,7 @@ def display_selected_data(
 @app.callback(
     Output("cluster_parent", "children"),
     Output("histo", "figure"),
+    Output("scatter", "figure"),
     Output("meta_data", "children"),
     [
         Input("selected_data", "data"),
@@ -721,10 +791,12 @@ def update_map(selected_data):
         selected_data = pd.read_json(selected_data, orient="split")
     else:
         selected_data = df_global
+    selected_points = selected_data.index
 
     return [
         get_cluster(selected_data),
         get_histo(selected_data),
+        get_scatter(selected_points),
         get_meta_data_html(selected_data),
     ]
 
@@ -765,6 +837,7 @@ def update_table(selected_data, page_current, page_size, sort_by, columns_select
 def main(path_to_data):
     global num_tweets_location
     global selected_data
+    global tsne_object
 
     df = pd.read_csv(
         path_to_data[0],
@@ -788,6 +861,7 @@ def main(path_to_data):
     df_user_week_uniq = df_user_week_uniq.round(3)
 
     selected_data = df_user_week_uniq
+    tsne_object = TSNE_class(df_user_week_uniq)
     plot(df_user_week_uniq, app)
     app.run_server(debug=True)
 
