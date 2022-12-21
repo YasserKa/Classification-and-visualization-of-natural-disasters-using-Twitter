@@ -4,11 +4,8 @@ histogram
 """
 
 
-from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
-from sklearn.feature_extraction.text import TfidfVectorizer
-
 import ast
+import itertools
 from enum import Enum
 
 import click
@@ -22,6 +19,10 @@ import plotly.graph_objects as go
 from dash import Dash, dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
+from gensim import corpora, models
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.manifold import TSNE
 
 from flood_detection.data.preprocess import Language, Preprocess
 from flood_detection.predict.text_analysis import get_preprocessed_docs, perform_LDA
@@ -51,12 +52,12 @@ global_histo_selection = {}
 num_tweets_location = 0
 num_tweets_mentioning_sweden = 0
 tsne_object = None
+tfidf_object = None
 
 # Number of times reset button got clicked
 # Plotly only provides the number of times a button got clicked, so a global
 # state is needed to check if a button is clicked
 current_clicks = 0
-modal_close_current_clicks = 0
 text_current_clicks = 0
 
 
@@ -265,7 +266,9 @@ text_analysis_button = html.Div(
     [
         dbc.Button(
             [
-                dbc.Spinner(html.Div(id="loading-output", children="LDA"), size="sm"),
+                dbc.Spinner(
+                    html.Div(id="loading-output", children="Text analysis"), size="sm"
+                ),
             ],
             color="light",
             className="me-1",
@@ -273,28 +276,8 @@ text_analysis_button = html.Div(
         ),
     ],
     style={
-        "position": "absolute",
-        "top": "210px",
-        "right": "10px",
-        "zIndex": "1000",
         "padding": "2px",
     },
-)
-
-modal = html.Div(
-    [
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle("Result for LDA")),
-                dbc.ModalBody("This is the content of the modal", id="modal-body-id"),
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close", className="ms-auto", n_clicks=0)
-                ),
-            ],
-            id="modal",
-            is_open=False,
-        ),
-    ]
 )
 
 
@@ -381,7 +364,7 @@ def get_meta_data_html(data_selected):
 
 
 @app.callback(Output("tweets", "children"), [Input("checklist-inline-input", "value")])
-def generate_table(checkbox_checked):
+def generate_tweets_table(checkbox_checked):
     global df_global
     PAGE_SIZE = 20
 
@@ -389,6 +372,45 @@ def generate_table(checkbox_checked):
         df_global[checkbox_checked].iloc[:PAGE_SIZE].to_dict("records"),
         id="datatable-paging",
         columns=[{"name": i, "id": i} for i in sorted(checkbox_checked)],
+        page_current=0,
+        page_size=PAGE_SIZE,
+        page_action="custom",
+        style_table={
+            "height": "45vh",
+            "overflowY": "auto",
+        },
+        style_cell={
+            "textAlign": "left",
+            "border": "1px solid black",
+        },
+        style_header={
+            "backgroundColor": "white",
+            "fontWeight": "bold",
+            "border": "1px solid black",
+        },
+        style_cell_conditional=[{"if": {"column_id": "Region"}, "textAlign": "left"}],
+        style_data={"whiteSpace": "normal", "height": "auto"},
+        style_data_conditional=[
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "#eee",
+            }
+        ],
+        sort_action="custom",
+        sort_mode="single",
+        sort_by=[],
+    )
+
+
+def generate_tfidf_terms_table(df):
+    PAGE_SIZE = 10
+
+    columns = list(df.columns)
+    columns.remove("term_id")
+    return dash_table.DataTable(
+        df[columns].iloc[:PAGE_SIZE].to_dict("records"),
+        id="datatable-paging",
+        columns=[{"name": i, "id": i} for i in columns],
         page_current=0,
         page_size=PAGE_SIZE,
         page_action="custom",
@@ -430,7 +452,6 @@ def get_map(choropleth, cluster):
             selected_info,
             radio_region_levels,
             reset_button,
-            text_analysis_button,
         ],
     )
 
@@ -522,6 +543,41 @@ class TSNE_class(object):
         self.clusters.fit(X)
 
 
+class TFIDF_class(object):
+    def __init__(self, docs):
+        self.dictionary = corpora.Dictionary(docs)
+        corpus = [self.dictionary.doc2bow(text) for text in docs]
+
+        self.tfidf_model = models.TfidfModel(corpus)
+
+    def get_top_terms(self, docs) -> pd.DataFrame:
+        corpus = [self.dictionary.doc2bow(text) for text in docs]
+        corpus_tfidf = self.tfidf_model[corpus]
+
+        # join tweets text into one list
+        tfidf_list = list(itertools.chain.from_iterable(list(corpus_tfidf)))
+
+        df_tfidf = (
+            pd.DataFrame(tfidf_list, columns=["term_id", "weight"])
+            .groupby("term_id", as_index=False)
+            .agg(
+                weight_mean=pd.NamedAgg(column="weight", aggfunc="mean"),
+                weight_count=pd.NamedAgg(column="term_id", aggfunc="count"),
+            )
+            .sort_values([("weight_count"), ("weight_mean")], ascending=False)
+        )
+        df_tfidf["term"] = df_tfidf["term_id"].apply(lambda x: self.dictionary[x])
+
+        df_tfidf = df_tfidf.rename(
+            columns={
+                "weight_count": "count",
+                "weight_mean": "mean",
+            }
+        )
+
+        return df_tfidf
+
+
 def get_scatter(selected_points=[]):
     global tsne_object
     scatter = go.Figure(
@@ -600,7 +656,6 @@ def plot(df, app):
         [
             html.Div(
                 [
-                    modal,
                     html.Div(
                         [
                             dbc.Checklist(
@@ -612,14 +667,47 @@ def plot(df, app):
                             ),
                             html.Div(
                                 children=[
-                                    generate_table(selected_columns),
+                                    generate_tweets_table(selected_columns),
                                 ],
                                 id="tweets",
                             ),
-                            dcc.Graph(
-                                id="scatter",
-                                figure=scatter,
-                                style={"width": "50%"},
+                            html.Div(
+                                children=[
+                                    dcc.Graph(
+                                        id="scatter",
+                                        figure=scatter,
+                                        style={"width": "50%", "float": "left"},
+                                    ),
+                                    html.Div(
+                                        children=[
+                                            text_analysis_button,
+                                            dbc.Tabs(
+                                                [
+                                                    dbc.Tab(
+                                                        "Press Text analysis button to get the topics",
+                                                        id="lda_topics",
+                                                        label="LDA Topics",
+                                                        label_style={"padding": "5px"},
+                                                        style={
+                                                            "height": "37vh",
+                                                            "overflow-y": "auto",
+                                                        },
+                                                    ),
+                                                    dbc.Tab(
+                                                        "Press Text analysis button to get the terms",
+                                                        id="tf-idf_terms",
+                                                        label="Top TF-IDF terms",
+                                                        label_style={"padding": "5px"},
+                                                        style={
+                                                            "height": "37vh",
+                                                            "overflow-y": "auto",
+                                                        },
+                                                    ),
+                                                ]
+                                            ),
+                                        ]
+                                    ),
+                                ],
                             ),
                         ],
                         style={
@@ -686,22 +774,17 @@ def radio_region_level_update(value):
 
 
 @app.callback(
-    Output("modal", "is_open"),
-    Output("modal-body-id", "children"),
+    Output("lda_topics", "children"),
+    Output("tf-idf_terms", "children"),
     Output("loading-output", "children"),
     [
-        Input("close", "n_clicks"),
         Input("text_analysis_button", "n_clicks"),
     ],
 )
-def text_anlaysis_button(n_close, text_n_clicks):
+def text_anlaysis_button(text_n_clicks):
     global text_current_clicks
-    global modal_close_current_clicks
+    global tfidf_object
     global selected_data
-
-    if n_close is not None and n_close > modal_close_current_clicks:
-        modal_close_current_clicks = n_close
-        return [False, html.Div(len(selected_data)), "LDA"]
 
     if text_n_clicks is not None and text_n_clicks > text_current_clicks:
         text_current_clicks = text_n_clicks
@@ -709,7 +792,12 @@ def text_anlaysis_button(n_close, text_n_clicks):
         df = selected_data.rename(columns={"processed": "text"})
         docs = get_preprocessed_docs(df, Language.ENGLISH)
         results = perform_LDA(docs)
-        return [True, html.Div(str(results)), "LDA"]
+        top_tfidf_df = tfidf_object.get_top_terms(docs)
+        return [
+            html.Div(str(results)),
+            generate_tfidf_terms_table(top_tfidf_df),
+            "Text analysis",
+        ]
 
 
 @app.callback(
@@ -818,6 +906,9 @@ def update_table(selected_data, page_current, page_size, sort_by, columns_select
     else:
         selected_data = df_global
 
+    # Need to round it again, otherwise the decimal numbers contain 0000000001
+    selected_data = selected_data.round(3)
+
     if len(sort_by):
         selected_data = selected_data.sort_values(
             sort_by[0]["column_id"],
@@ -838,6 +929,7 @@ def main(path_to_data):
     global num_tweets_location
     global selected_data
     global tsne_object
+    global tfidf_object
 
     df = pd.read_csv(
         path_to_data[0],
@@ -859,9 +951,13 @@ def main(path_to_data):
         df, per_location=True
     )
     df_user_week_uniq = df_user_week_uniq.round(3)
+    # df_user_week_uniq.style.set_precision(3)
 
     selected_data = df_user_week_uniq
     tsne_object = TSNE_class(df_user_week_uniq)
+    df = df_user_week_uniq.rename(columns={"processed": "text"})
+    docs = get_preprocessed_docs(df, Language.ENGLISH)
+    tfidf_object = TFIDF_class(docs)
     plot(df_user_week_uniq, app)
     app.run_server(debug=True)
 
