@@ -47,11 +47,25 @@ def get_preprocessed_docs(df, language):
     return docs
 
 
-def perform_LDA(docs):
+def perform_LDA(docs, num_topics=1):
+
+    # Add bigrams and trigrams to docs (only ones that appear 20 times or more).
+    bigram = Phrases(docs, min_count=20)
+    for idx in range(len(docs)):
+        for token in bigram[docs[idx]]:
+            if "_" in token:
+                # Token is a bigram, add to document.
+                docs[idx].append(token)
+
     dictionary = corpora.Dictionary(docs)
 
-    # Filter out words that occur less than 20 documents, or more than 50% of the documents.
-    dictionary.filter_extremes(no_below=20, no_above=0.5)
+    # Filter out words that occur less than min(20 documents, 5% in documents), or more than 75% of the documents.
+    not_below_perc = 0.05
+    min_docs = 20
+
+    dictionary.filter_extremes(
+        no_below=min(min_docs, not_below_perc * len(docs)), no_above=0.75
+    )
 
     # Bag-of-words representation of the documents.
     corpus = [dictionary.doc2bow(doc) for doc in docs]
@@ -60,7 +74,6 @@ def perform_LDA(docs):
         return "The corpus isn't enough"
 
     # Set training parameters.
-    num_topics = 1
     chunksize = 2000
     passes = 20
     iterations = 400
@@ -83,10 +96,6 @@ def perform_LDA(docs):
     )
 
     top_topics = model.top_topics(corpus)
-
-    # Average topic coherence is the sum of topic coherences of all topics, divided by the number of topics.
-    avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
-    print("Average topic coherence: %.4f." % avg_topic_coherence)
 
     return top_topics
 

@@ -6,6 +6,7 @@ histogram
 
 import ast
 import itertools
+import math
 from enum import Enum
 
 import click
@@ -59,6 +60,9 @@ tfidf_object = None
 # state is needed to check if a button is clicked
 current_clicks = 0
 text_current_clicks = 0
+
+# Global state that's adjustable by the text input
+num_lda_topics = 2
 
 
 MAX_NUM_META_DATA_LOCATIONS = 5
@@ -277,8 +281,35 @@ text_analysis_button = html.Div(
     ],
     style={
         "padding": "2px",
+        "float": "left",
     },
 )
+
+num_topics_text_input = html.Div(
+    [
+        html.P("# topics", style={"margin": "10px", "float": "left"}),
+        dbc.Input(
+            id="num_topics_input",
+            placeholder="default: 2",
+            type="number",
+            max=10,
+            value=num_lda_topics,
+            style={"width": "200px"},
+        ),
+    ]
+)
+
+
+# The output callback is redundent, but it's required by dash
+@app.callback(Output("num_topics_input", "value"), [Input("num_topics_input", "value")])
+def num_topics_text_input_update(value):
+    global num_lda_topics
+    # Number of topics should be a positive integer
+    if value is None or value < 1:
+        num_lda_topics = ""
+    else:
+        num_lda_topics = math.floor(value)
+    return num_lda_topics
 
 
 def get_meta_data_html(data_selected):
@@ -680,7 +711,13 @@ def plot(df, app):
                                     ),
                                     html.Div(
                                         children=[
-                                            text_analysis_button,
+                                            html.Div(
+                                                [
+                                                    text_analysis_button,
+                                                    num_topics_text_input,
+                                                ],
+                                                style={"display": "inline-flex"},
+                                            ),
                                             dbc.Tabs(
                                                 [
                                                     dbc.Tab(
@@ -785,13 +822,16 @@ def text_anlaysis_button(text_n_clicks):
     global text_current_clicks
     global tfidf_object
     global selected_data
+    global num_lda_topics
 
     if text_n_clicks is not None and text_n_clicks > text_current_clicks:
         text_current_clicks = text_n_clicks
 
         df = selected_data.rename(columns={"processed": "text"})
         docs = get_preprocessed_docs(df, Language.ENGLISH)
-        results = perform_LDA(docs)
+
+        num_topics = 2 if num_lda_topics == "" else num_lda_topics
+        results = perform_LDA(docs, num_topics)
         top_tfidf_df = tfidf_object.get_top_terms(docs)
         return [
             html.Div(str(results)),
