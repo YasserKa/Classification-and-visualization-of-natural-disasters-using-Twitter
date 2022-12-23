@@ -132,22 +132,12 @@ docs = [[token for token in doc.split(" ") if len(token) > 1] for doc in docs]
 # %%
 docs = preprocess.clean_text(
     list(map(lambda x: " ".join(x), docs)),
+    not_needed_words=["flood", "floods", "gävle"],
 )
-docs = list(map(lambda x: x.split(" "), docs))
+# docs = list(map(lambda x: x.split(" "), docs))
 
 # %%
-# import collections
-
-# doc_freq = list(map(lambda x: len(x.split(" ")), docs))
-
-# # print(doc_freq)
-# counter = collections.Counter(doc_freq)
-# print(counter)
-# print(len(list(filter(lambda x: len(x.split(" ")) > 3, docs))))
-docs_ = list(filter(lambda x: len(x.split(" ")) > 4, docs))
-
-# import visidata
-
+docs = list(filter(lambda x: len(x.split(" ")) > 4, docs))
 
 # %%
 
@@ -162,8 +152,24 @@ tfidf = TfidfVectorizer()
 X = tfidf.fit_transform(docs)
 
 X_embedded = TSNE(
-    n_components=2, learning_rate="auto", init="random", perplexity=3
+    n_components=2, learning_rate="auto", init="random", perplexity=30
 ).fit_transform(X)
+
+
+# %%
+
+clustering = DBSCAN(eps=1.5, min_samples=5).fit(X)
+from collections import Counter
+
+# print(X)
+print(Counter(clustering.labels_))
+
+# print(set(clustering.labels_))
+# matplotlib.pyplot.scatter(
+#     X_embedded[:, 0], X_embedded[:, 1], c=clustering.labels_, cmap="Set1", alpha=0.7
+# )
+
+# %%
 
 
 # %%
@@ -173,8 +179,6 @@ from sklearn.cluster import DBSCAN, KMeans
 clusters = KMeans(n_clusters=5)
 clusters.fit(X)
 
-
-# clustering = DBSCAN().fit(X)
 
 matplotlib.pyplot.scatter(
     X_embedded[:, 0], X_embedded[:, 1], c=clusters.labels_, cmap="Set1", alpha=0.7

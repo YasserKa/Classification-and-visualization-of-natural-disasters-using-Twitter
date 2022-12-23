@@ -21,13 +21,12 @@ from dash import Dash, dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_extensions.javascript import arrow_function
 from gensim import corpora, models
-from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 
 from flood_detection.data.preprocess import Language, Preprocess
-from flood_detection.predict.text_analysis import (LDA_model,
-                                                   get_preprocessed_docs)
+from flood_detection.predict.text_analysis import LDA_model, get_preprocessed_docs
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
@@ -604,11 +603,10 @@ class TSNE_class(object):
         X = tfidf.fit_transform(df["text"])
 
         self.X_embedded = TSNE(
-            n_components=2, learning_rate="auto", init="random", perplexity=3
+            n_components=2, learning_rate="auto", init="random", perplexity=5
         ).fit_transform(X)
 
-        self.clusters = KMeans(n_clusters=5)
-        self.clusters.fit(X)
+        self.clusters = DBSCAN(eps=1.2, min_samples=2).fit(X)
 
 
 class TFIDF_class(object):
@@ -656,6 +654,7 @@ def get_scatter(selected_points=[]):
                 mode="markers",
                 marker={
                     "color": tsne_object.clusters.labels_,
+                    "line_width": 1,
                 },
                 opacity=0.7,
                 selectedpoints=selected_points,
@@ -771,7 +770,7 @@ def plot(df, app):
                                                     dbc.Tab(
                                                         tfidf_table,
                                                         id="tf-idf_terms",
-                                                        label="Top TF-IDF terms",
+                                                        label="TF-IDF terms",
                                                         label_style={"padding": "5px"},
                                                         style={
                                                             "height": "37vh",
