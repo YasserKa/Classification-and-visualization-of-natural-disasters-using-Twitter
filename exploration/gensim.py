@@ -40,7 +40,7 @@ df_api = pd.read_csv(path_to_data)
 path_to_data = abspath(cfg.supervisor.processed_flood)
 df_sup = pd.read_csv(path_to_data)
 
-df = df_sup
+df = df_api
 df = df[df["predicted_label"] == 1].reset_index(drop=True).astype({"id": "str"})
 # df = df[df["relevant"] == 1].reset_index(drop=True).astype({"id": "str"})
 
@@ -122,16 +122,18 @@ else:
 
 # docs = list(map(lambda x: preprocess.stem(x), docs))
 
+# Apply lemmatization
 docs = list(map(lambda x: preprocess.lemmatize(x), docs))
 
+# Remove sentences with one term or less
 docs = [[token for token in doc.split(" ") if len(token) > 1] for doc in docs]
 
 
 # %%
 docs = preprocess.clean_text(
-    list(map(lambda x: " ".join(x), docs)), ["flood", "gävle", "gävleborgs", "alberta"]
+    list(map(lambda x: " ".join(x), docs)),
 )
-# docs = list(map(lambda x: x.split(" "), docs))
+docs = list(map(lambda x: x.split(" "), docs))
 
 # %%
 # import collections
@@ -142,24 +144,41 @@ docs = preprocess.clean_text(
 # counter = collections.Counter(doc_freq)
 # print(counter)
 # print(len(list(filter(lambda x: len(x.split(" ")) > 3, docs))))
-docs_ = list(filter(lambda x: len(x.split(" ")) > 3, docs))
+docs_ = list(filter(lambda x: len(x.split(" ")) > 4, docs))
 
-from sklearn.cluster import KMeans
+# import visidata
+
+
+# %%
+
+import matplotlib
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
-from yellowbrick.text import TSNEVisualizer
+from sklearn.manifold import TSNE
 
 # Load the data and create document vectors
 tfidf = TfidfVectorizer()
 
 X = tfidf.fit_transform(docs)
 
+X_embedded = TSNE(
+    n_components=2, learning_rate="auto", init="random", perplexity=3
+).fit_transform(X)
+
+
+# %%
+
+from sklearn.cluster import DBSCAN, KMeans
+
 clusters = KMeans(n_clusters=5)
 clusters.fit(X)
 
-tsne = TSNEVisualizer()
-tsne.fit(X, ["c{}".format(c) for c in clusters.labels_])
-tsne.show()
 
+# clustering = DBSCAN().fit(X)
+
+matplotlib.pyplot.scatter(
+    X_embedded[:, 0], X_embedded[:, 1], c=clusters.labels_, cmap="Set1", alpha=0.7
+)
 
 # %%
 
@@ -173,28 +192,56 @@ for idx in range(len(docs)):
 
 # %%
 # TF-IDF scores
-from collections import defaultdict
+# from collections import defaultdict
 
 from gensim import corpora
-
-# remove words that appear only once
-frequency = defaultdict(int)
-for text in docs:
-    for token in text:
-        frequency[token] += 1
 
 dictionary = corpora.Dictionary(docs)
 corpus = [dictionary.doc2bow(text) for text in docs]
 
 from gensim import models
 
-tfidf = models.TfidfModel(corpus)  # step 1 -- initialize a model
-
+tfidf_model = models.TfidfModel(corpus)  # step 1 -- initialize a model
 
 # %%
-corpus_tfidf = tfidf[corpus]
-for doc in corpus_tfidf:
-    print(doc)
+corpus_tfidf = tfidf_model[corpus]
+
+# for doc in corpus_tfidf:
+#     print(doc)
+
+import itertools
+
+tfidf_list = list(itertools.chain.from_iterable(list(corpus_tfidf)))
+# %%
+
+df_tfidf = (
+    pd.DataFrame(tfidf_list, columns=["term_id", "weight"])
+    .groupby("term_id", as_index=False)
+    .agg(
+        weight_mean=pd.NamedAgg(column="weight", aggfunc="mean"),
+        weight_count=pd.NamedAgg(column="term_id", aggfunc="count"),
+    )
+    .sort_values([("weight_count"), ("weight_mean")], ascending=False)
+)
+df_tfidf["term"] = df_tfidf["term_id"].apply(lambda x: dictionary[x])
+print(df_tfidf)
+# df_tfidf = (
+#     pd.DataFrame(
+#         [
+#             sentence_keywords[0]
+#             for sentence_keywords in extracted_keywords
+#             if len(sentence_keywords) > 0
+#         ],
+#         columns=["keyword", "weight"],
+#     )
+#     .groupby("keyword", as_index=False)
+#     .agg(
+#         weight_mean=pd.NamedAgg(column="weight", aggfunc="mean"),
+#         weight_count=pd.NamedAgg(column="keyword", aggfunc="count"),
+#     )
+#     .sort_values([("weight_count"), ("weight_mean")], ascending=False)
+# )
+
 
 # %%
 lsi_model = models.LsiModel(
@@ -240,9 +287,14 @@ print(df_bert)
 dictionary = corpora.Dictionary(docs)
 
 # Filter out words that occur less than 20 documents, or more than 50% of the documents.
-dictionary.filter_extremes(no_below=20, no_above=0.5)
+not_below_perc = 0.05
+min_docs = 20
 
-# %%
+dictionary.filter_extremes(
+    no_below=min(min_docs, not_below_perc * len(docs)), no_above=0.85
+)
+
+
 # Bag-of-words representation of the documents.
 corpus = [dictionary.doc2bow(doc) for doc in docs]
 # Let’s see how many tokens and documents we have to train on.

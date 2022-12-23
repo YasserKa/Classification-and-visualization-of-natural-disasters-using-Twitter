@@ -26,7 +26,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 
 from flood_detection.data.preprocess import Language, Preprocess
-from flood_detection.predict.text_analysis import get_preprocessed_docs, perform_LDA
+from flood_detection.predict.text_analysis import (LDA_model,
+                                                   get_preprocessed_docs)
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
@@ -59,9 +60,10 @@ tfidf_object = None
 # Plotly only provides the number of times a button got clicked, so a global
 # state is needed to check if a button is clicked
 current_clicks = 0
-text_current_clicks = 0
+text_current_clicks = -1
 
-# Global state that's adjustable by the text input
+lda_model = None
+# Number of topics used on selected tweets
 num_lda_topics = 2
 
 
@@ -79,6 +81,10 @@ data_needed = [
 
 df_global = pd.DataFrame()
 selected_data = pd.DataFrame()
+
+# Used for sorting table
+global_topics_df = pd.DataFrame()
+global_tfidf_df = pd.DataFrame()
 
 # When region level changes, this function gets triggered, return
 # previous intersected_points
@@ -290,9 +296,8 @@ num_topics_text_input = html.Div(
         html.P("# topics", style={"margin": "10px", "float": "left"}),
         dbc.Input(
             id="num_topics_input",
-            placeholder="default: 2",
             type="number",
-            max=10,
+            placeholder=f"default: {num_lda_topics}",
             value=num_lda_topics,
             style={"width": "200px"},
         ),
@@ -304,6 +309,7 @@ num_topics_text_input = html.Div(
 @app.callback(Output("num_topics_input", "value"), [Input("num_topics_input", "value")])
 def num_topics_text_input_update(value):
     global num_lda_topics
+
     # Number of topics should be a positive integer
     if value is None or value < 1:
         num_lda_topics = ""
@@ -434,19 +440,50 @@ def generate_tweets_table(checkbox_checked):
 
 
 def generate_tfidf_terms_table(df):
-    PAGE_SIZE = 10
 
     columns = list(df.columns)
     columns.remove("term_id")
     return dash_table.DataTable(
-        df[columns].iloc[:PAGE_SIZE].to_dict("records"),
-        id="datatable-paging",
+        df[columns].to_dict("records"),
+        id="datatable-paging-tfidf",
         columns=[{"name": i, "id": i} for i in columns],
-        page_current=0,
-        page_size=PAGE_SIZE,
-        page_action="custom",
         style_table={
-            "height": "45vh",
+            "height": "35vh",
+            "overflowY": "auto",
+        },
+        style_cell={
+            "textAlign": "left",
+            "border": "1px solid black",
+        },
+        style_header={
+            "backgroundColor": "white",
+            "fontWeight": "bold",
+            "border": "1px solid black",
+        },
+        style_cell_conditional=[{"if": {"column_id": "Region"}, "textAlign": "left"}],
+        style_data={"whiteSpace": "normal", "height": "auto"},
+        style_data_conditional=[
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "#eee",
+            }
+        ],
+        sort_action="custom",
+        sort_mode="single",
+        sort_by=[],
+    )
+
+
+def generate_topics_table(df):
+
+    columns = list(df.columns)
+    columns.remove("term_id")
+    return dash_table.DataTable(
+        df[columns].to_dict("records"),
+        id="datatable-paging-topics",
+        columns=[{"name": i, "id": i} for i in columns],
+        style_table={
+            "height": "35vh",
             "overflowY": "auto",
         },
         style_cell={
@@ -682,6 +719,7 @@ def plot(df, app):
     selected_columns = ["raw", "translated", "processed"]
     options = [{"label": column, "value": column} for column in wanted_columns]
     scatter = get_scatter(df.index)
+    topics_table, tfidf_table, _ = text_anlaysis_button(0)
 
     app.layout = html.Div(
         [
@@ -721,7 +759,7 @@ def plot(df, app):
                                             dbc.Tabs(
                                                 [
                                                     dbc.Tab(
-                                                        "Press Text analysis button to get the topics",
+                                                        topics_table,
                                                         id="lda_topics",
                                                         label="LDA Topics",
                                                         label_style={"padding": "5px"},
@@ -731,7 +769,7 @@ def plot(df, app):
                                                         },
                                                     ),
                                                     dbc.Tab(
-                                                        "Press Text analysis button to get the terms",
+                                                        tfidf_table,
                                                         id="tf-idf_terms",
                                                         label="Top TF-IDF terms",
                                                         label_style={"padding": "5px"},
@@ -823,6 +861,8 @@ def text_anlaysis_button(text_n_clicks):
     global tfidf_object
     global selected_data
     global num_lda_topics
+    global global_topics_df
+    global global_tfidf_df
 
     if text_n_clicks is not None and text_n_clicks > text_current_clicks:
         text_current_clicks = text_n_clicks
@@ -830,11 +870,19 @@ def text_anlaysis_button(text_n_clicks):
         df = selected_data.rename(columns={"processed": "text"})
         docs = get_preprocessed_docs(df, Language.ENGLISH)
 
+        df_global_ = df_global.rename(columns={"processed": "text"})
+        all_docs = get_preprocessed_docs(df_global_, Language.ENGLISH)
+
         num_topics = 2 if num_lda_topics == "" else num_lda_topics
-        results = perform_LDA(docs, num_topics)
+
+        lda_model = LDA_model(all_docs, num_topics)
+        topics_df = lda_model.get_topics(docs)
+        global_topics_df = topics_df
+
         top_tfidf_df = tfidf_object.get_top_terms(docs)
+        global_tfidf_df = top_tfidf_df
         return [
-            html.Div(str(results)),
+            generate_topics_table(topics_df),
             generate_tfidf_terms_table(top_tfidf_df),
             "Text analysis",
         ]
@@ -963,14 +1011,61 @@ def update_table(selected_data, page_current, page_size, sort_by, columns_select
     )
 
 
+@app.callback(
+    Output("datatable-paging-topics", "data"),
+    [
+        Input("datatable-paging-topics", "sort_by"),
+    ],
+)
+def update_topics_table(sort_by):
+    global global_topics_df
+    # Need to round it again, otherwise the decimal numbers contain 0000000001
+
+    if len(sort_by):
+        df = global_topics_df.sort_values(
+            sort_by[0]["column_id"],
+            ascending=sort_by[0]["direction"] == "asc",
+            inplace=False,
+        )
+    else:
+        df = global_topics_df
+
+    return df.to_dict("records")
+
+
+@app.callback(
+    Output("datatable-paging-tfidf", "data"),
+    [
+        Input("datatable-paging-tfidf", "sort_by"),
+    ],
+)
+def update_tfidf_table(sort_by):
+    global global_tfidf_df
+    # Need to round it again, otherwise the decimal numbers contain 0000000001
+
+    if len(sort_by):
+        df = global_tfidf_df.sort_values(
+            sort_by[0]["column_id"],
+            ascending=sort_by[0]["direction"] == "asc",
+            inplace=False,
+        )
+    else:
+        df = global_tfidf_df
+
+    return df.to_dict("records")
+
+
 @click.command()
 @click.argument("path_to_data", nargs=-1)
 def main(path_to_data):
     global num_tweets_location
     global selected_data
     global tsne_object
+    global lda_model
+    global num_lda_topics
     global tfidf_object
 
+    print("Loading and processing data")
     df = pd.read_csv(
         path_to_data[0],
         converters={
@@ -991,13 +1086,18 @@ def main(path_to_data):
         df, per_location=True
     )
     df_user_week_uniq = df_user_week_uniq.round(3)
-    # df_user_week_uniq.style.set_precision(3)
-
     selected_data = df_user_week_uniq
+
+    print("Doing text analysis")
+
+    docs = get_preprocessed_docs(df_user_week_uniq, Language.ENGLISH)
+
     tsne_object = TSNE_class(df_user_week_uniq)
     df = df_user_week_uniq.rename(columns={"processed": "text"})
     docs = get_preprocessed_docs(df, Language.ENGLISH)
     tfidf_object = TFIDF_class(docs)
+
+    print("Plotting")
     plot(df_user_week_uniq, app)
     app.run_server(debug=True)
 
