@@ -30,6 +30,7 @@ from flood_detection.predict.text_analysis import LDA_model, get_preprocessed_do
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
+# WARN: This script is highly unfactorized
 
 app = Dash(external_stylesheets=[dbc.themes.YETI], prevent_initial_callbacks=True)
 
@@ -59,12 +60,16 @@ tfidf_object = None
 # Plotly only provides the number of times a button got clicked, so a global
 # state is needed to check if a button is clicked
 current_clicks = 0
+clustering_current_clicks = 0
 text_current_clicks = -1
 
 lda_model = None
 # Number of topics used on selected tweets
 num_lda_topics = 2
 
+# params for DBSCAN clustering in TSNE updates by text input
+eps = 1.2
+min_samples = 2
 
 MAX_NUM_META_DATA_LOCATIONS = 5
 
@@ -317,6 +322,80 @@ def num_topics_text_input_update(value):
     return num_lda_topics
 
 
+eps_text_input = html.Div(
+    [
+        html.P("eps", style={"margin": "10px", "float": "left"}),
+        dbc.Input(
+            id="eps_text_input",
+            type="number",
+            placeholder=f"default: {eps}",
+            value=eps,
+            style={"width": "75px"},
+        ),
+    ]
+)
+
+
+# The output callback is redundent, but it's required by dash
+@app.callback(Output("eps_text_input", "value"), [Input("eps_text_input", "value")])
+def eps_text_input_update(value):
+    global eps
+
+    # Number of topics should be a positive integer
+    if value is None or value < 1:
+        eps = ""
+    else:
+        eps = value
+
+    return eps
+
+
+min_samples_text_input = html.Div(
+    [
+        html.P("min sample", style={"margin": "10px", "float": "left"}),
+        dbc.Input(
+            id="min_samples_text_input",
+            type="number",
+            placeholder=f"default: {min_samples}",
+            value=min_samples,
+            style={"width": "75px"},
+        ),
+    ]
+)
+
+
+@app.callback(
+    Output("min_samples_text_input", "value"),
+    [Input("min_samples_text_input", "value")],
+)
+def min_samples_text_input_update(value):
+    global min_samples
+
+    # Number of topics should be a positive integer
+    if value is None or value < 1:
+        min_samples = ""
+    else:
+        min_samples = value
+
+    return min_samples
+
+
+clustering_button = html.Div(
+    [
+        dbc.Button(
+            "DBSCAN",
+            color="light",
+            className="me-1",
+            id="clustering_button",
+        ),
+    ],
+    style={
+        "padding": "2px",
+        "float": "left",
+    },
+)
+
+
 def get_meta_data_html(data_selected):
     global num_tweets_location
     global num_tweets_mentioning_sweden
@@ -442,6 +521,8 @@ def generate_tfidf_terms_table(df):
 
     columns = list(df.columns)
     columns.remove("term_id")
+    # place term at the start of the table
+    columns.insert(0, columns.pop(columns.index("term")))
     return dash_table.DataTable(
         df[columns].to_dict("records"),
         id="datatable-paging-tfidf",
@@ -477,6 +558,8 @@ def generate_topics_table(df):
 
     columns = list(df.columns)
     columns.remove("term_id")
+    # place term at the start of the table
+    columns.insert(0, columns.pop(columns.index("term")))
     return dash_table.DataTable(
         df[columns].to_dict("records"),
         id="datatable-paging-topics",
@@ -600,13 +683,17 @@ class TSNE_class(object):
         # Load the data and create document vectors
         tfidf = TfidfVectorizer()
 
-        X = tfidf.fit_transform(df["text"])
+        self.X = tfidf.fit_transform(df["text"])
 
         self.X_embedded = TSNE(
             n_components=2, learning_rate="auto", init="random", perplexity=5
-        ).fit_transform(X)
+        ).fit_transform(self.X)
+        self.update_clustering()
 
-        self.clusters = DBSCAN(eps=1.2, min_samples=2).fit(X)
+    def update_clustering(self):
+        global eps
+        global min_samples
+        self.clusters = DBSCAN(eps=eps, min_samples=min_samples).fit(self.X)
 
 
 class TFIDF_class(object):
@@ -741,10 +828,27 @@ def plot(df, app):
                             ),
                             html.Div(
                                 children=[
-                                    dcc.Graph(
-                                        id="scatter",
-                                        figure=scatter,
-                                        style={"width": "50%", "float": "left"},
+                                    html.Div(
+                                        children=[
+                                            html.Div(
+                                                [
+                                                    clustering_button,
+                                                    eps_text_input,
+                                                    min_samples_text_input,
+                                                ],
+                                                style={"display": "inline-flex"},
+                                            ),
+                                            dcc.Graph(
+                                                id="scatter",
+                                                figure=scatter,
+                                                style={
+                                                    "float": "left",
+                                                    "width": "100%",
+                                                    "height": "90%",
+                                                },
+                                            ),
+                                        ],
+                                        style={"width": "50%"},
                                     ),
                                     html.Div(
                                         children=[
@@ -782,6 +886,7 @@ def plot(df, app):
                                         ]
                                     ),
                                 ],
+                                style={"display": "inline-flex"},
                             ),
                         ],
                         style={
@@ -957,10 +1062,16 @@ def display_selected_data(
     Output("meta_data", "children"),
     [
         Input("selected_data", "data"),
+        Input("clustering_button", "n_clicks"),
     ],
 )
-def update_map(selected_data):
+def update_map(selected_data, n_clicks):
     global df_global
+    global clustering_current_clicks
+
+    if n_clicks is not None and n_clicks > clustering_current_clicks:
+        tsne_object.update_clustering()
+        clustering_current_clicks = n_clicks
 
     if selected_data is not None:
         selected_data = pd.read_json(selected_data, orient="split")

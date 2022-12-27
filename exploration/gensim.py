@@ -143,6 +143,7 @@ docs = list(filter(lambda x: len(x.split(" ")) > 4, docs))
 
 import matplotlib
 import numpy as np
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 
@@ -158,21 +159,19 @@ X_embedded = TSNE(
 
 # %%
 
-clustering = DBSCAN(eps=1.5, min_samples=5).fit(X)
+clustering = DBSCAN(eps=0.7, min_samples=3, metric="cosine").fit(X)
 from collections import Counter
 
 # print(X)
 print(Counter(clustering.labels_))
+# clustering = DBSCAN(eps=1.1, min_samples=2).fit(X)
 
-# print(set(clustering.labels_))
-# matplotlib.pyplot.scatter(
-#     X_embedded[:, 0], X_embedded[:, 1], c=clustering.labels_, cmap="Set1", alpha=0.7
-# )
-
-# %%
-
+matplotlib.pyplot.scatter(
+    X_embedded[:, 0], X_embedded[:, 1], c=clustering.labels_, cmap="Set1", alpha=0.7
+)
 
 # %%
+
 
 from sklearn.cluster import DBSCAN, KMeans
 
