@@ -1,22 +1,78 @@
 % vim: spell spelllang=en_gb
 \section{Literature Review}
 
-Appeal of social media because of gigantic volume and it being public
-The challenges of extracting information from raw data that often has grammatical road some problems
+The massive and accessible volume of data that social media produces has attracted the attention of
+many researchers as a valuable data source for their research topic; however, collecting and
+processing data of this nature pose many challenges to extracting useful information. This section
+mentions what other researchers focusing on disaster management topics did to address these
+challenges while using Twitter; it also discusses the different approaches used for identifying
+relevant tweets, extracting geographical location from them, visualizing the results, and applying
+text analysis.
 
-Some of this research has have made the focus the use the social media to facilitate disaster management full-size haven't prediction event identification visualisation identification of victims
+\subsection{Data Collection} Twitter's \ac{API} enables developers to retrieve historical tweets using
+queries that are made of operators to match a variety of tweet attributes, such as a specific
+keyword, having a geotag provided by the user who created the tweet, and the language classified by
+Twitter. Users generate around 500-700 million tweets a day \cite{inproceedings}, making it
+necessary to limit the number of tweets to fetch using the \ac{API} to reduce computational power and
+downtime. \citeauth{fengExtractionPluvialFlood2018} only fetches geotagged tweets and then filters
+necessary
+them using 45 keywords in 7 languages; this approach filters out a big chunk of relevant tweets
+since 1\% of tweets are geotagged \cite{middletonRealTimeCrisisMapping2014}. A better approach is to
+fetch tweets using keywords related to the topic of interest in different languages.
+\citeauth{debruijnGlobalDatabaseHistoric2019b} uses over 40 keywords associated with floods in 11
+major languages in the query to fetch tweets.
 
-This literature review discuss for challenges such as data collection location extraction flood detection and visualisation. Some of these literature focus on 1 of these challenges while others  focus more than one of these
+Most classification tasks require the tweets to be labelled to train a classifier. A straightforward
+approach is to manually label a sample of the tweets
+\cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
+\citeauth{petersenIdentificationExplorationExtreme2021} use Crisilext6
+\cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsource labelled tweets, for training their
+classifiers that get evaluated on 88 million unlabelled tweets containing flood-related terms
+\cite{DVN/T3ZFMR_2019}. \citeauth{fengExtractionPluvialFlood2018} automatically label the tweets
+by checking if there is rainfall during the provided time and city location by using a weather
+\ac{API}\footnote{https://www.wunderground.com/weather/api/d/docs}; if there's a rainfall, the tweet is
+labelled positive, the negative label otherwise
 
-\subsection{Data Collection}
-- Data collection
-  - labeled, unlabaled, autolabeling (page 8 of petersen)
-  - Using twitter api, streaming, 3rd party, images
-  - Keywords used (multinlingual)
-  - Data processing
-    - spam, filtering
-- What problems they address
-  - Early detection of events via monitiring a stream
+In addition to using textual data, some researchers use other types of data to enhance their
+pipelines. Some tweets contain media attachments, such as images and videos that are potential
+visual information for the concerned research topic \cite{alamFloodDetectionTwitter2020}\cite{saidFloodsDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020}; search engines are
+another resourceful source for images as well \cite{fengExtractionPluvialFlood2018}. When it comes
+to flooding events, hydrological information can be a valuable source of information that can be
+extracted from a global precipitation dataset based on tweets' time stamps and location in the text
+\cite{debruijnImprovingClassificationFlood2020}.
+\citeauth{barkerDevelopmentNationalscaleRealtime2019}
+use Environment Agency flood-monitoring \ac{API}\footnote{https://environment.data.gov.uk/flood-monitoring/doc/reference\#flood-warnings} to get
+river gauge levels and flood warnings to identify at-risk flooding areas.
+
+Processing text is a crucial part of any \ac{NLP} pipeline to train an effective classifier.
+Research requires that the corpus is in multiple languages, so translating the text to one language
+(most likely English) is needed if the classifier can not handle multilingual data
+\cite{singhEventClassificationLocation2019}. One of the most common text-processing tasks is
+removing unnecessary terms such as stopwords, Uniform Resource Locator URLs, numbers, and
+punctuation marks. User mentions in tweets don't provide useful information, so pipelines often
+remove or replace them with a generic term such as
+``@user''\cite{debruijnImprovingClassificationFlood2020}. The location of the flood event is an
+important piece of information that is extracted from a term in the tweet, making it a potential
+target that includes biases in the dataset by overusing it;
+\citeauth{debruijnImprovingClassificationFlood2020} replaces these terms by the country name that
+the location is located in; on the other hand,
+\citeauth{petersenIdentificationExplorationExtreme2021} replace the terms by the word ``place''
+if they get mentioned more than 0.5\% of the size of the data set. Another way to improve the
+performance of the classifier is to group the terms by converting them to lower-case and transforming
+them to their lexeme or word stem by lemmatisation or stemming respectively.
+
+Some tweets are noisy or redundant, making them a target for filtering out. Retweets are identical
+to other tweets without additional context making them unneeded. Spam bots generate similar tweets
+for malicious reasons, such as spreading false content to manipulate the public; other reasons could
+be for utility reasons, such as creating a feed for users to check updates. These tweets introduce
+noise to the dataset that gets reduced by removing duplicate tweets.
+\citeauth{debruijnGlobalDatabaseHistoric2019b} only considers one tweet from each user in the last
+14 days mentioning a specific region; they also remove tweets containing more than five consecutive
+words that match with those in another tweet among the previous 100 talking about a location.
+\citeauth{singhEventClassificationLocation2019} approaches this problem by only extracting tweets
+created from mobile phones and only considers tweets from users who have $\text{followers} /
+\text{following} < 1$.
+
 \subsection{Text Classification}
 - Flood detection
   - transformers
@@ -28,8 +84,7 @@ This literature review discuss for challenges such as data collection location e
   - methods
     - markov chains using data from user profile and historical tweets
   - twitter info (geotag, entities, etc.)
-  - 1% of tweets are geotaged    [cite:@middletonRealTimeCrisisMapping2014]
+  - 1\% of tweets are geotaged    [cite:@middletonRealTimeCrisisMapping2014]
 \subsection{Visualization}
 
-Closing paragraph
-- The location of my solution in the context of the existing literature
+\subsection{Text analysis}

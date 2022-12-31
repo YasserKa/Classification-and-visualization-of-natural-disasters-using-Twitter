@@ -3,8 +3,7 @@
 \usepackage[toc,page]{appendix} 
 % For hyperlinks
 \usepackage{hyperref}
-
- \hypersetup{
+\hypersetup{
     colorlinks=true,
     linkcolor=blue,
     citecolor=black,        % color of links to bibliography
@@ -12,7 +11,9 @@
     urlcolor=blue,
 }
 \usepackage[printonlyused,withpage]{acronym}
+\usepackage{amsmath}
 \usepackage{geometry}
+\newcommand{\citeauth}[1] {\citeauthor{#1} \cite{#1}}
 \usepackage{scrlayer} % Needed for left blank page
 \emergencystretch=1em % Resolves bibliography overflow
 
@@ -38,7 +39,7 @@
 \addbibresource{bibliography.bib}
  
 \begin{document}
- \pagenumbering{roman}
+\pagenumbering{roman}
 
 \thispagestyle{empty}
 \section*{Title page}
@@ -92,7 +93,6 @@ abstract page.
 \newpage
 
 \printbibliography[heading=bibintoc, title={References}]
-
 \newpage
 
 \input{sections/appendix}

@@ -16,11 +16,11 @@ media platforms such as Twitter provide individuals with a public space to share
 effectively creating another potential source of data.
 
 Researchers started harnessing this new wealth of information to aid the disaster management
-procedure.  Twitter's stream \ac{API} makes it possible to create a monitoring system for early event
+procedure.  Twitter streaming \ac{API} makes it possible to create a monitoring system for early event
 detection on a global \cite{debruijnGlobalDatabaseHistoric2019b} and local
 \cite{barkerDevelopmentNationalscaleRealtime2019} scales. Another use for it would be identifying
 victims in real-time, locating their physical location, and communicating the information to rescue
-teams \cite{singhEventClassificationLocation2019c}. After the threat subsides, emergency
+teams \cite{singhEventClassificationLocation2019}. After the threat subsides, emergency
 managers can use relevant tweets to assess the impact and plan the recovery phase
 \cite{barkerDevelopmentNationalscaleRealtime2019}. To prepare for future floods, authoritative
 entities can make informed actions by analysing historical data and determining the locations
@@ -28,12 +28,20 @@ suffering from recurrent calamities. This newly acquired knowledge can augment w
 systems' pipelines improving their accuracies such as \ac{SMHI}, a Swedish expert authority with a
 global perspective and a vital task in predicting changes in weather, water, and climate \cite{SMHI2021}.
 
+This thesis project uses Swedish tweets to extract relevant knowledge about flood events in Sweden
+with the focus on answering the following questions:
+\begin{enumerate}
+  \item What methods can be used to classify Swedish tweets related to flood events?
+  \item How to extract the locations mentioned in the tweets?
+  \item What visualizations can be used to represent the results?
+  \item What insights can be extracted by using text analysis on the tweets?
+\end{enumerate}
 
 This thesis project is a part of a research project, AI for Climate Adaptation
 \cite{nesetAI4ClimateAdaptation} at \ac{LiU} in collaboration with the \ac{SMHI}. It implements a
 pipeline that provides a visual representation of tweets related to flood events in Sweden. First,
 relevant tweets are pulled, processed, and classified from the Twitter API using data mining
 techniques. Second, physical locations are extracted from tweets mentioning flood events employing
-\ac{NER} and gazetteers. Finally, the identified locations with relevant information from tweets are
-presented on a spatio-temporal visualization. For verification purposes, the pipeline is applied on
-a week worth of tweets after past flood events.
+\ac{NER} and gazetteers. Finally, the results are presented on a spatio-temporal visualization, and
+text analysis techniques are done on the tweets. For verification purposes, the pipeline is applied on a
+week worth of tweets after past flood events.
