@@ -26,11 +26,6 @@ class Region_level(Enum):
 
 DEFAULT_REGION_TYPE = Region_level.COUNTIES
 
-ZOOM_CONFIG = dict(
-    center=[63.333112, 16.007205],
-    zoom=4,
-)
-
 selected_region_type = DEFAULT_REGION_TYPE.value
 selected_geo = None
 
@@ -48,8 +43,8 @@ def get_from_raw_loc(row):
 
 def get_smallest_loc_info(df):
     # Create a row for each location
-    df["locations_info"] = df["loc_smallest_param"].apply(
-        lambda x: [x[key] for key in data_needed]
+    df["locations_info"] = df["loc_smalled_bounding_box"].apply(
+        lambda x: list(x.values())
     )
 
     df = df[df["locations_info"].str.len() > 0]
@@ -86,20 +81,14 @@ data_needed = [
 ]
 
 df_global = pd.read_csv(
-    "./data/processed_geo/twitter_api_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv",
-    converters={
-        "locations": ast.literal_eval,
-        "swedish_locations": ast.literal_eval,
-    },
+    "./data/processed_geo/supervisor_annotated_tweets.csv",
+    converters={"locations": ast.literal_eval},
 )
 
-
-df_global["loc_smallest_param"] = df_global["swedish_locations"].apply(
+df_global["locations_info"] = df_global["locations"].apply(get_from_raw_loc)
+df_global["loc_smalled_bounding_box"] = df_global["locations_info"].apply(
     get_location_with_lowest_parameter
 )
-df_global = df_global[df_global["loc_smallest_param"].str.len() > 0].reset_index()
-
-
 df_global = get_smallest_loc_info(df_global)
 
 preprocess = Preprocess()
@@ -183,7 +172,7 @@ with open(selected_region_type, "r") as file:
 def get_choropleth():
     return dl.GeoJSON(
         url=selected_region_type,
-        zoomToBounds=False,  # when true, zooms to bounds when data changes (e.g. on load)
+        zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
         zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
         hoverStyle=arrow_function(dict(weight=5, color="#666", dashArray="")),
         id="choropleth",
@@ -223,43 +212,21 @@ radio_region_levels = html.Div(
     style={"position": "absolute", "top": "60px", "right": "10px", "zIndex": "1000"},
 )
 
-# resets zoom and selection
-reset_button = html.Div(
-    [
-        dbc.Button(
-            "Reset",
-            outline=True,
-            color="secondary",
-            className="me-1",
-            id="reset_button",
-        ),
-    ],
-    style={"position": "absolute", "top": "130px", "right": "10px", "zIndex": "1000"},
-)
-
-
-def get_map(choropleth, cluster):
-    return dl.Map(
-        **ZOOM_CONFIG,
-        children=[
-            dl.TileLayer(),
-            html.Div([choropleth], id="choropleth_parent"),
-            html.Div([cluster], id="cluster_parent"),
-            hover_info,
-            selected_info,
-            radio_region_levels,
-            reset_button,
-        ],
-    )
-
-
 # Create app.
 app = Dash(prevent_initial_callbacks=True)
-
-
-map = get_map(choropleth, cluster)
 app.layout = html.Div(
-    [map],
+    [
+        dl.Map(
+            children=[
+                dl.TileLayer(),
+                html.Div([choropleth], id="choropleth_parent"),
+                html.Div([cluster], id="cluster_parent"),
+                hover_info,
+                selected_info,
+                radio_region_levels,
+            ]
+        )
+    ],
     style={"width": "100%", "height": "50vh", "margin": "auto", "display": "block"},
     id="map",
 )
@@ -282,52 +249,14 @@ def radio_region_level_update(value):
     return get_choropleth()
 
 
-def get_cluster_points(cluster_point):
-    global df_global
-    coord = cluster_point["geometry"]["coordinates"]
-    if not cluster_point["properties"]["cluster"]:
-        return df_global[
-            (df_global["lon"] == coord[0]) & (df_global["lat"] == coord[1])
-        ]
-    cluster_size = cluster_point["properties"]["point_count"]
-
-    df_global["distance"] = (df_global["lon"] - coord[0]) ** 2 + (
-        df_global["lat"] - coord[1]
-    ) ** 2
-
-    return df_global.sort_values(by=["distance"]).iloc[:cluster_size]
-
-
-@app.callback(
-    Output("map", "children"),
-    [
-        Input("reset_button", "n_clicks"),
-    ],
-)
-def reset_button_click():
-    global df_global
-    return [get_map(get_choropleth(), get_cluster(df_global))]
-
-
 @app.callback(
     Output("cluster_parent", "children"),
     Output("selected_info", "children"),
-    [
-        Input("choropleth", "click_feature"),
-        Input("cluster", "click_feature"),
-    ],
+    [Input("choropleth", "click_feature")],
 )
-def choropleth_click(choropleth_selection, cluster_selection):
-    if cluster_selection is not None:
-        intersected_points = get_cluster_points(cluster_selection)
-    elif choropleth_selection is not None:
-        intersected_points = get_intersected_points(choropleth_selection)
-    else:
-        raise Exception("No points got selected")
-    return [
-        get_cluster(intersected_points),
-        get_selected_region_info(choropleth_selection),
-    ]
+def choropleth_click(feature):
+    intersected_points = get_intersected_points(feature)
+    return [get_cluster(intersected_points), get_selected_region_info(feature)]
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from flood_detection.data.preprocess import Preprocess
 
 
+# TODO: add one for Swedish
 def test_clean_text():
     text = "CaPitaL, words https://example.com @this #that \n 1923 something?"
     expected_text = "capital words that something"

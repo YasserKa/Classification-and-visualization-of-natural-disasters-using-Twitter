@@ -770,6 +770,8 @@ joblib==1.2.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:e1cee4a79e4af22881164f218d4311f60074197fb707e082e803b61f6d137018
 jsbeautifier==1.14.7 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:77993254db1ff6f84eb6e1d75e3b6b72cba2ef20813a585b2d81e8e5e3c713c6
+keybert[gensim]==0.7.0 ; python_version >= "3.10" and python_version < "3.11" \
+    --hash=sha256:b5003d10a5bfa1f7db3cb86e04f33b59939ae09095c093228713bb08499f4555
 kiwisolver==1.4.4 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:02f79693ec433cb4b5f51694e8477ae83b3205768a6fb48ffba60549080e295b \
     --hash=sha256:03baab2d6b4a54ddbb43bba1a3a2d1627e82d205c5cf8f4c924dc49284b87166 \
