@@ -22,27 +22,18 @@ fetch tweets using keywords related to the topic of interest in different langua
 \citeauth{debruijnGlobalDatabaseHistoric2019b} uses over 40 keywords associated with floods in 11
 major languages in the query to fetch tweets.
 
-Most classification tasks require the tweets to be labelled to train a classifier. A straightforward
-approach is to manually label a sample of the tweets
-\cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
-\citeauth{petersenIdentificationExplorationExtreme2021} use Crisilext6
-\cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsource labelled tweets, for training their
-classifiers that get evaluated on 88 million unlabelled tweets containing flood-related terms
-\cite{DVN/T3ZFMR_2019}. \citeauth{fengExtractionPluvialFlood2018} automatically label the tweets
-by checking if there is rainfall during the provided time and city location by using a weather
-\ac{API}\footnote{https://www.wunderground.com/weather/api/d/docs}; if there's a rainfall, the tweet is
-labelled positive, the negative label otherwise
-
 In addition to using textual data, some researchers use other types of data to enhance their
 pipelines. Some tweets contain media attachments, such as images and videos that are potential
-visual information for the concerned research topic \cite{alamFloodDetectionTwitter2020}\cite{saidFloodsDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020}; search engines are
-another resourceful source for images as well \cite{fengExtractionPluvialFlood2018}. When it comes
-to flooding events, hydrological information can be a valuable source of information that can be
-extracted from a global precipitation dataset based on tweets' time stamps and location in the text
+visual information for the concerned research topic
+\cite{alamFloodDetectionTwitter2020}\cite{saidFloodsDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020};
+search engines are another resourceful source for images as well
+\cite{fengExtractionPluvialFlood2018}. When it comes to flooding events, hydrological information
+can be a valuable source of information that can be extracted from a global precipitation dataset
+based on tweets' time stamps and location in the text
 \cite{debruijnImprovingClassificationFlood2020}.
-\citeauth{barkerDevelopmentNationalscaleRealtime2019}
-use Environment Agency flood-monitoring \ac{API}\footnote{https://environment.data.gov.uk/flood-monitoring/doc/reference\#flood-warnings} to get
-river gauge levels and flood warnings to identify at-risk flooding areas.
+\citeauth{barkerDevelopmentNationalscaleRealtime2019} use Environment Agency flood-monitoring
+\ac{API}\footnote{https://environment.data.gov.uk/flood-monitoring/doc/reference\#flood-warnings} to
+get river gauge levels and flood warnings to identify at-risk flooding areas.
 
 Processing text is a crucial part of any \ac{NLP} pipeline to train an effective classifier.
 Research requires that the corpus is in multiple languages, so translating the text to one language
@@ -56,10 +47,10 @@ important piece of information that is extracted from a term in the tweet, makin
 target that includes biases in the dataset by overusing it;
 \citeauth{debruijnImprovingClassificationFlood2020} replaces these terms by the country name that
 the location is located in; on the other hand,
-\citeauth{petersenIdentificationExplorationExtreme2021} replace the terms by the word ``place''
-if they get mentioned more than 0.5\% of the size of the data set. Another way to improve the
-performance of the classifier is to group the terms by converting them to lower-case and transforming
-them to their lexeme or word stem by lemmatisation or stemming respectively.
+\citeauth{petersenIdentificationExplorationExtreme2021} replace the terms by the word ``place'' if
+they get mentioned more than 0.5\% of the size of the data set. Another way to improve the
+performance of the classifier is to group the terms by converting them to lower-case and
+transforming them to their lexeme or word stem by lemmatisation or stemming respectively.
 
 Some tweets are noisy or redundant, making them a target for filtering out. Retweets are identical
 to other tweets without additional context making them unneeded. Spam bots generate similar tweets
@@ -74,10 +65,69 @@ created from mobile phones and only considers tweets from users who have $\text{
 \text{following} < 1$.
 
 \subsection{Text Classification}
-- Flood detection
-  - transformers
-  - CNN
-  - word embeding
+Identifying disaster events using social media requires a classifier to determine the relevant data.
+Textual data containing terms related to a disaster doesn't mean that it discusses a disastrous
+event since words such as ``flood'' can be used figuratively in sentences (e.g., a flood of joy). A
+binary classifier labelling the data with ``on-topic'' and ``off-topic'' labels is needed to filter
+out irrelevant content.
+
+Most classifiers use supervised \ac{ML} algorithms requiring labeled data for training. A
+straightforward approach is to manually label a sample of the tweets
+\cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
+\citeauth{petersenIdentificationExplorationExtreme2021} use Crisilext6
+\cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsource labelled tweets, for training their
+classifiers that get evaluated on 88 million unlabelled tweets containing flood-related terms
+\cite{DVN/T3ZFMR_2019}. \citeauth{fengExtractionPluvialFlood2018} automatically label the tweets by
+checking if there is rainfall during the provided time and city location by using a weather
+\ac{API}\footnote{https://www.wunderground.com/weather/api/d/docs}; if there's a rainfall, the tweet
+is labelled positive, negative otherwise.
+
+A classifier needs a numerical representation of the textual data for training. Text is often
+represented in a real-valued vector by encoding words and their context. There are different word
+embedding techniques, such as \ac{TF-IDF} \cite{enwiki:1123031029} that reflect how important a word
+is to a document in a corpus. Word2vec \cite{mikolovEfficientEstimationWord2013} and its extension
+doc2Vec \cite{leDistributedRepresentationsSentences2014} are other word embedding techniques that
+capture the semantic and syntactic qualities of words via a vector space with several hundred
+dimensions, where each unique word in the corpus gets assigned to a vector in the space.
+
+There are different groups of \ac{ML} algorithms to classify data for varying data types. Supervised
+algorithms are employed if the training data set is labelled; otherwise, a probabilistic approach
+can be used by training a naive Bayes classifier on  labelled and unlabelled data
+\cite{liDisasterResponseAided2018}. \citeauth{fengExtractionPluvialFlood2018} use naive Bayes,
+random forest, logistic regression, \ac{SVM} (RBF Kernel), and \ac{SVM} (Linear Kernel) on labelled
+data transformed using \ac{TF-IDF} with accuracies of 0.7109, 0.7582, 0.7705, 0.7712, and 0.7739,
+respectively. \citeauth{petersenIdentificationExplorationExtreme2021} results are more promising,
+where they train a logistic regression and random forest classifiers with 0.939 and 0.9253
+accuracies, respectively. Deep learning approaches  generally outperform classical algorithms; one
+example is \ac{CNN} trained on word embeddings for sentence classification.
+\citeauthor{fengExtractionPluvialFlood2018} and
+\citeauthor{petersenIdentificationExplorationExtreme2021} train a \ac{CNN} model on word2vec
+embeddings with 0.7868 and 0.94611 accuracies, respectively.
+
+Recently, transfer learning has been gaining popularity; it's the idea of transferring knowledge
+acquired by solving one problem to other related problems. In the case of text classification,
+\ac{RNN} is a class of artificial neural networks that process sequences of data using \ac{LSTM}
+making it a suitable algorithm for \ac{NLP} tasks;
+\citeauth{petersenIdentificationExplorationExtreme2021} fine-tunes the pre-trained \ac{ULMFit}
+\cite{howardUniversalLanguageModel2018} with an accuracy of 0.9499. Models using transforms
+architecture outperform \ac{RNN} in many \ac{NLP} tasks. One popular example is \ac{BERT}
+\cite{devlinBERTPretrainingDeep2019}, a deep learning-based \ac{NLP} pre-training technique used by
+generalized models by training on a massive dataset; afterwards, they are fine-tuned on a smaller
+one for a specific task. \citeauth{alamFloodDetectionTwitter2020} uses a pre-trained \ac{BERT} model
+that works on one language with an accuracy of 0.853, and
+\citeauth{debruijnGlobalDatabaseHistoric2019b} uses a multilingual model with 0.8 F1-score.
+
+Visual data such as images are usually classified using \ac{CNN} models by getting the results of
+the models after removing the output layer to get a feature vector to train classifiers. These
+models are pre-trained on massive datasets such as Imagenet
+\cite{krizhevskyImageNetClassificationDeep2017} and places database
+\cite{zhouLearningDeepFeatures2014}. \citeauth{fengExtractionPluvialFlood2018} use GoogLeNet
+(Inception-V3 model) \cite{7780677} pre-trained on ImageNet to train multilayer perceptron, random
+Forest, gradient boosted trees, and  xgboost with accuracies of 0.8907, 0.9133, 0.9252, and 0.9295,
+respectively. \citeauth{ningPrototypingSocialMedia2020} uses VGGNet
+\cite{simonyanVeryDeepConvolutional2015}, Inception V3, ResNet \cite{heDeepResidualLearning2015},
+and DenseNet201 \cite{huangDenselyConnectedConvolutional2018} with 0.91 accuracy.
+
 \subsection{Location Extraction}
 - Location specific or global
   - global, local
