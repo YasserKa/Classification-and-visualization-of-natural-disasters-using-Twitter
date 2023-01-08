@@ -153,7 +153,7 @@ can have more than one location candidate, such as ``Boston'', which is the name
 including ``Boston, USA'' and ``Boston, UK''; this fact makes geoparsing tasks on a global scale
 harder than local ones. \citeauth{debruijnGlobalDatabaseHistoric2019b} uses TAGGS
 \citeauth{debruijnTAGGSGroupingTweets2017}, a geoparsing algorithm, to extract countries,
-administrative areas \& settlements (i.e. cities, towns, and villages) mentioned within the tweets'
+administrative areas, and settlements (i.e. cities, towns, and villages) mentioned within the tweets'
 text on a global scale. The process includes toponym recognition and toponym resolution.  Toponym
 recognition extracts the toponyms that refer to one or more locations using a gazetteer, a
 geographical index, or a dictionary. Toponym resolution predicts the correct location for the
@@ -169,6 +169,90 @@ toponyms, a Python package that is a client for several popular geocoding web se
 GoogleV3 and GeoNames). \citeauth{singhEventClassificationLocation2019} uses the fact that people
 visit the same locations daily to generate a Markov chain model on historical tweets created by the
 same user to locate them.
-\subsection{Visualization}
 
-\subsection{Text analysis}
+% \subsection{Text analysis}
+
+\subsection{Visualization}
+Visualization of the results of an \ac{NLP} pipeline is common practice for several reasons. The
+massive and complex data can communicate the needed knowledge for different audiences to understand
+the underlying situation and take action accordingly. The developers can use the visualization to
+validate that the pipeline is working as intended. The authority can check the Spatio-temporal data
+to identify places that have recurring floods and reinforce their infrastructure to prepare for
+future flooding. Also, the plots make event detection and monitoring much faster and more
+straightforward.
+
+\citeauth{debruijnGlobalDatabaseHistoric2019b} uses historical and real-time data to show flooding
+events on different levels (countries, administrative areas, and settlements). It is powered using a
+JavaScript library, leaflet\footnote{https://leafletjs.com/}. The application, seen in figure
+\ref{fig:global}, contains a map showing the flooding events with an adjustable timeline and a list
+of tweets for the selected location.
+
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth]{images/global.png}
+\end{center}
+\caption{Global Flood Monitor application showing flood events}
+\label{fig:global}
+\end{figure}
+
+\citeauth{petersenIdentificationExplorationExtreme2021} provide multiple plots with sophisticated
+methods to configure the interface and filter the tweets. Their visualization is powered using the python
+libraries, Plotly\footnote{https://plotly.com/python/} and Dash\footnote{https://dash.plotly.com/}.
+The app, shown in figure \ref{fig:peter}, provides an interface to showcase the different aspects of the
+data: spatial via a map, temporal via a histogram, and textual via a list of tweets and word cloud.
+They use a scatter map to show the locations extracted from the tweets, where the colour of each
+point represents the method used to identify the location. To resolve the problem of tweets
+overlapping each other due to the discussion of the same location, the identical points are
+spread by adding Gaussian noise to their coordinates points. As for representing the timestamps,
+they use a histogram aggregated by each day with a time slider. Researchers can pinpoint repetitive
+or interesting topics by navigating the word cloud to see the most frequent keywords or manually
+navigating the list of tweets. The plots are interactive, where actions in one of them would
+influence others. The data can be filtered in different ways: keywords in the text, the method used
+to extract the location, tweet type (a retweet or not), a map, and a histogram. In addition, there is a
+drop-down to change the map graph type and the algorithm used to classify the tweets.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth]{./images/peter.png}
+\end{center}
+\caption{\citeauthor{petersenIdentificationExplorationExtreme2021} application}
+\label{fig:peter}
+\end{figure}
+
+\citeauth{fengExtractionPluvialFlood2018} use leaflet to plot a map showing flooding events as
+observed in figure \ref{fig:feng}. They use $\text{Getis-Ord Gi}^{\ast}$ \cite{ordLocalSpatialAutocorrelation2010}
+to detect statistical hot spots and present them as a choropleth map. The light blue circles
+represent the Spatio-temporal clusters of events, and the circles with numbers at the centre
+indicate clusters of tweets in that area with their total. The markers indicate individual tweets
+with a pop-up containing information about it.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=0.80\textwidth]{./images/feng.png}
+\end{center}
+\caption{Web map application with pluvial flood in Berlin by \citeauthor{fengExtractionPluvialFlood2018}}
+\label{fig:feng}
+\end{figure}
+
+\citeauth{barkerDevelopmentNationalscaleRealtime2019} visualizes the tweets using different map plots
+ created by leaflet. The map plot in figure \ref{fig:baker_marker} consists of clickable pointers for pop-up boxes of the tweets.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=0.8\textwidth]{images/baker_marker.png}
+\end{center}
+\caption{Map with tweet markers in by \citeauthor{barkerDevelopmentNationalscaleRealtime2019}}
+\label{fig:baker_marker}
+\end{figure}
+
+The bubble map in figure \ref{fig:baker_bubble} displays the tweets with the size of the circles
+representing the area of the place and colour indicating the number of tweets talking about the
+location.
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=0.9\textwidth]{./images/baker_bubble.png}
+\end{center}
+\caption{Bubble map of tweets by \citeauthor{barkerDevelopmentNationalscaleRealtime2019}}
+\label{fig:baker_bubble}
+\end{figure}
