@@ -82,12 +82,14 @@ class LDA_model:
             .agg(
                 count=pd.NamedAgg(column="term_id", aggfunc="count"),
                 **{
-                    f"topic_{x}_mean": pd.NamedAgg(column=f"topic_{x}", aggfunc="mean")
+                    f"topic{x}": pd.NamedAgg(column=f"topic_{x}", aggfunc="mean")
                     for x in range(self.num_topics)
                 },
             )
             .sort_values([("count")], ascending=False)
         )
+
+        df_terms_weights = df_terms_weights.round(5)
         df_terms_weights["term"] = df_terms_weights["term_id"].apply(
             lambda x: self.dictionary[x]
         )

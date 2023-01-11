@@ -731,6 +731,7 @@ class TFIDF_class(object):
                 "weight_mean": "mean",
             }
         )
+        df_tfidf = df_tfidf.round(5)
 
         return df_tfidf
 
