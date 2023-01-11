@@ -533,7 +533,6 @@ def generate_tfidf_terms_table(df):
         columns=[{"name": i, "id": i} for i in columns],
         style_table={
             "height": "35vh",
-            "overflowY": "auto",
         },
         style_cell={
             "textAlign": "left",
@@ -874,6 +873,7 @@ def plot(df, app):
                                                         style={
                                                             "height": "37vh",
                                                             "overflow-y": "auto",
+                                                            "overflow-x": "auto",
                                                         },
                                                     ),
                                                     dbc.Tab(
@@ -888,10 +888,13 @@ def plot(df, app):
                                                     ),
                                                 ]
                                             ),
-                                        ]
+                                        ],
+                                        style={
+                                            "width": "50%",
+                                        },
                                     ),
                                 ],
-                                style={"display": "inline-flex"},
+                                style={"display": "inline-flex", "width": "100%"},
                             ),
                         ],
                         style={
