@@ -736,12 +736,24 @@ class TFIDF_class(object):
 
 def get_scatter(selected_points=[]):
     global tsne_object
+    aligned_tweets = []
+    # Add breaks to text to create a linewidth
+    for tweet in df_global["processed"]:
+        index = 0
+        lines = []
+        while index != -1:
+            index = tweet.find(" ", 50)
+            lines.append("".join(tweet[:index]))
+            tweet = tweet[index + 1 :]
+        aligned_tweets.append("<br>".join(lines))
     scatter = go.Figure(
         data=[
             go.Scatter(
                 x=tsne_object.X_embedded[:, 0],
                 y=tsne_object.X_embedded[:, 1],
                 mode="markers",
+                hoverinfo="text",
+                text=aligned_tweets,
                 marker={
                     "color": tsne_object.clusters.labels_,
                     "line_width": 1,
