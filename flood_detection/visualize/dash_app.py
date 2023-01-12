@@ -61,7 +61,6 @@ tfidf_object = None
 # state is needed to check if a button is clicked
 current_clicks = 0
 clustering_current_clicks = 0
-text_current_clicks = -1
 
 lda_model = None
 # Number of topics used on selected tweets
@@ -440,9 +439,9 @@ def get_meta_data_html(data_selected):
     STYLE = {"margin-top": "0rem", "margin-bottom": "0rem", "float": "left"}
     meta_data = {
         "Tweets": f"Total: {str(num_tweets_location)}, With location: {str(total_data_num)}, Selected: "
-        f"{str(len(data_selected))}, "
+        f"{str(len(data_selected))} ,"
         f"Has word Sweden: {str(num_tweets_mentioning_sweden)} ,",
-        "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]}",
+        "Spans": f"from {str(oldest_time)[:-6]} to {str(newest_time)[:-6]} ,",
         "Locations": f"Total: {str(total_loc_num)}, Selected: {str(locations_selected_num)} ,",
         "Selected locations": "",
     }
@@ -969,35 +968,31 @@ def radio_region_level_update(value):
     ],
 )
 def text_anlaysis_button(text_n_clicks):
-    global text_current_clicks
     global tfidf_object
     global selected_data
     global num_lda_topics
     global global_topics_df
     global global_tfidf_df
 
-    if text_n_clicks is not None and text_n_clicks > text_current_clicks:
-        text_current_clicks = text_n_clicks
+    df = selected_data.rename(columns={"processed": "text"})
+    docs = get_preprocessed_docs(df, Language.ENGLISH)
 
-        df = selected_data.rename(columns={"processed": "text"})
-        docs = get_preprocessed_docs(df, Language.ENGLISH)
+    df_global_ = df_global.rename(columns={"processed": "text"})
+    all_docs = get_preprocessed_docs(df_global_, Language.ENGLISH)
 
-        df_global_ = df_global.rename(columns={"processed": "text"})
-        all_docs = get_preprocessed_docs(df_global_, Language.ENGLISH)
+    num_topics = 2 if num_lda_topics == "" else num_lda_topics
 
-        num_topics = 2 if num_lda_topics == "" else num_lda_topics
+    lda_model = LDA_model(all_docs, num_topics)
+    topics_df = lda_model.get_topics(docs)
+    global_topics_df = topics_df
 
-        lda_model = LDA_model(all_docs, num_topics)
-        topics_df = lda_model.get_topics(docs)
-        global_topics_df = topics_df
-
-        top_tfidf_df = tfidf_object.get_top_terms(docs)
-        global_tfidf_df = top_tfidf_df
-        return [
-            generate_topics_table(topics_df),
-            generate_tfidf_terms_table(top_tfidf_df),
-            "Text analysis",
-        ]
+    top_tfidf_df = tfidf_object.get_top_terms(docs)
+    global_tfidf_df = top_tfidf_df
+    return [
+        generate_topics_table(topics_df),
+        generate_tfidf_terms_table(top_tfidf_df),
+        "Text analysis",
+    ]
 
 
 @app.callback(
