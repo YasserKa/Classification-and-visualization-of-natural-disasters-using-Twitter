@@ -1,5 +1,5 @@
 % vim: spell spelllang=en_gb
-\documentclass[a4paper, 12pt]{article}
+\documentclass[a4paper, 12pt]{report}
 \usepackage[toc,page]{appendix} 
 % For hyperlinks
 \usepackage{hyperref}
@@ -90,13 +90,18 @@ abstract page.
 
 \newpage
 
+\input{sections/methods}
+
+\newpage
+
 \href{https://gist.github.com/YasserKa/cb39b763ff9484e73ba82003c9aae2eb}{Link to tentative notes for report}
 
 \newpage
 
-\printbibliography[heading=bibintoc, title={References}]
+\input{sections/appendix}
+
 \newpage
 
-\input{sections/appendix}
+\printbibliography[heading=bibintoc, title={References}]
 
 \end{document}

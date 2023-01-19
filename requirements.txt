@@ -847,9 +847,6 @@ kombu==5.2.4 ; python_version >= "3.10" and python_version < "3.11" \
 langcodes==3.3.0 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:4d89fc9acb6e9c8fdef70bcdf376113a3db09b67285d9e1d534de6d8818e7e69 \
     --hash=sha256:794d07d5a28781231ac335a1561b8442f8648ca07cd518310aeb45d6f0807ef6
-langdetect==1.0.9 ; python_version >= "3.10" and python_version < "3.11" \
-    --hash=sha256:7cbc0746252f19e76f77c0b1690aadf01963be835ef0cd4b56dddf2a8f1dfc2a \
-    --hash=sha256:cbc1fef89f8d062739774bd51eda3da3274006b3661d199c2655f6b3f6d605a0
 markupsafe==2.1.1 ; python_version >= "3.10" and python_version < "3.11" \
     --hash=sha256:0212a68688482dc52b2d45013df70d169f542b7394fc744c02a57374a4207003 \
     --hash=sha256:089cf3dbf0cd6c100f02945abeb18484bd1ee57a079aefd52cffd17fba910b88 \

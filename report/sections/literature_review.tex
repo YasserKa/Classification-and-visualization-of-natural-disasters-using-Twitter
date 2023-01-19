@@ -1,15 +1,14 @@
 % vim: spell spelllang=en_gb
-\section{Literature Review}
+\chapter{Literature Review}
 
 The massive and accessible volume of data that social media produces has attracted the attention of
 many researchers as a valuable data source for their research topic; however, collecting and
 processing data of this nature pose many challenges to extracting useful information. This section
 mentions what other researchers focusing on disaster management topics did to address these
 challenges while using Twitter; it also discusses the different approaches used for identifying
-relevant tweets, extracting geographical location from them, visualizing the results, and applying
-text analysis.
+relevant tweets, extracting geographical location from them, and visualizing the results.
 
-\subsection{Data Collection} Twitter's \ac{API} enables developers to retrieve historical tweets using
+\section{Data Collection} Twitter's \ac{API} enables developers to retrieve historical tweets using
 queries that are made of operators to match a variety of tweet attributes, such as a specific
 keyword, having a geotag provided by the user who created the tweet, and the language classified by
 Twitter. Users generate around 500-700 million tweets a day \cite{inproceedings}, making it
@@ -64,14 +63,14 @@ words that match with those in another tweet among the previous 100 talking abou
 created from mobile phones and only considers tweets from users who have $\text{followers} /
 \text{following} < 1$.
 
-\subsection{Text Classification}
+\section{Text Classification}
 Identifying disaster events using social media requires a classifier to determine the relevant data.
 Textual data containing terms related to a disaster doesn't mean that it discusses a disastrous
 event since words such as ``flood'' can be used figuratively in sentences (e.g., a flood of joy). A
 binary classifier labelling the data with ``on-topic'' and ``off-topic'' labels is needed to filter
 out irrelevant content.
 
-Most classifiers use supervised \ac{ML} algorithms requiring labeled data for training. A
+Most classifiers use supervised \ac{ML} algorithms requiring labelled data for training. A
 straightforward approach is to manually label a sample of the tweets
 \cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
 \citeauth{petersenIdentificationExplorationExtreme2021} use Crisilext6
@@ -128,7 +127,7 @@ respectively. \citeauth{ningPrototypingSocialMedia2020} uses VGGNet
 \cite{simonyanVeryDeepConvolutional2015}, Inception V3, ResNet \cite{heDeepResidualLearning2015},
 and DenseNet201 \cite{huangDenselyConnectedConvolutional2018} with 0.91 accuracy.
 
-\subsection{Location Extraction}
+\section{Location Extraction}
 Identifying the locations of disasters is helpful for the disaster management cycle. Social media
 enables people to generate \ac{VGI}, which is more advantageous over the more expensive accuracy
 testing by official agencies because contributors have unique local knowledge.  Detecting a
@@ -169,10 +168,36 @@ toponyms, a Python package that is a client for several popular geocoding web se
 GoogleV3 and GeoNames). \citeauth{singhEventClassificationLocation2019} uses the fact that people
 visit the same locations daily to generate a Markov chain model on historical tweets created by the
 same user to locate them.
+ 
+\section{Text Analysis}
 
-% \subsection{Text analysis}
+Besides text classification and location extraction, other text analysis techniques extract
+valuable information from text data. In the case of disasters, disaster managers can use social
+media to get insights, such as how impactful an event is on society. They can visualize the results
+to understand the situation and act accordingly. 
 
-\subsection{Visualization}
+\citeauth{grunder-fahrerHowSocialMedia2018} extract multiple relevant pieces of information from
+social media and present them to disaster managers via a searchable application. They extract the
+following: topics using HDP-CRF algorithm \cite{tehHierarchicalBayesianNonparametric2010},
+locations using Openstreetmap\footnote{https://www.openstreetmap.org/} location markers, time using
+the social media meta data, and names of organizations using \ac{NER}. They present
+the information using several interactive graphs such as pie charts, word clouds and line graphs.
+
+Sentiment analysis is a popular text analysis technique that shows people's sentiments during an
+event. \citeauth{luVisualizingSocialMedia2015} extract sentiment analysis from Twitter about the
+Ebola virus using three different sentiment classifiers to measure the sentiment score of the tweet
+depending on the majority of the votes. Also, they calculate the inconsistency between the
+classifiers using an entropy measure \cite{argamon-engelsonCommitteeBasedSampleSelection1999}. The
+positive and negative sentiments are each presented in a density map using solid blue and red
+colours, respectively; the colour is blurred insread if the inconsistency score is above a certain
+threshold. \citeauth{perinan-pascualAssessingImpactTweets2020} tries to extract the sentiment by
+calculate three scores for the tweets: (1) the reliability of how much the tweet discusses a problem
+during a hazard, (2) the impact of the tweet by using the user's activity and popularity as well as
+how much influence the tweet is \cite{palIdentifyingTopicalAuthorities2011}, (3) and the impact of
+the problem using the previous scores. They present the mean of the scores on a time frame basis on
+a line graph.
+
+\section{Visualization}
 Visualization of the results of an \ac{NLP} pipeline is common practice for several reasons. The
 massive and complex data can communicate the needed knowledge for different audiences to understand
 the underlying situation and take action accordingly. The developers can use the visualization to
@@ -229,7 +254,7 @@ with a pop-up containing information about it.
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=0.80\textwidth]{./images/feng.png}
+  \includegraphics[width=\columnwidth]{./images/feng.png}
 \end{center}
 \caption{Web map application with pluvial flood in Berlin by \citeauth{fengExtractionPluvialFlood2018}}
 \label{fig:feng}
@@ -240,7 +265,7 @@ with a pop-up containing information about it.
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=0.8\textwidth]{images/baker_marker.png}
+  \includegraphics[width=\columnwidth]{images/baker_marker.png}
 \end{center}
 \caption{Map with tweet markers in by \citeauth{barkerDevelopmentNationalscaleRealtime2019}}
 \label{fig:baker_marker}
@@ -251,7 +276,7 @@ representing the area of the place and colour indicating the number of tweets ta
 location.
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=0.9\textwidth]{./images/baker_bubble.png}
+  \includegraphics[width=\columnwidth]{./images/baker_bubble.png}
 \end{center}
 \caption{Bubble map of tweets by \citeauth{barkerDevelopmentNationalscaleRealtime2019}}
 \label{fig:baker_bubble}
