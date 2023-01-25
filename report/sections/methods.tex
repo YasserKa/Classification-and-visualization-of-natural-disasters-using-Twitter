@@ -10,6 +10,7 @@ science-related tasks. The code base is available at a GitHub
 repository\footnote{https://github.com/YasserKa/Classification-and-visualization-of-natural-disasters-using-Twitter}
 accompanied with a \texttt{README.md} containing instructions to set up the environment and run the
 project.
+
 \begin{figure}[H]
 \begin{center}
   \includegraphics[width=\columnwidth]{./images/pipeline.png}
@@ -90,3 +91,122 @@ analysis, and the author id to reduce spam.
 \end{table}
 
 \section{Text Classification}
+
+There are three groups of approaches for \ac{NLP} tasks: heuristics, \ac{ML}, and deep
+learning. The heuristics approach is the oldest one which builds rules manually for a specific task
+by using dictionaries and thesauruses. \ac{ML} techniques, including probabilistic
+modelling and likelihood maximization, are used on a numerical representation of the textual data to
+learn a model. Neural networks are a popular choice for handling complex, and unstructured data,
+making them a suitable candidate for language.
+
+\ac{RNN} \cite{hopfieldNeuralNetworksPhysical1982} is a common artificial neural network for
+\ac{NLP} tasks, such as text classification, \ac{NER}, and machine translation. Its memory enables
+it to take information from previous input to update the current input and output vector (called
+hidden state) as shown in Figure~\ref{fig:rnn_example}, making it appropriate for sequential. For common
+tasks such as translation  an encoder-decoder architecture is needed, where the encoder encodes the
+input sequence into a numerical representation (called the last hidden state) that gets passed to
+the decoder for output sequence generation. Figure~\ref{fig:rnn_encoder_decoder} shows an example of translating the
+English statement ``Transformers are great!'' to the German language. \ac{RNN} has shortcomings when it tries to
+capture the context for long sequences of information, where the encoder might lose the information
+at the start of the sequence while forming the representation. \ac{RNN}'s  weak memory can be
+addressed by using the attention mechanism that allows the decoder to access all the hidden states
+of the encoder. The main goal of attention is to enable the decoder to prioritize the states using
+weights it assigns at every decoding timestamp. Figure~\ref{fig:rnn_encoder_decoder_attention} shows
+an example for predicting the third token in the output sequence. Even though attention improves the
+accuracy of the translations, the computations are sequential and cannot be parallelized.
+
+% The trims are added to remove the black edges
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/unrolling_rnn.png}
+\end{center}
+\caption{RNN example \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_example}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn.png}
+\end{center}
+\caption{Two \ac{RNN}s making an encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_encoder_decoder}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn_attention.png}
+\end{center}
+\caption{Two \ac{RNN}s making an encoder-decoder architecture with attention mechanism \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_encoder_decoder_attention}
+\end{figure}
+
+Transformers with its self-attention architecture, proposed by google researchers
+\cite{vaswaniAttentionAllYou2017}, made the training process much faster. The idea is to use
+attention on all states in the same layer of the neural network.
+Figure~\ref{fig:encoder_decoder_transformer} shows the self-attention mechanism on both encoder
+and decoder with their outputs fed to feed-forward neural networks. Transformers still require a
+large amount of labelled text data to train the models,which gets circumvent using transfer learning
+by pre-training a model on a huge dataset that gets fine-tuned afterwards on a much smaller dataset
+for a more specific task.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_transformer.png}
+\end{center}
+\caption{Transformer's encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:encoder_decoder_transformer}
+\end{figure}
+
+This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of BERT, for text
+classification.  The main advantage of this model is that it achieves comparable performance to BERT
+while being significantly smaller than BERT while being significantly smaller and more efficient. A
+DistilBERT pre-trained model is provided by Hugging Face\footnote{https://huggingface.co/}, a
+framework that provides a unified API for over more than 50 architectures, making it easier for
+users to integrate \ac{NLP} models into their applications.
+
+After pre-processing the data, there are several steps to obtain the trained model. DistilBERT works
+on the English language, and since Sweden is the focus of the research, most of the text is in
+Swedish; thus, the text is translated to English using google
+translate\footnote{https://translate.google.com/} by a python library wrapper
+deep-translate\footnote{https://deep-translator.readthedocs.io/en/latest/}. The text classification
+purpose is to identify the tweets that discuss flood events, so the ``On Topic'' attribute of the
+dataset is used as a label during training. The learning rate for the neural network is $5\times e^{-5}$ with
+100 warmup steps over three epochs using 90\% of the labelled tweets as training data, 5\% as test
+data, and 5\% for validation. Training the model locally takes a long time with the available
+resources, so the training is done using Amazon
+SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service that covers tools to build, train,
+and deploy \ac{ML} models. The data is uploaded to Amazon Simple Storage Service (Amazon S3) to make it
+accessible for the Hugging Face training script that is executed in an instance available in the
+cloud. After the training is complete, the fine-tuned model and the evaluation metric are
+downloaded. The evaluation metric consists of the following:
+
+item
+\begin{itemize}
+  \item Accuracy: the fraction of the number of correctly classified instances (i.e., true positives
+    and true negatives) among all instances (i.e., whole dataset) (equation~\ref{eq:accuracy}).
+ \begin{equation}
+   \text{Accuracy}=\frac{TN+TP}{TN+FN+TP+FP} 
+   \label{eq:accuracy}
+\end{equation}
+\item Precision: the fraction of the number of correctly classified relevant instances (i.e., true
+  positives) among the total number of instances classified as relevant (i.e., true positives and
+  false positives) (equation~\ref{eq:precision}).
+ \begin{equation}
+   \text{Precision}=\frac{TP}{TP+FP} 
+   \label{eq:precision}
+\end{equation}
+\item Recall: the fraction of the correctly classified relevant instances (i.e., true positives)
+  among all relevant instances (i.e. true positives and false negatives) (equation~\ref{eq:recall}).
+ \begin{equation}
+   \text{Precision}=\frac{TP}{TP+FN} 
+   \label{eq:recall}
+\end{equation}
+\item $\text{F}_1$ score: the harmonic mean of precision and recall (equation~\ref{eq:f1}).
+ \begin{equation}
+   \text{F}_1 =2.\frac{\text{Precision}.\text{Recall}}{\text{Precision}+\text{Recall}} 
+   \label{eq:f1}
+\end{equation}
+\end{itemize}
+  
+
+  
