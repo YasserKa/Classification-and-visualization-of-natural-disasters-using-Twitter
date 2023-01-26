@@ -180,7 +180,6 @@ accessible for the Hugging Face training script that is executed in an instance 
 cloud. After the training is complete, the fine-tuned model and the evaluation metric are
 downloaded. The evaluation metric consists of the following:
 
-item
 \begin{itemize}
   \item Accuracy: the fraction of the number of correctly classified instances (i.e., true positives
     and true negatives) among all instances (i.e., whole dataset) (equation~\ref{eq:accuracy}).
@@ -270,3 +269,28 @@ the same name.
 
 \section{Text analysis}
   
+Further pre-processing is done on the dataset to prepare for text analysis tasks. Lemmatisation is
+done on the text, using \ac{NLTK}\footnote{https://www.nltk.org/}, to reduce words to their lemmas.
+Afterwards, Tokenisation is done on the corpus. Terms occurring in less than 20 documents or 5\% of
+the documents are removed, as well as the terms mentioned in more than 75\% of the documents.
+Bigrams that occur more than 20 times in the corpus are included, such as traffic jams, and climate
+change. To reduce spam, tweets created by the same user who tweeted about the same location the past
+week are discarded.
+
+The text analysis used in the project are \ac{LDA} \cite{pritchardInferencePopulationStructure2000}
+\cite{falushInferencePopulationStructure2003}, \ac{TF-IDF}, and
+\ac{t-SNE}\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a topic modelling
+method that generates topics (a set of terms) in a corpus and assigns the relevancy of each topic in
+each document. The \ac{LDA} model is initialized and trained using Gensim \cite{rehurek_lrec},
+where the number of discovered topics is adjustable in the visualization. The second text analysis
+technique used is \ac{TF-IDF}, using scikit-learn\footnote{https://scikit-learn.org/stable/}, to
+extract interesting terms by checking their average weight and frequency in the corpus. Lastly,
+\ac{t-SNE} is a visualization method for high-dimensional data by reducing their dimensions to two
+or three-dimensional maps. In this project, \ac{t-SNE} reduces the dimensions of a \ac{TF-IDF}
+matrix generated from the corpus to 2-dimensional space and then presented on a scatter plot; the
+points are clustered before applying \ac{t-SNE} using \ac{DBSCAN} with adjustable eps (maximum
+distance between neighbours), and min\_samples (number of samples in a neighbourhood for the
+point to be considered as a core point). \ac{t-SNE}, the generation of the \ac{TF-IDF} matrix, and
+clustering are done using scikit-learn.
+
+\section{Visualization}

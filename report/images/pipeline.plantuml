@@ -27,9 +27,13 @@ partition "Location extraction" {
   -down->[false] "Discard tweets" as dt3
 }
 
-partition "Visualization" {
+partition "Text Analysis" {
   else
-  -right->[true] "Generate plots"
+    -right->[true] "Add text analysis"
   endif
+}
+
+partition "Visualization" {
+  -right-> "Generate plots"
 }
 @enduml
