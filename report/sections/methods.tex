@@ -209,4 +209,64 @@ item
 \end{itemize}
   
 
+\section{Location Extraction}
+
+The project uses a hybrid approach for geoparsing to extract locations. For toponym recognition, the
+tokens representing locations are extracted using the KBLab/bert-base-swedish-cased-ner
+model\footnote{https://huggingface.co/KBLab/bert-base-swedish-cased-ner}. The model is based on BERT
+and fine-tuned for \ac{NER} using The Stockholm-Umeå Corpus, a collection of Swedish texts from the
+1990s that consists of one million words. As for toponym resolution, the location tokens are
+disambiguated using Nominatim and GeoNames geocoders through
+Geopy\footnote{https://geopy.readthedocs.io/en/latest}, a Python client for several
+popular geocoding web services. Nominatim retrieves data about the location from OpenStreetMap. The
+following shows the possible fields retrieved:
+
+  \begin{verbatim}
+  {
+    "place_id": "100149",
+    "licence": "Data © OpenStreetMap contributors, 
+                ODbL 1.0. https://osm.org/copyright",
+    "osm_type": "node",
+    "osm_id": "107775",
+    "boundingbox": ["51.3473219", "51.6673219", 
+                    "-0.2876474", "0.0323526"],
+    "lat": "51.5073219",
+    "lon": "-0.1276474",
+    "display_name": "London, Greater London, England, 
+                     SW1A 2DU, United Kingdom",
+    "class": "place",
+    "type": "city",
+    "importance": 0.9654895765402,
+    "icon": "https://nominatim.openstreetmap.org/
+             images/mapicons/poi_place_city.p.20.png",
+    "address": {
+      "city": "London",
+      "state_district": "Greater London",
+      "state": "England",
+      "ISO3166-2-lvl4": "GB-ENG",
+      "postcode": "SW1A 2DU",
+      "country": "United Kingdom",
+      "country_code": "gb"
+    },
+    "extratags": {
+      "capital": "yes",
+      "website": "http://www.london.gov.uk",
+      "wikidata": "Q84",
+      "wikipedia": "en:London",
+      "population": "8416535"
+    }
+  }                           
+  \end{verbatim}
+
+The descriptions for the fields are available in the
+documentation\footnote{https://nominatim.org/release-docs/develop/api/Output/}. The project uses
+the lat, lon, and display\_name to represent the location on a map. In some cases, the text might
+contain two locations, the one with the smaller bounding box (area of corner coordinates) is used,
+which is, in most cases, a more specific place located in the bigger one (e.g. a street within a
+municipality). The geocoder services provide the ability to limit the search of the locations
+within a specific country. Since the project is limited to Sweden, the output can be limited using
+this option , reducing the false positives that happens when different countries have places with
+the same name.
+
+\section{Text analysis}
   
