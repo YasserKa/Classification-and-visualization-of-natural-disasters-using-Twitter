@@ -294,3 +294,45 @@ point to be considered as a core point). \ac{t-SNE}, the generation of the \ac{T
 clustering are done using scikit-learn.
 
 \section{Visualization}
+
+  Visualization is often placed at the end of the pipeline and might be the most important since it
+  brings meaning to the results, which can be interrupted by most audiences. Also, it's a direct way
+  to verify that the pipeline is working. The web application is made by
+  Dash\footnote{https://dash.plotly.com/} to create an interface for
+  Plotly\footnote{https://plotly.com/python/}'s visualizations. Dash Bootstrap
+  Components\footnote{https://dash-bootstrap-components.opensource.faculty.ai/} is used as well for
+  an easier way to use Bootstrap components for Plotly Dash, such as buttons, input, and tables.
+
+  There are several interactive graphs to enable spatial, temporal, and textual exploration of
+  tweets. The text, created time, location extracted, and other features of the selected tweets are
+  explored using a table. The identified locations are presented using clustered pointers on a map;
+  tweets selection can be done by clicking on the clusters or on a different level of regions
+  (counties or municipalities) that can be changed using radio items. The creation dates of tweets
+  are aggregated and plotted using a histogram; they are aggregated by day if the tweets span a
+  month or less; otherwise, by month. The results of \ac{LDA} and \ac{TF-IDF} are displayed in two
+  tables showing the frequency of the terms and their mean weights. The number of topics generated
+  by \ac{LDA} can be changed using a text input, and the tables can be regenerated after changing
+  the selected tweets by clicking a button. A scatter plot shows the \ac{t-SNE}'s 2-dimensional
+  space with \ac{DBSCAN}  clustering, where the clustering properties (eps and min samples) can be
+  adjusted by text inputs. Lastly, metadata about the interface is available: the total number
+  of tweets, the number of selected tweets, the oldest and newest tweet creation dates, the total
+  number of locations, the number of selected locations, and a list of locations' names. All
+  elements of the interface influence each other to some extent. Selecting tweets using the map,
+  histogram, or scatter plot will alter the view for the rest of the presentations by highlighting
+  only the selected tweets.
+
+\section{Verification}
+
+The pipeline is applied on one week worth of tweets starting from a date when a flood event happened
+in Sweden and verified using the visualizations presented at the find step. The query used to extract the
+tweets contain flood relevant terms in Swedish:
+
+\begin{verbatim}
+ "atmosfärisk flod" OR "hög vatten" OR åskskur
+ OR regnskur OR dagvattensystem OR dränering OR "höga vågor"
+ OR "höga flöden" OR dämmor
+ OR snösmältning OR blött OR oväder OR stormflod OR vattenstånd
+ OR vattennivå OR åskväder OR regnstorm"
+ OR "mycket regn" OR "kraftig regn" OR översvämningsskador 
+ OR översvämningar OR översvämning
+\end{verbatim}
