@@ -91,6 +91,13 @@ doc2Vec \cite{leDistributedRepresentationsSentences2014} are other word embeddin
 capture the semantic and syntactic qualities of words via a vector space with several hundred
 dimensions, where each unique word in the corpus gets assigned to a vector in the space.
 
+There are three groups of approaches for \ac{NLP} tasks: heuristics, \ac{ML}, and deep
+learning. The heuristics approach is the oldest one which builds rules manually for a specific task
+by using dictionaries and thesauruses. \ac{ML} techniques, including probabilistic
+modelling and likelihood maximization, are used on a numerical representation of the textual data to
+learn a model. Neural networks are a popular choice for handling complex, and unstructured data,
+making them a suitable candidate for language.
+
 There are different groups of \ac{ML} algorithms to classify data for varying data types. Supervised
 algorithms are employed if the training data set is labelled; otherwise, a probabilistic approach
 can be used by training a naive Bayes classifier on  labelled and unlabelled data
@@ -105,29 +112,88 @@ example is \ac{CNN} trained on word embeddings for sentence classification.
 \citeauth{petersenIdentificationExplorationExtreme2021} train a \ac{CNN} model on word2vec
 embeddings with 0.7868 and 0.94611 accuracies, respectively.
 
-Recently, transfer learning has been gaining popularity; it's the idea of transferring knowledge
-acquired by solving one problem to other related problems. In the case of text classification,
-\ac{RNN} is a class of artificial neural networks that process sequences of data using \ac{LSTM}
-making it a suitable algorithm for \ac{NLP} tasks;
-\citeauth{petersenIdentificationExplorationExtreme2021} fine-tunes the pre-trained \ac{ULMFit}
-\cite{howardUniversalLanguageModel2018} with an accuracy of 0.9499. Models using transforms
-architecture outperform \ac{RNN} in many \ac{NLP} tasks. One popular example is \ac{BERT}
-\cite{devlinBERTPretrainingDeep2019}, a deep learning-based \ac{NLP} pre-training technique used by
-generalized models by training on a massive dataset; afterwards, they are fine-tuned on a smaller
-one for a specific task. \citeauth{alamFloodDetectionTwitter2020} uses a pre-trained \ac{BERT} model
-that works on one language with an accuracy of 0.853, and
-\citeauth{debruijnGlobalDatabaseHistoric2019b} uses a multilingual model with 0.8 F1-score.
+\ac{RNN} \cite{hopfieldNeuralNetworksPhysical1982} is a common artificial neural network for
+\ac{NLP} tasks, such as text classification, \ac{NER}, and machine translation. Its memory enables
+it to take information from previous input to update the current input and output vector (called
+hidden state) as shown in Figure~\ref{fig:rnn_example}, making it appropriate for sequential. For common
+tasks such as translation  an encoder-decoder architecture is needed, where the encoder encodes the
+input sequence into a numerical representation (called the last hidden state) that gets passed to
+the decoder for output sequence generation. Figure~\ref{fig:rnn_encoder_decoder}, taken from
+\citeauthor{tunstallNaturalLanguageProcessing2022}'s book\cite{tunstallNaturalLanguageProcessing2022}, shows an example of translating the
+English statement ``Transformers are great!'' to the German language. \ac{RNN} has shortcomings when it tries to
+capture the context for long sequences of information, where the encoder might lose the information
+at the start of the sequence while forming the representation. \ac{RNN}'s  weak memory can be
+addressed by using the attention mechanism that allows the decoder to access all the hidden states
+of the encoder. The main goal of attention is to enable the decoder to prioritize the states using
+weights it assigns at every decoding timestamp. Figure~\ref{fig:rnn_encoder_decoder_attention} shows
+an example for predicting the third token in the output sequence. Even though attention improves the
+accuracy of the translations, the computations are sequential and cannot be parallelized. In
+addition, most \ac{NLP} tasks require trains models using a large amounts of labelled text data that
+might not be available. Transfer learning resolves this problem by transferring knowledge acquired
+of solving one problem to other related ones.
 
-Visual data such as images are usually classified using \ac{CNN} models by getting the results of
-the models after removing the output layer to get a feature vector to train classifiers. These
-models are pre-trained on massive datasets such as Imagenet
-\cite{krizhevskyImageNetClassificationDeep2017} and places database
-\cite{zhouLearningDeepFeatures2014}. \citeauth{fengExtractionPluvialFlood2018} use GoogLeNet
+% The trims are added to remove the black edges
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/unrolling_rnn.png}
+\end{center}
+\caption{RNN example \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_example}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn.png}
+\end{center}
+\caption{Two \ac{RNN}s making an encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_encoder_decoder}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn_attention.png}
+\end{center}
+\caption{Two \ac{RNN}s making an encoder-decoder architecture with attention mechanism \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:rnn_encoder_decoder_attention}
+\end{figure}
+
+The concept of transfer learning was used in computer vision before its introduction to \ac{NLP}.
+The models are pre-trained on large-scale datasets pre-trained on massive datasets, such as Imagenet
+\cite{krizhevskyImageNetClassificationDeep2017} and places database,
+\cite{zhouLearningDeepFeatures2014} to learn the basic features of images, such as
+edges or colours. They are fine-tuned on downstream tasks with a smaller dataset. 
+. \citeauth{fengExtractionPluvialFlood2018} use GoogLeNet
 (Inception-V3 model) \cite{7780677} pre-trained on ImageNet to train multilayer perceptron, random
 Forest, gradient boosted trees, and  xgboost with accuracies of 0.8907, 0.9133, 0.9252, and 0.9295,
 respectively. \citeauth{ningPrototypingSocialMedia2020} uses VGGNet
 \cite{simonyanVeryDeepConvolutional2015}, Inception V3, ResNet \cite{heDeepResidualLearning2015},
 and DenseNet201 \cite{huangDenselyConnectedConvolutional2018} with 0.91 accuracy.
+
+
+In 2017 and 2018, several research groups proposed new approaches to use transfer learning for
+\ac{NLP}. \ac{ULMFit} \cite{howardUniversalLanguageModel2018} introduced a general framework by
+pre-training \ac{LSTM} models for various tasks.
+\citeauth{petersenIdentificationExplorationExtreme2021} fine-tunes a pre-trained \ac{ULMFit} model
+to classify flood-relevant tweets with an accuracy of 0.9499. 
+
+Transformers with transfer learning and their self-attention architecture, proposed by google
+researchers \cite{vaswaniAttentionAllYou2017}, made the training process much faster. The idea is to
+use attention on all states in the same layer of the neural network.
+Figure~\ref{fig:encoder_decoder_transformer} shows the self-attention mechanism on both the encoder
+and decoder with their outputs fed to feed-forward neural networks.
+\citeauth{alamFloodDetectionTwitter2020} fine-tunes a pre-trained
+\ac{BERT}\cite{devlinBERTPretrainingDeep2019}  model that works on one language with an accuracy of
+0.853, and \citeauth{debruijnGlobalDatabaseHistoric2019b} uses a multilingual model with 0.8
+F1-score.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_transformer.png}
+\end{center}
+\caption{Transformer's encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
+\label{fig:encoder_decoder_transformer}
+\end{figure}
+
 
 \section{Location Extraction}
 Identifying the locations of disasters is helpful for the disaster management cycle. Social media
