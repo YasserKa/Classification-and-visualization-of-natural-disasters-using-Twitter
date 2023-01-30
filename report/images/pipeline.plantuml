@@ -2,13 +2,15 @@
 !theme carbon-gray
 
 partition "Data collection" {
-  (*) -> "Retrieve data from Twitter API"
-  -> "Preprocess the data"
+  (*) -right-> "Retrieve data from Twitter API"
+  -right-> "Preprocess the data" as pd2
+  (*) -up-> "Labelled data"
+  -right-> "Preprocess the data" as pd1
 }
 
 partition "Text classifiation" {
-  "Labelled data" --> "Train classifier"
-  "Preprocess the data" -right-> "Classify tweets"
+  pd1 -right-> "Train classifier"
+  pd2 -right-> "Classify tweets"
   "Train classifier" -down-> "Classify tweets" 
   "Classify tweets" -right-> if ===is on-topic? then 
   -down->[false] "Discard tweets" as dt1

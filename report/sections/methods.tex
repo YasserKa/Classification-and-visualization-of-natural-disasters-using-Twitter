@@ -2,18 +2,19 @@
 \chapter{Methods}
 
 This section discusses and motivates the methods used in the project. Figure \ref{fig:flow_chart}
-shows a flow chart of the pipeline (an enlarged copy is available in Figure \ref{fig:flow_chart_big}
-of Appendix \ref{appendix:raw}). The pipeline consists of the following steps: Data collection, text
-classification, location extraction, and visualization. Python is the primary programming language
-used for the project because of the rich ecosystem surrounding it, especially when it comes to data
-science-related tasks. The code base is available at a GitHub
+shows a flow chart of the steps for the pipeline (an enlarged and ma ore detailed copy is available in
+Figure \ref{fig:flow_chart_big} of appendix \ref{appendix:raw}). The pipeline consists of the
+following steps: Data collection, text classification, location extraction, and visualization.
+Python is the primary programming language used for the project because of the rich ecosystem
+surrounding it, especially when it comes to data science-related tasks. The code base is available
+on a GitHub
 repository\footnote{https://github.com/YasserKa/Classification-and-visualization-of-natural-disasters-using-Twitter}
 accompanied with a \texttt{README.md} containing instructions to set up the environment and run the
 project.
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=\columnwidth]{./images/pipeline.png}
+  \includegraphics[width=\columnwidth]{./images/pipeline_concise.png}
 \end{center}
 \caption{Flow chart for the pipeline}
 \label{fig:flow_chart}
@@ -24,9 +25,19 @@ project.
 Finding a good quality data source is the first step to having a lean start for most research
 questions. The pipeline trains an \ac{ML} classifier using a manually labelled dataset containing
 4899 tweets with attributes presented in Table~\ref{tab:dataset_attr}. The text and metadata of the tweets are extracted
-from Twitter's API using the IDs. The trained model performance is verified using the tweets from
-the API using Tweepy\footnote{https://docs.tweepy.org/en/latest/index.html}, a python library for
-accessing Twitter API.
+from Twitter's API using the IDs. The trained model performance is verified using the tweets
+extracted from the API using Tweepy\footnote{https://docs.tweepy.org/en/latest/index.html}, a python
+library for accessing Twitter API. Figure~\ref{fig:flow_chart_data_collection_text_classification}
+shows both sources of data and how they are used in the pipeline.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth]{./images/data_collection_text_classification.png}
+\end{center}
+\caption{Data collection and text classification steps of the pipeline}
+\label{fig:flow_chart_data_collection_text_classification}
+\end{figure}
+
 
 \begin{table}
   \center
@@ -49,17 +60,21 @@ accessing Twitter API.
   \caption{Dataset attributes}
 \end{table}
 
-Textual data requires pre-processing for several tasks, such as training an \ac{ML} algorithm, text
-analysis, and visualization. Parts of text that don't contribute to the context are removed:
-\ac{URL}s, emojis, mentions, hashtag signs, numbers, new lines, punctuation, and stopwords (provided
-by spaCy\footnote{https://spacy.io/}, an \ac{NLP} python library). Afterwards, duplicate tweets,
-tweets containing no text, and retweets are discarded from the dataset.
+After retrieving the data, they are pre-processed to prepare them for the upcoming tasks, such as training an
+\ac{ML} algorithm, text analysis, and visualization.  Parts of text that don't contribute to the
+context are removed: \ac{URL}s, emojis, mentions, hashtag signs, numbers, new lines, punctuation,
+and stopwords (provided by spaCy\footnote{https://spacy.io/}, an \ac{NLP} python library).
+Afterwards, duplicate tweets, tweets containing no text, and retweets are discarded from the
+dataset. The trained model requires the text to be in English the English language, and since Sweden
+is the focus of the research, most of the text is in Swedish; thus, the text is translated to
+English using google translate\footnote{https://translate.google.com/} by a python library wrapper
+deep-translate\footnote{https://deep-translator.readthedocs.io/en/latest/}. 
 
 Data needs to be stored and managed to accommodate policies and regulations. Twitter's developer
 policy\footnote{https://developer.twitter.com/en/developer-terms/policy} has a content
 redistribution section stating that only the IDs of the tweets can be shared online. Thus, the
 tweets can't be available publicly on such as GitHub, the service that hosts the publicly available
-code base. To this end, the data is stored and cached after each step on google drive using
+code base. To this end, the data is stored after each step on google drive using
 \ac{DVC}'s\footnote{https://dvc.org/doc} data management capabilities.
 
 
@@ -91,28 +106,24 @@ analysis, and the author id to reduce spam.
 \end{table}
 
 \section{Text Classification}
-This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of BERT, for text
+
+This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for text
 classification.  The main advantage of this model is that it achieves comparable performance to BERT
 while being significantly smaller than BERT while being significantly smaller and more efficient. A
 DistilBERT pre-trained model is provided by Hugging Face\footnote{https://huggingface.co/}, a
 framework that provides a unified API for over more than 50 architectures, making it easier for
-users to integrate \ac{NLP} models into their applications.
+users to integrate \ac{NLP} models into their applications. The learning rate for the neural network
+is $5\times e^{-5}$ with 100 warmup steps over three epochs using 90\% of the labelled tweets as
+training data, 5\% as test data, and 5\% for validation. The text classification purpose is to
+identify the tweets that discuss flood events, so the ``On Topic'' attribute of the dataset is used
+as a label during training. 
 
-After pre-processing the data, there are several steps to obtain the trained model. DistilBERT works
-on the English language, and since Sweden is the focus of the research, most of the text is in
-Swedish; thus, the text is translated to English using google
-translate\footnote{https://translate.google.com/} by a python library wrapper
-deep-translate\footnote{https://deep-translator.readthedocs.io/en/latest/}. The text classification
-purpose is to identify the tweets that discuss flood events, so the ``On Topic'' attribute of the
-dataset is used as a label during training. The learning rate for the neural network is $5\times e^{-5}$ with
-100 warmup steps over three epochs using 90\% of the labelled tweets as training data, 5\% as test
-data, and 5\% for validation. Training the model locally takes a long time with the available
-resources, so the training is done using Amazon
-SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service that covers tools to build, train,
-and deploy \ac{ML} models. The data is uploaded to Amazon Simple Storage Service (Amazon S3) to make it
-accessible for the Hugging Face training script that is executed in an instance available in the
-cloud. After the training is complete, the fine-tuned model and the evaluation metric are
-downloaded. The evaluation metric consists of the following:
+Training the model locally takes a long time with the available resources, so the training is done
+using Amazon SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service that covers tools to
+build, train, and deploy \ac{ML} models. The data is uploaded to Amazon Simple Storage Service
+(Amazon S3) to make it accessible for the Hugging Face training script that is executed in an
+instance available in the cloud. After the training is complete, the fine-tuned model and the
+evaluation metric are downloaded. The evaluation metric consists of the following:
 
 \begin{itemize}
   \item Accuracy: the fraction of the number of correctly classified instances (i.e., true positives
@@ -151,46 +162,11 @@ and fine-tuned for \ac{NER} using The Stockholm-Umeå Corpus, a collection of Sw
 1990s that consists of one million words. As for toponym resolution, the location tokens are
 disambiguated using Nominatim and GeoNames geocoders through
 Geopy\footnote{https://geopy.readthedocs.io/en/latest}, a Python client for several
-popular geocoding web services. Nominatim retrieves data about the location from OpenStreetMap. The
-following shows the possible fields retrieved:
+popular geocoding web services. Nominatim retrieves different fields about the
+location from OpenStreetMap. An example of the output is available in appendix
+\ref{appendix:examples}.
 
-  \begin{verbatim}
-  {
-    "place_id": "100149",
-    "licence": "Data © OpenStreetMap contributors, 
-                ODbL 1.0. https://osm.org/copyright",
-    "osm_type": "node",
-    "osm_id": "107775",
-    "boundingbox": ["51.3473219", "51.6673219", 
-                    "-0.2876474", "0.0323526"],
-    "lat": "51.5073219",
-    "lon": "-0.1276474",
-    "display_name": "London, Greater London, England, 
-                     SW1A 2DU, United Kingdom",
-    "class": "place",
-    "type": "city",
-    "importance": 0.9654895765402,
-    "icon": "https://nominatim.openstreetmap.org/
-             images/mapicons/poi_place_city.p.20.png",
-    "address": {
-      "city": "London",
-      "state_district": "Greater London",
-      "state": "England",
-      "ISO3166-2-lvl4": "GB-ENG",
-      "postcode": "SW1A 2DU",
-      "country": "United Kingdom",
-      "country_code": "gb"
-    },
-    "extratags": {
-      "capital": "yes",
-      "website": "http://www.london.gov.uk",
-      "wikidata": "Q84",
-      "wikipedia": "en:London",
-      "population": "8416535"
-    }
-  }                           
-  \end{verbatim}
-
+  
 The descriptions for the fields are available in the
 documentation\footnote{https://nominatim.org/release-docs/develop/api/Output/}. The project uses
 the lat, lon, and display\_name to represent the location on a map. In some cases, the text might
@@ -198,8 +174,18 @@ contain two locations, the one with the smaller bounding box (area of corner coo
 which is, in most cases, a more specific place located in the bigger one (e.g. a street within a
 municipality). The geocoder services provide the ability to limit the search of the locations
 within a specific country. Since the project is limited to Sweden, the output can be limited using
-this option , reducing the false positives that happens when different countries have places with
-the same name.
+this option, reducing the false positives that happen when different countries have places with
+the same name. Tweets that don't contain location terms identifying a geographical
+location are discarded as shown in Figure~\ref{fig:flow_chart_location_extraction}.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[width=\columnwidth]{./images/location_extraction.png}
+\end{center}
+\caption{Flow chart for the location extraction step of the pipeline}
+\label{fig:flow_chart_location_extraction}
+\end{figure}
+
 
 \section{Text analysis}
   
@@ -255,11 +241,11 @@ clustering are done using scikit-learn.
   histogram, or scatter plot will alter the view for the rest of the presentations by highlighting
   only the selected tweets.
 
-\section{Verification}
+\section{Experiments}
 
-The pipeline is applied on one week worth of tweets starting from a date when a flood event happened
-in Sweden and verified using the visualizations presented at the find step. The query used to extract the
-tweets contain flood relevant terms in Swedish:
+The pipeline is applied to one week's worth of tweets starting from a date when a flood event happened
+in Sweden and verified using the visualizations presented at the find step. The query is created by
+experts at a workshop in \ac{SMHI} to extract tweets contain flood relevant terms in Swedish:
 
 \begin{verbatim}
  "atmosfärisk flod" OR "hög vatten" OR åskskur
