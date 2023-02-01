@@ -68,6 +68,8 @@ def train_locally(dataset, model_enc, output_dir, download_model) -> None:
     batch_size = 4
     logging_steps = len(dataset["train"]) // batch_size
 
+    # NOTE: The hyperparameters are different that of sagemaker's, since the
+    # local resources are much lower
     training_args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=2,
@@ -156,7 +158,7 @@ def train_sagemaker(dataset, model_enc, role_name, download_model):
         test_dataset.save_to_disk(test_input_path, fs=s3)
 
     hyperparameters = {
-        "epochs": 1,
+        "epochs": 4,
         "train_batch_size": 32,
         "model_name": model_enc.get_name(),
     }
