@@ -25,8 +25,8 @@ project.
 Finding a good quality data source is the first step to having a lean start for most research
 questions. The pipeline trains an \ac{ML} classifier using three manually labelled datasets. Two of
 them are crowdsourced datasets provided by Crisilext6; the tweets are from the 2013 flood events in
-Alberta\footnote{https://en.wikipedia.org/wiki/2013_Alberta_floods} and
-Queensland\footnote{https://en.wikipedia.org/wiki/Cyclone_Oswald}, and there are around 10,000
+Alberta\footnote{https://en.wikipedia.org/wiki/2013\_Alberta\_floods} and
+Queensland\footnote{https://en.wikipedia.org/wiki/Cyclone\_Oswald}, and there are around 10,000
 records for each one with the tweet's ID, tweet's text, and a label about the relevance of the tweet
 regarding the event. The third dataset is about some flood events in Sweden, spanning between 2015
 and 2021; it contains 4899 tweets, mostly in the Swedish language, with attributes presented in
@@ -128,7 +128,7 @@ using Amazon SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service th
 build, train, and deploy \ac{ML} models. The data is uploaded to Amazon Simple Storage Service
 (Amazon S3) to make it accessible for the Hugging Face training script that is executed in an
 instance available in the cloud. After the training is complete, the fine-tuned model and the
-evaluation metric are downloaded. The evaluation metric consists of the following:
+evaluation metrics are downloaded. The evaluation metrics consists of the following:
 
 
 \begin{itemize}

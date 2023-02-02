@@ -250,7 +250,7 @@ radio_region_levels = html.Div(
         dbc.Label("Regions level"),
         dbc.RadioItems(
             options=[
-                {"label": "Counties", "value": Region_level.COUNTIES.value},
+                {"label": "counties", "value": Region_level.COUNTIES.value},
                 {"label": "municipalities", "value": Region_level.MUNICIPALITIES.value},
             ],
             value=selected_region_type,
