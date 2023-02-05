@@ -305,11 +305,7 @@ def main() -> None:
         raise Exception(f"{path} file not found")
 
     preprocess = Preprocess()
-    # Translate the Swedish dataset only
-    if path == abspath(cfg.supervisor.tweets):
-        df = preprocess.clean_dataframe(df)
-    else:
-        df = preprocess.clean_dataframe(df, translate=False)
+    df = preprocess.clean_dataframe(df)
 
     df.to_csv(output, index=False)
 
