@@ -110,7 +110,7 @@ analysis, and the author id to reduce spam.
   \label{tab:tweet_attr}
 \end{table}
 
-\section{Text Classification}
+\section{Text Classification}\label{sec:text_classification_section}
 
 This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for text
 classification.  The main advantage of this model is that it achieves comparable performance to BERT
@@ -363,19 +363,3 @@ with the rest of the locations.
     \caption{Metadata about the visual interface}
     \label{fig:meta_data}
 \end{figure}
-
-\section{Experiments}
-
-The pipeline is applied to one week's worth of tweets starting from a date when a flood event happened
-in Sweden and verified using the visualizations presented at the find step. The query is created by
-experts at a workshop in \ac{SMHI} to extract tweets contain flood relevant terms in Swedish:
-
-\begin{verbatim}
- "atmosfärisk flod" OR "hög vatten" OR åskskur
- OR regnskur OR dagvattensystem OR dränering OR "höga vågor"
- OR "höga flöden" OR dämmor
- OR snösmältning OR blött OR oväder OR stormflod OR vattenstånd
- OR vattennivå OR åskväder OR regnstorm"
- OR "mycket regn" OR "kraftig regn" OR översvämningsskador 
- OR översvämningar OR översvämning
-\end{verbatim}
