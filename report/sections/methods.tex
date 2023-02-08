@@ -66,7 +66,7 @@ and usage of the data in the pipeline.
 \end{table}
 
 After retrieving the data, they are pre-processed to prepare them for the upcoming tasks, such as training an
-\ac{ML} algorithm, text analysis, and visualization.  Parts of text that don't contribute to the
+\ac{ML} algorithm, text analysis, and visualization.  Parts of text that do not contribute to the
 context are removed: \ac{URL}s, emojis, mentions, hashtag signs, numbers, new lines, punctuation,
 and stopwords (provided by spaCy\footnote{https://spacy.io/}, an \ac{NLP} python library).
 Afterwards, duplicate tweets, tweets containing no text, and retweets are discarded from the
@@ -78,7 +78,7 @@ deep-translate\footnote{https://deep-translator.readthedocs.io/en/latest/}.
 Data needs to be stored and managed to accommodate policies and regulations. Twitter's developer
 policy\footnote{https://developer.twitter.com/en/developer-terms/policy} has a content
 redistribution section stating that only the IDs of the tweets can be shared online. Thus, the
-tweets can't be available publicly on such as GitHub, the service that hosts the publicly available
+tweets can not be available publicly on such as GitHub, the service that hosts the publicly available
 code base. To this end, the data is stored after each step on google drive using
 \ac{DVC}'s\footnote{https://dvc.org/doc} data management capabilities.
 
@@ -206,7 +206,7 @@ which is, in most cases, a more specific place located in the bigger one (e.g. a
 municipality). The geocoder services provide the ability to limit the search of the locations
 within a specific country. Since the project is limited to Sweden, the output can be limited using
 this option, reducing the false positives that happen when different countries have places with
-the same name. Tweets that don't contain location terms identifying a geographical
+the same name. Tweets that do not contain location terms identifying a geographical
 location are discarded as shown in Figure~\ref{fig:flow_chart_location_extraction}.
 
 \begin{figure}[H]
