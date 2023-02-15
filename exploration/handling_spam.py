@@ -17,7 +17,7 @@ supervisor_proc_geo_path: str = abspath("./" + cfg.supervisor.processed_geo)
 df_sup = pd.read_csv(supervisor_proc_geo_path, converters={"user": ast.literal_eval})
 
 api_tweets_path: str = abspath(
-    cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23__2022-11-25_15:26:36.csv"
+    cfg.twitter_api.processed_geo + "_2021-08-17_to_2021-08-23__2023-02-02_22:34:09.csv"
 )
 df_api = pd.read_csv(api_tweets_path, converters={"user": ast.literal_eval})
 
@@ -45,13 +45,18 @@ df[rows_needed_names] = df["user"].apply(get_values).tolist()
 # Aggregation over users
 df["count"] = 1
 df_group = df.groupby(["user_id"], as_index=True)
+import json
+
 df_agg = df_group.agg(
     {
         "user_id": "first",
         "user_name": "first",
         "count": "sum",
         "created_at": lambda x: list(x),
-        "locations": lambda x: list(x),
+        "locations": lambda x: list(
+            map(lambda y: list(json.loads(y.replace("'", '"')).keys()), x)
+        ),
+        # "locations": lambda x: list(map(lambda y: y, x)),
         "id": lambda x: list(x),
     }
 )

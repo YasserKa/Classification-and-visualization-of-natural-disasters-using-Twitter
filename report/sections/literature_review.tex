@@ -15,17 +15,16 @@ queries that are made of operators to match a variety of tweet attributes, such 
 keyword, having a geotag provided by the user who created the tweet, and the language classified by
 Twitter. Users generate around 500-700 million tweets a day \cite{inproceedings}, making it
 necessary to limit the number of tweets to fetch using the \ac{API} to reduce computational power and
-downtime. \citeauth{fengExtractionPluvialFlood2018} only fetches geotagged tweets and then filters
-necessary
-them using 45 keywords in 7 languages; this approach filters out a big chunk of relevant tweets
-since 1\% of tweets are geotagged \cite{middletonRealTimeCrisisMapping2014}. A better approach is to
-fetch tweets using keywords related to the topic of interest in different languages.
-\citeauth{debruijnGlobalDatabaseHistoric2019b} uses over 40 keywords associated with floods in 11
-major languages in the query to fetch tweets.
+downtime. \citeauth{fengExtractionPluvialFlood2018} only fetch geotagged tweets and then filter 
+them using 45 keywords in 7 languages; this approach disregards a big chunk of relevant tweets
+since 1\% of tweets are geotagged \cite{middletonRealTimeCrisisMapping2014}. A better approach that
+doesn't only regard 1\% of the tweets is to fetch tweets using keywords related to the topic of
+interest in different languages. \citeauth{debruijnGlobalDatabaseHistoric2019b} uses over 40
+keywords associated with floods in 11 major languages in the query to fetch tweets.
 
 In addition to using textual data, some researchers use other types of data to enhance their
-pipelines. Some tweets contain media attachments, such as images and videos that are potential
-visual information for the concerned research topic
+pipelines. Some tweets contain media attachments, such as images and videos that potentially provide
+additional visual information for the concerned research topic
 \cite{alamFloodDetectionTwitter2020}\cite{saidFloodsDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020};
 search engines are another resourceful source for images as well
 \cite{fengExtractionPluvialFlood2018}. When it comes to flooding events, hydrological information
@@ -51,9 +50,9 @@ the location is located in; on the other hand,
 \citeauth{petersenIdentificationExplorationExtreme2021} replace the terms by the word ``place'' if
 they get mentioned more than 0.5\% of the size of the data set. Another way to improve the
 performance of the classifier is to group the terms by converting them to lower-case and
-transforming them to their lexeme or word stem by lemmatisation or stemming respectively.
+transforming them to their lexeme (e.g. better turns to good) or word stem (e.g. walking turns to walk) by lemmatisation\cite{petersenIdentificationExplorationExtreme2021} or stemming\cite{fengExtractionPluvialFlood2018}, respectively.
 
-Some tweets are noisy or redundant, making them a target for filtering out. Retweets are identical
+ Some tweets are redundant or do not provide any relevant information, these can be considered noise and be filtered out. For example, retweets are identical
 to other tweets without additional context making them unneeded. Spam bots generate similar tweets
 for malicious reasons, such as spreading false content to manipulate the public; other reasons could
 be for utility reasons, such as creating a feed for users to check updates. These tweets introduce
@@ -75,8 +74,8 @@ out irrelevant content.
 Most classifiers use supervised \ac{ML} algorithms requiring labelled data for training. A
 straightforward approach is to manually label a sample of the tweets
 \cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
-\citeauth{petersenIdentificationExplorationExtreme2021} use Crisilext6
-\cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsource labelled tweets, for training their
+\citeauth{petersenIdentificationExplorationExtreme2021} use CrisisLex6
+\cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsourced collection of labelled tweets, for training their
 classifiers that get evaluated on 88 million unlabelled tweets containing flood-related terms
 \cite{DVN/T3ZFMR_2019}. \citeauth{fengExtractionPluvialFlood2018} automatically label the tweets by
 checking if there is rainfall during the provided time and city location by using a weather
@@ -115,54 +114,53 @@ embeddings with 0.7868 and 0.94611 accuracies, respectively.
 \ac{RNN} \cite{hopfieldNeuralNetworksPhysical1982} is a common artificial neural network for
 \ac{NLP} tasks, such as text classification, \ac{NER}, and machine translation. Its memory enables
 it to take information from previous input to update the current input and output vector (called
-hidden state) as shown in Figure~\ref{fig:rnn_example}, making it appropriate for sequential. For common
-tasks such as translation  an encoder-decoder architecture is needed, where the encoder encodes the
-input sequence into a numerical representation (called the last hidden state) that gets passed to
-the decoder for output sequence generation. Figure~\ref{fig:rnn_encoder_decoder}, taken from
-\citeauthor{tunstallNaturalLanguageProcessing2022}'s book\cite{tunstallNaturalLanguageProcessing2022}, shows an example of translating the
-English statement ``Transformers are great!'' to the German language. \ac{RNN} has shortcomings when it tries to
-capture the context for long sequences of information, where the encoder might lose the information
-at the start of the sequence while forming the representation. \ac{RNN}'s  weak memory can be
-addressed by using the attention mechanism that allows the decoder to access all the hidden states
-of the encoder. The main goal of attention is to enable the decoder to prioritize the states using
-weights it assigns at every decoding timestamp. Figure~\ref{fig:rnn_encoder_decoder_attention} shows
-an example for predicting the third token in the output sequence. Even though attention improves the
-accuracy of the translations, the computations are sequential and cannot be parallelized. In
-addition, most \ac{NLP} tasks require trains models using a large amounts of labelled text data that
-might not be available. Transfer learning resolves this problem by transferring knowledge acquired
-of solving one problem to other related ones.
+hidden state) as shown in Figure~\ref{fig:rnn_example}, taken from \citeauthor{tunstallNaturalLanguageProcessing2022}'s book\cite{tunstallNaturalLanguageProcessing2022},making it appropriate for sequential data, such as text. 
 
 % The trims are added to remove the black edges
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/unrolling_rnn.png}
+  \includegraphics[width=12cm,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/unrolling_rnn.png}
 \end{center}
 \caption{RNN example \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:rnn_example}
 \end{figure}
 
+For common tasks such as translation an encoder-decoder architecture is needed, where the encoder encodes the
+input sequence into a numerical representation (called the last hidden state) that gets passed to
+the decoder for output sequence generation. Figure~\ref{fig:rnn_encoder_decoder} shows an example of translating the
+English statement ``Transformers are great!'' to the German language. 
+
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn.png}
+  \includegraphics[width=12cm, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn.png}
 \end{center}
 \caption{Two \ac{RNN}s making an encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:rnn_encoder_decoder}
 \end{figure}
 
+\ac{RNN} has shortcomings when it tries to capture the context for long sequences of information, where the encoder might lose the information at the start of the sequence while forming the representation. \ac{RNN}'s  weak memory can be
+addressed by using the attention mechanism that allows the decoder to access all the hidden states
+of the encoder. The main goal of attention is to enable the decoder to prioritize the states using
+weights it assigns at every decoding timestamp. Figure~\ref{fig:rnn_encoder_decoder_attention} shows
+an example for predicting the third token in the output sequence. Even though attention improves the
+accuracy of the translations, the computations are sequential and cannot be parallelized. In
+addition, most \ac{NLP} tasks require training models using a large amounts of labelled text data that
+might not be available. Transfer learning resolves this problem by transferring knowledge acquired
+from solving one problem to other related ones.
+
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=\columnwidth,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn_attention.png}
+  \includegraphics[width=12cm,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn_attention.png}
 \end{center}
 \caption{Two \ac{RNN}s making an encoder-decoder architecture with attention mechanism \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:rnn_encoder_decoder_attention}
 \end{figure}
 
 The concept of transfer learning was used in computer vision before its introduction to \ac{NLP}.
-The models are pre-trained on large-scale datasets pre-trained on massive datasets, such as Imagenet
+The models are pre-trained on massive datasets, such as Imagenet
 \cite{krizhevskyImageNetClassificationDeep2017} and places database,
 \cite{zhouLearningDeepFeatures2014} to learn the basic features of images, such as
-edges or colours. They are fine-tuned on downstream tasks with a smaller dataset. 
-. \citeauth{fengExtractionPluvialFlood2018} use GoogLeNet
+edges or colours. They are fine-tuned on downstream tasks with a smaller dataset.citeauth{fengExtractionPluvialFlood2018} use GoogLeNet
 (Inception-V3 model) \cite{7780677} pre-trained on ImageNet to train multilayer perceptron, random
 Forest, gradient boosted trees, and  xgboost with accuracies of 0.8907, 0.9133, 0.9252, and 0.9295,
 respectively. \citeauth{ningPrototypingSocialMedia2020} uses VGGNet
@@ -188,7 +186,7 @@ F1-score.
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[width=\columnwidth, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_transformer.png}
+  \includegraphics[width=12cm, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_transformer.png}
 \end{center}
 \caption{Transformer's encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:encoder_decoder_transformer}
@@ -205,13 +203,13 @@ for it. During the event, the rescue teams' task would be easier if they can loc
 people \cite{singhEventClassificationLocation2019}. After the event wanes, assessing the most
 impacted spots can enable the authority to make informed decisions on a recovery plan.
 
-Users can assign an accessible property to their tweets, called ``geotag'' , a geographical
+Twitter users can assign an accessible property to their tweets, called ``geotag'', a geographical
 identification metadata. Adding ``has:geo'' to the query sent to the API will return geotagged
 tweets with metadata about the location, such as a display name, geo polygon, and a geo lat-log
 coordinate. The geotag is the most straightforward method to identify the locations 
 \cite{fengExtractionPluvialFlood2018}, but unfortunately, only 1\% of the tweets are geotagged
-\cite{middletonLocationExtractionSocial2018}, making it not include a massive amount of tweets
-mentioning locations.
+\cite{middletonLocationExtractionSocial2018}, disregarding a massive amount of tweets
+mentioning locations in their text.
 
 Locations can be extracted using toponyms, a place's name, in tweets' text by using geoparsing.
 Geoparsing is a process of converting free-text descriptions of places
@@ -219,18 +217,18 @@ Geoparsing is a process of converting free-text descriptions of places
 can have more than one location candidate, such as ``Boston'', which is the name of several places,
 including ``Boston, USA'' and ``Boston, UK''; this fact makes geoparsing tasks on a global scale
 harder than local ones. \citeauth{debruijnGlobalDatabaseHistoric2019b} uses TAGGS
-\citeauth{debruijnTAGGSGroupingTweets2017}, a geoparsing algorithm, to extract countries,
+\cite{debruijnTAGGSGroupingTweets2017}, a geoparsing algorithm, to extract countries,
 administrative areas, and settlements (i.e. cities, towns, and villages) mentioned within the tweets'
 text on a global scale. The process includes toponym recognition and toponym resolution.  Toponym
 recognition extracts the toponyms that refer to one or more locations using a gazetteer, a
 geographical index, or a dictionary. Toponym resolution predicts the correct location for the
-toponyms in several steps.A score is assigned to each possible location using metadata related to
+toponyms in several steps. A score is assigned to each possible location using metadata related to
 the tweet, such as the user's timezone \& hometown, the tweet's coordinates, and mentions of nearby
-locations. Then, calculate the average score of grouped tweets mentioning the same toponym within a
-24-hour. Finally, assign the groups of tweets with the location that has the highest score.
-\citeauth{petersenIdentificationExplorationExtreme2021} uses geotag property, geoparsing using
+locations. Then, the average score of grouped tweets mentioning the same toponym within a
+24-hour is calculated. Finally, the groups of tweets with the location that has the highest score are assigned.
+\citeauth{petersenIdentificationExplorationExtreme2021} use geotag property, geoparsing using
 \ac{NER} on text, and user's profile location to extract toponyms. If the text contains two
-toponyms, check if they are close with a distance threshold of 1500km, choose one of them randomly.
+toponyms, they pick one of them randomly if the locations are close with a distance threshold of 1500km.
 They use GeoPy\footnote{https://geopy.readthedocs.io/en/stable/} to assign geographical locations to
 toponyms, a Python package that is a client for several popular geocoding web services (e.g.,
 GoogleV3 and GeoNames). \citeauth{singhEventClassificationLocation2019} uses the fact that people
@@ -251,25 +249,31 @@ locations using Openstreetmap\footnote{https://www.openstreetmap.org/} location 
 the social media meta data, and names of organizations using \ac{NER}. They present
 the information using several interactive graphs such as pie charts, word clouds and line graphs.
 
-Sentiment analysis is a popular text analysis technique that shows people's sentiments during an
-event. \citeauth{luVisualizingSocialMedia2015} extract sentiment analysis from Twitter about the
-Ebola virus using three different sentiment classifiers to measure the sentiment score of the tweet
-depending on the majority of the votes. Also, they calculate the inconsistency between the
-classifiers using an entropy measure \cite{argamon-engelsonCommitteeBasedSampleSelection1999}. The
-positive and negative sentiments are each presented in a density map using solid blue and red
-colours, respectively; the colour is blurred insread if the inconsistency score is above a certain
-threshold. \citeauth{perinan-pascualAssessingImpactTweets2020} tries to extract the sentiment by
-calculate three scores for the tweets: (1) the reliability of how much the tweet discusses a problem
-during a hazard, (2) the impact of the tweet by using the user's activity and popularity as well as
-how much influence the tweet is \cite{palIdentifyingTopicalAuthorities2011}, (3) and the impact of
-the problem using the previous scores. They present the mean of the scores on a time frame basis on
-a line graph.
+Dimensionality reduction is a common preprocessing technique to reduce the complexity of textual
+data, preparing it for other tasks such as noise reduction, visualization, or clustering.
+\citeauth{heusingerDimensionalityReductionContext2022} uses random projection to reduce the
+dimensions of tweets to predict their hashtags, making them easier to search on Twitter.
+\citeauth{omuyaSentimentAnalysisSocial2022} extracts features from social media using Principal
+Component Analysis to perform sentiment analysis. Sentiment analysis is a popular text analysis
+technique that shows people's sentiments during an event. \citeauth{luVisualizingSocialMedia2015}
+perform sentiment analysis from Twitter about the Ebola virus using three different sentiment
+classifiers to measure the sentiment score of the tweet depending on the majority of the votes.
+Also, they calculate the inconsistency between the classifiers using an entropy measure
+\cite{argamon-engelsonCommitteeBasedSampleSelection1999}. The positive and negative sentiments are
+each presented in a density map using solid blue and red colours, respectively; if the inconsistency
+score is above a certain threshold, the colour is blurred
+\citeauth{perinan-pascualAssessingImpactTweets2020} tries to extract the sentiment by calculating
+three scores for the tweets: (1) the reliability of how much the tweet discusses a problem during a
+hazard, (2) the impact of the tweet by using the user's activity and popularity as well as how much
+influence the tweet is \cite{palIdentifyingTopicalAuthorities2011}, (3) and the impact of the
+problem using the previous scores. They present the mean of the scores on a time frame basis on a
+line graph.
 
 \section{Visualization}
 Visualization of the results of an \ac{NLP} pipeline is common practice for several reasons. The
 massive and complex data can communicate the needed knowledge for different audiences to understand
 the underlying situation and take action accordingly. The developers can use the visualization to
-validate that the pipeline is working as intended. The authority can check the Spatio-temporal data
+validate that the pipeline is working as intended. The authority can check the spatio-temporal data
 to identify places that have recurring floods and reinforce their infrastructure to prepare for
 future flooding. Also, the plots make event detection and monitoring much faster and more
 straightforward.
@@ -292,7 +296,7 @@ of tweets for the selected location.
 \citeauth{petersenIdentificationExplorationExtreme2021} provide multiple plots with sophisticated
 methods to configure the interface and filter the tweets. Their visualization is powered using the python
 libraries, Plotly\footnote{https://plotly.com/python/} and Dash\footnote{https://dash.plotly.com/}.
-The app, shown in figure \ref{fig:peter}, provides an interface to showcase the different aspects of the
+The app, shown in Figure~\ref{fig:peter}, provides an interface to showcase the different aspects of the
 data: spatial via a map, temporal via a histogram, and textual via a list of tweets and word cloud.
 They use a scatter map to show the locations extracted from the tweets, where the colour of each
 point represents the method used to identify the location. To resolve the problem of tweets
@@ -314,9 +318,9 @@ drop-down to change the map graph type and the algorithm used to classify the tw
 \end{figure}
 
 \citeauth{fengExtractionPluvialFlood2018} use leaflet to plot a map showing flooding events as
-observed in figure \ref{fig:feng}. They use $\text{Getis-Ord Gi}^{\ast}$ \cite{ordLocalSpatialAutocorrelation2010}
+observed in Figure~\ref{fig:feng}. They use $\text{Getis-Ord Gi}^{\ast}$ \cite{ordLocalSpatialAutocorrelation2010}
 to detect statistical hot spots and present them as a choropleth map. The light blue circles
-represent the Spatio-temporal clusters of events, and the circles with numbers at the centre
+represent the spatio-temporal clusters of events, and the circles with numbers at the centre
 indicate clusters of tweets in that area with their total. The markers indicate individual tweets
 with a pop-up containing information about it.
 
@@ -328,8 +332,8 @@ with a pop-up containing information about it.
 \label{fig:feng}
 \end{figure}
 
-\citeauth{barkerDevelopmentNationalscaleRealtime2019} visualizes the tweets using different map plots
- created by leaflet. The map plot in figure \ref{fig:baker_marker} consists of clickable pointers for pop-up boxes of the tweets.
+\citeauth{barkerDevelopmentNationalscaleRealtime2019} visualize the tweets using different map plots
+ created by leaflet. The map plot in Figure~\ref{fig:baker_marker} consists of clickable pointers for pop-up boxes of the tweets.
 
 \begin{figure}[H]
 \begin{center}
@@ -339,7 +343,7 @@ with a pop-up containing information about it.
 \label{fig:baker_marker}
 \end{figure}
 
-The bubble map in figure \ref{fig:baker_bubble} displays the tweets with the size of the circles
+The bubble map in Figure~\ref{fig:baker_bubble} displays the tweets with the size of the circles
 representing the area of the place and colour indicating the number of tweets talking about the
 location.
 \begin{figure}[H]
