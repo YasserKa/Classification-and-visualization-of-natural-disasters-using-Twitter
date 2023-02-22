@@ -1,9 +1,10 @@
 % vim: spell spelllang=en_gb
 \chapter{Results}
 
-This section presents the results of the methods used by evaluating each step of the pipeline: (1)
-classifying flood-relevant tweets, (2) extracting geographical locations from tweets, (3) finding
-useful insights using textual analysis techniques, and (4) visualizing the results in an interactive manner.
+This section presents the results of the methods used by evaluating each step of the pipeline using
+three datasets from flooding events in Sweden : (1) classifying flood-relevant tweets, (2) extracting
+geographical locations from tweets, (3) finding useful insights using textual analysis techniques,
+and (4) visualizing the results in an interactive manner.
 
 \section{Text Classification} 
 Table~\ref{tab:metrics} shows the evaluation metrics mentioned in
@@ -14,7 +15,7 @@ performing well with the trained data. Table~\ref{tab:tweets_missclassified} sho
 falsely classified tweets from the Swedish dataset translated to English.
 
 
-\begin{table}
+\begin{table}[H]
   \center
   \bgroup
   \def\arraystretch{1.5}
@@ -44,9 +45,12 @@ falsely classified tweets from the Swedish dataset translated to English.
   \label{tab:metrics}
 \end{table}
 
+% Left aligned row
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
 \begin{table}
   \center
-  \begin{tabular}{|p{5cm}|p{5cm}|l|l|}
+  \begin{tabular}{|L{0.35\textwidth}|L{0.35\textwidth}|l|l|}
     \hline
     Translated tweet & Processed tweet & Predicted & Actual \\
     \hline
@@ -95,9 +99,21 @@ created by experts at a workshop in \ac{SMHI} containing flood-relevant terms in
  OR regnskur OR dagvattensystem OR dränering OR "höga vågor"
  OR "höga flöden" OR dämmor
  OR snösmältning OR blött OR oväder OR stormflod OR vattenstånd
- OR vattennivå OR åskväder OR regnstorm"
+ OR vattennivå OR åskväder OR regnstorm
  OR "mycket regn" OR "kraftig regn" OR översvämningsskador
  OR översvämningar OR översvämning
+\end{verbatim}
+
+Its English translation is the following:
+
+\begin{verbatim}
+ "atmospheric river" or "high water" or thunderstorms
+  Or "rain shower" or "day water system" or drainage or "high waves"
+  Or "high flows" or dams
+  Or "snow melt" or wet or storm or "storm river" or "water level"
+  Or "water level" or thunderstorms or rainstorm
+  Or "very rain" or "heavy rain" or "flood damage"
+  Or floods or flood
 \end{verbatim}
 
 \subsection{Gävleborg and Dalarna on the 18th of August 2021}
@@ -110,7 +126,7 @@ Table~\ref{tab:tweets_missclassified_gavle} shows some of the false negatives.
 
 \begin{table}[H]
   \center
-  \begin{tabular}{|p{7.5cm}|p{7.5cm}|}
+  \begin{tabular}{|L{7.5cm}|L{7.5cm}|}
     \hline
     Translated tweet & Processed tweet\\
     \hline
@@ -208,9 +224,10 @@ because the number of selected tweets is too small.
   \label{fig:gavle_text_analysias_tweets_table}
 \end{figure}
 
-Checking the map in Figure~\ref{fig:traffic_disruption_map} shows that the tweets are talking about traffic
-disruptions happening in the southern parts of Gävleborg and Dalarna counties. Besides this, the
-text analysis techniques didn't find anything interesting.
+Checking the map in Figure~\ref{fig:traffic_disruption_map} shows that the same tweets discuss
+traffic disruptions in the southern parts of Gävleborg and Dalarna counties. Besides this, the text
+analysis techniques didn't find anything interesting because the tweets are of small size and
+composed of other elements besides text to capture their context.
 
 \begin{figure}[H]
   \begin{center}
@@ -225,9 +242,9 @@ Heavy rain caused flooding in Gothenburg on the 11th of September
 2019\footnote{https://floodlist.com/europe/sweden-flash-floods-gothenburg-september-2019}.
 After extracting 315 tweets from Twitter's API and
 processing them, 243 were left, of which 117 were classified as flood-relevant, of which 53
-containing toponyms. From, the spatial and temporal distributions of the plots in
+containing toponyms. The spatial and temporal distributions of the plots in
 Figure~\ref{fig:gothenburg_map}
-shows the true location and starting date of the event, which is evident from the 18 flood-relevant tweets in Gothenburg county, of which 12 were created on the
+show the true location and starting date of the event, which is evident from the 18 flood-relevant tweets in Gothenburg county, of which 12 were created on the
 11th and three on the 12th. With that said, the location extraction step made an error by
 identifying ``Spanien'', which was contained in 16 tweets, as isolated dwelling in Stockholm; in
 fact, the tweets are discussing floods in the country
@@ -238,7 +255,7 @@ flood event.
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=13cm]{./images/gothenburg_floods.png}
+    \includegraphics[width=12cm]{./images/gothenburg_floods.png}
   \end{center}
   \caption{Tweet table  showing tweets about flood event in Gothenburg}
   \label{fig:gothenburg_map}

@@ -18,17 +18,18 @@ news is to blacklist user accounts with suspicious by checking for suspicious ac
 past tweets and network. Another side effect of using social media is that some events happen
 without getting reported because they are either out of sight from the public eye, or didn't attract
 sufficient attention. Social media won't provide sufficient data, if any, about these events to
-process; integrating more data sources into the pipeline, such as web meteorological data, web
-scraping articles, and reports from governmental agencies might supplement this deficiency.
+process; integrating more data sources into the pipeline, such as meteorological data, articles, and
+reports from governmental agencies might supplement this deficiency.
 
-The evaluation metrics for the classifier based on the DistilBERT transformer seems promising on the
+The evaluation metrics for the classifier based on the DistilBERT transformer seem promising on the
 datasets it was trained on, with an accuracy of 92.31\% and F$_{1}$ score of 91.81\%; yet, the
-experiments show that the model has high precision and low recall which could be a side effect of
-the tweets being microblogs (i.e. small text documents), where there is not enough context in the
-tweets to be able to classify them correctly (e.g. ``It's wet in location X'', and ``It rained a lot
-yesterday''); also, since the context of the tweets is constructed using other elements than text,
-such as images, hashtags, and \ac{URL}s, the classifier will not be able to indicate the actual
-intent of the user, failing in categorizing the tweet correctly (e.g. It's very wet here
+experiments show that the model has high precision and low recall. The nature of the text in tweets
+makes it more difficult for them to get classified. The tweets are
+microblogs (i.e. small text documents), where there is not enough context in the tweets to be able
+to classify them correctly (e.g. ``It's wet in location X'', and ``It rained a lot yesterday'');
+also, since the context of the tweets is constructed using other elements than text, such as emojis,
+images, hashtags, and \ac{URL}s, the classifier will not be able to indicate the actual intent of
+the user, failing in categorizing the tweet correctly (e.g. It's very wet here
 https://t.co/PcroA3s1A2); putting these elements into consideration while classifying the tweets is
 possible by using an image classifier and a web scraper to handle the images and the \ac{URL}s,
 respectively. There's a drawback to using a classifier that works only on English text, since it
@@ -47,21 +48,23 @@ using a better way to handle the existence of several locations in one tweet ins
 one with the smallest parameter only.
 
 The plots in the visual interface present the textual, spatial, and temporal aspects of the tweets
-interactively and straightforwardly. The map shows the distribution of the geographical locations
-mentioned in the tweet and enables filtering using regions; yet, the map does not allow box or lasso
-selections, and the pop-up of the pointers shows the name of the location only, where it could be
-more informative by including more information related to the tweet. The histogram shows the
-temporal distribution for the creation date of the tweets, where the number of tweets is the highest
-at the start of the event then it reduces gradually afterwards. This information can be a factor in
-calculating the impact of the flood on society since the event attracts more attention the more it
-influences the citizens. The tweets table provides a way to check some features of the selected
-tweets, and it could be improved by adding a text filter to focus on tweets that contain specific
-terms; this feature would support the ``Filter'' task for the textual data. The test cases in the
-previous show a potential use case for textual filtering by limiting the tweets on the terms related
-to trends, such as traffic disruption and \ac{SMHI} warnings. Besides these trends, the results of
-the text analysis techniques shown in the \ac{t-SNE}'s scatter plot, \ac{LDA} table, and \ac{TF-IDF}
-table didn't provide any useful insights. Some clusters in the scatter plot are made of
-near-identical tweets and are likely created by spambots. Using other clustering techniques in the
+interactively. The map shows the distribution of the geographical locations mentioned in the tweet
+and enables filtering using regions; yet, the map does not allow box or lasso selections, and the
+pop-up of the pointers shows the name of the location only, where it could be more informative by
+including more information related to the tweet. The histogram shows the temporal distribution for
+the creation date of the tweets, where the number of tweets is the highest at the start of the event
+then it reduces gradually afterwards. This information can be a factor in calculating the impact of
+the flood on society since the event attracts more attention the more it influences the citizens.
+The tweets table provides a way to check some features of the selected tweets, and it could be
+improved by adding a text filter to focus on tweets that contain specific terms; this feature would
+support the ``Filter'' task for the textual data. The test cases show a potential use case for
+textual filtering by limiting the tweets to the terms related to trends found by exploring the
+clusters in the \ac{t-SNE} scatter plot, such as traffic disruption and \ac{SMHI} warnings. The
+clustered 2-dimensional space provides a method to find similar tweets using their spatial
+proximity, potentially referring to similar events, assessed using the spatio-temporal
+distribution in the map and histogram plots. Besides these trends, the results of the text analysis
+techniques shown in the \ac{t-SNE}'s scatter plot, \ac{LDA} table, and \ac{TF-IDF} table didn't
+provide any useful insights due to the nature of the text. Using other clustering techniques in the
 scatter plot, such as K-means, might bring better results. Obtaining more data and changing the
 pre-processing approach might improve the results of these techniques. More text analysis techniques
 can be used, such as sentiment analysis, which gives the ability to quantify the impact of the
