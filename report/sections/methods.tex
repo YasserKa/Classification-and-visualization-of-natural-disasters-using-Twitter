@@ -3,7 +3,7 @@
 
 This section discusses and motivates the methods used in the project. Figure~\ref{fig:flow_chart}
 shows a flow chart of the steps for the pipeline (an enlarged and more detailed copy is available in
-Figure~\ref{fig:flow_chart_big} of appendix \ref{appendix:raw}). The pipeline consists of the
+Figure~\ref{fig:flow_chart_big} of Appendix \ref{appendix:raw}). The pipeline consists of the
 following steps: Data collection, text classification, location extraction, text analysis, and visualization.
 Python is the primary programming language used for the project because of the rich ecosystem
 surrounding it, especially when it comes to data science-related tasks. The code base is available
@@ -30,12 +30,12 @@ Queensland\footnote{https://en.wikipedia.org/wiki/Cyclone\_Oswald}, and there ar
 records for each one with the tweet's ID, tweet's text, and a label about the relevance of the tweet
 regarding the event. The third dataset was collected and annotated in the scope of the
 AI4ClimateAdaptation project and includes flood events in Sweden, spanning between 2015 and 2021; it
-contains 4899 tweets, mostly in the Swedish language, with attributes presented in
-Table~\ref{tab:dataset_attr}. The text and metadata of the tweets are extracted from Twitter's API
-using the IDs. The trained model performance is verified using tweets extracted from the API using
-Tweepy\footnote{https://docs.tweepy.org/en/latest/index.html}, a python library for accessing
-Twitter API. Figure~\ref{fig:flow_chart_data_collection_text_classification} shows both the source
-and usage of the data in the pipeline.
+contains 4899 tweets, most of them are in the Swedish language, with attributes presented in
+Table~\ref{tab:dataset_attr}. The text and metadata of the tweets are extracted from Twitter's
+\ac{API} using the IDs. The trained model performance is verified using extracted tweets from the
+\ac{API} using Tweepy\footnote{https://docs.tweepy.org/en/latest/index.html}, a python library for
+accessing Twitter \ac{API}. Figure~\ref{fig:flow_chart_data_collection_text_classification} shows
+both the source and usage of the data in the pipeline.
 
 \begin{figure}[H]
 \begin{center}
@@ -44,7 +44,6 @@ and usage of the data in the pipeline.
 \caption{Data collection and text classification steps of the pipeline}
 \label{fig:flow_chart_data_collection_text_classification}
 \end{figure}
-
 
 \begin{table}
   \center
@@ -67,31 +66,30 @@ and usage of the data in the pipeline.
   \label{tab:dataset_attr}
 \end{table}
 
-After retrieving the data, they are pre-processed to prepare them for the upcoming tasks, such as training an
-\ac{ML} algorithm, text analysis, and visualization.  Parts of text that do not contribute to the
-context are removed: \ac{URL}s, emojis, mentions, hashtag signs, numbers, new lines, punctuation,
-and stopwords (provided by spaCy\footnote{https://spacy.io/}, an \ac{NLP} python library).
-Afterwards, duplicate tweets, tweets containing no text, and retweets are discarded from the
-dataset. The trained model requires the text to be in the English language, and since Sweden
-is the focus of the research, most of the text is in Swedish; thus, the text is translated to
-English using google translate\footnote{https://translate.google.com/} by a python library wrapper
+After retrieving the data, they are pre-processed to prepare them for the upcoming tasks, such as
+training an \ac{ML} algorithm, text analysis, and visualization. Parts of the text that do not
+contribute to the context are discarded: \ac{URL}s, emojis, mentions, hashtag signs, numbers, new
+lines, punctuation, and stopwords (provided by spaCy\footnote{https://spacy.io/}, an \ac{NLP} python
+library). Afterwards, duplicate tweets, tweets with no text, and retweets are discarded from the
+dataset. The trained model requires the text to be in English, and since Sweden is the focus of the
+research, most of the text is in Swedish; thus, the Swedish text is translated to English using
+google translate\footnote{https://translate.google.com/} by a python library wrapper
 deep-translate\footnote{https://deep-translator.readthedocs.io/en/latest/}. 
 
 Data needs to be stored and managed to accommodate policies and regulations. Twitter's developer
 policy\footnote{https://developer.twitter.com/en/developer-terms/policy} has a content
-redistribution section stating that only the IDs of the tweets can be shared online. Thus, the
-tweets can not be available publicly on sources, such as GitHub (the service that hosts the publicly available
-code base). To this end, the data is stored after each step of the pipeline on google drive using
+redistribution section stating that only tweets' IDs can be shared online. Thus, the tweets can not
+be available publicly on the internet, such as GitHub (the service that hosts the publicly available
+code base). To this end, the data is stored after each step of the pipeline using google drive using
 \ac{DVC}'s\footnote{https://dvc.org/doc} data management capabilities.
 
-
-Twitter's API provides an extensive list of information about the
+Twitter's \ac{API} provides an extensive list of information about the
 tweets\footnote{https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet}.
 It shares the engagement metrics of the tweet, including like count, reply count, and retweet count;
 as well as, an \ac{NLP} analysis of its own, such as the language used, and entities parsed from the
 text. Table~\ref{tab:tweet_attr} shows the tweet's attributes used in this project for the following reasons: the id to
 generate the \ac{URL} of the tweet, the text for \ac{NLP} tasks, the created date for temporal
-analysis, and the author id to reduce spam.
+analysis, and author's id to reduce spam.
 
 \begin{table}
   \center
@@ -114,23 +112,23 @@ analysis, and the author id to reduce spam.
 
 \section{Text Classification}\label{sec:text_classification_section}
 
-This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for text
-classification.  The main advantage of this model is that it achieves comparable performance to BERT
-while being significantly smaller than BERT and more efficient. A
-DistilBERT pre-trained model is provided by Hugging Face\footnote{https://huggingface.co/}, a
-framework that provides a unified API for over more than 50 architectures, making it easier for
-users to integrate \ac{NLP} models into their applications. The learning rate for the neural network
-is $5\times e^{-5}$ with 100 warmup steps over four epochs using 90\% of the labelled tweets as
-training data, 5\% as test data, and 5\% for validation. The text classification purpose is to
-identify the tweets that discuss flood events, so the ``On Topic'' attribute of the dataset is used
-as a label during training. 
+This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for
+text classification. The main advantage of this model is that it achieves comparable performance to
+BERT while being significantly smaller than BERT and more efficient. The used DistilBERT pre-trained
+model is provided by Hugging Face\footnote{https://huggingface.co/}, a framework that provides a
+unified \ac{API} for over more than 50 architectures, making it easier for users to integrate
+\ac{NLP} models into their applications. The learning rate for the neural network is $5\times
+e^{-5}$ with 100 warmup steps over four epochs using 90\% of the labelled tweets as training data,
+5\% as test data, and 5\% for validation. Text classification's purpose is to identify the tweets
+that discuss flood events, so model training is done with the ``On Topic'' attribute as a label. 
 
-Training the model locally takes a long time with the available resources, so the training is done
-using Amazon SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service that covers tools to
-build, train, and deploy \ac{ML} models. The data is uploaded to Amazon Simple Storage Service
-(Amazon S3) to make it accessible for the Hugging Face training script that is executed in an
-instance available in the cloud. After the training is complete, the fine-tuned model and the
-evaluation metrics are downloaded. The evaluation metrics consists of the following:
+Training the model in the local environment takes a long time with the available resources, so the
+training is done using Amazon SageMaker\footnote{https://aws.amazon.com/sagemaker/}, a service that
+covers tools to build, train, and deploy \ac{ML} models, to accelerate the process. The data is
+uploaded to Amazon Simple Storage Service (Amazon S3) to make it accessible for the Hugging Face
+training script, which gets executed in an instance available in the cloud. After completing the
+training, the fine-tuned model and the evaluation metrics are downloaded. The evaluation metrics
+consist of the following:
 
 \begin{itemize}
   \item Confusion matrix: a matrix showing the classifier's predictions for a labelled dataset
@@ -188,27 +186,24 @@ evaluation metrics are downloaded. The evaluation metrics consists of the follow
 \section{Location Extraction}
 
 The project uses a hybrid approach for geoparsing to extract locations. For toponym recognition, the
-tokens representing locations are extracted using the KBLab/bert-base-swedish-cased-ner
-model\footnote{https://huggingface.co/KBLab/bert-base-swedish-cased-ner}. The model is based on BERT
-and fine-tuned for \ac{NER} using The Stockholm-Umeå Corpus, a collection of Swedish texts from the
+tokens representing locations are identified using the KBLab/bert-base-swedish-cased-ner
+model\footnote{https://huggingface.co/KBLab/bert-base-swedish-cased-ner}, which is based on BERT and
+fine-tuned for \ac{NER} using The Stockholm-Umeå Corpus, a collection of Swedish texts from the
 1990s that consists of one million words. As for toponym resolution, the location tokens are
 disambiguated using Nominatim and GeoNames geocoders through
-Geopy\footnote{https://geopy.readthedocs.io/en/latest}, a Python client for several
-popular geocoding web services. Nominatim retrieves different fields about the
-location from OpenStreetMap. An example of the output is available in appendix
-\ref{appendix:examples}.
-
-
-The descriptions for the fields are available in the
-documentation\footnote{https://nominatim.org/release-docs/develop/api/Output/}. The project uses
-the lat, lon, and display\_name to represent the location on a map. In some cases, the text might
+Geopy\footnote{https://geopy.readthedocs.io/en/latest}, a Python client for several popular
+geocoding web services. Nominatim retrieves different fields about the location from OpenStreetMap.
+An output example is available in Appendix \ref{appendix:examples}. The descriptions for the
+attributes are available in the
+documentation\footnote{https://nominatim.org/release-docs/develop/api/Output/}. The project uses the
+lat, lon, and display\_name to represent the location on a map. In some cases, the text might
 contain two locations, the one with the smaller bounding box (area of corner coordinates) is used,
 which is, in most cases, a more specific place located in the bigger one (e.g. a street within a
-municipality). The geocoder services provide the ability to limit the search of the locations
-within a specific country. Since the project is limited to Sweden, the output is limited using
-this option, reducing the false positives that happen when different countries have places with
-the same name. Tweets that do not contain location terms identifying a geographical
-location are discarded as shown in Figure~\ref{fig:flow_chart_location_extraction}.
+municipality). The geocoder services provide the ability to limit the search of locations within a
+specific country. Since the project is limited to Sweden, the output is limited using this option,
+reducing the false positives that happen when different countries have places with the same name.
+Tweets not containing location terms identifying a geographical location are discarded, as shown in
+Figure~\ref{fig:flow_chart_location_extraction}.
 
 \begin{figure}[H]
   \begin{center}
@@ -222,20 +217,20 @@ location are discarded as shown in Figure~\ref{fig:flow_chart_location_extractio
 \section{Text analysis}
 
 Further pre-processing is done on the dataset to prepare for text analysis tasks. Lemmatisation is
-done on the text, using \ac{NLTK}\footnote{https://www.nltk.org/}, to reduce words to their lemmas.
-Afterwards, Tokenisation is done on the corpus. Terms occurring in less than 20 documents or 5\% of
+done on the text, using \ac{NLTK}\footnote{https://www.nltk.org/}, to reduce words to their lemmas;
+then, the corpus is tokenized. Terms occurring in less than 20 documents or 5\% of
 the documents are removed, as well as the terms mentioned in more than 75\% of the documents.
-Bigrams that occur more than 20 times in the corpus are included, such as traffic jams, and climate
+Bigrams that occur more than 20 times in the corpus are included, such as traffic jam, and climate
 change. To reduce the impact of spambots, tweets created by the same user who tweeted about the same location the past
 week are discarded.
 
 The text analysis used in the project are \ac{LDA} \cite{pritchardInferencePopulationStructure2000}
-\cite{falushInferencePopulationStructure2003}, \ac{TF-IDF}, and
-\ac{t-SNE}\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a topic modelling
-method that generates topics (a set of terms) in a corpus and assigns the relevance of each topic in
-each document. Categorizing tweets can show important insights about a flood event, such as
-incidents caused by floods and their impact on society. The \ac{LDA} model is initialized and
-trained using Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in the
+\cite{falushInferencePopulationStructure2003}, \ac{TF-IDF}, and \ac{t-SNE}
+\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a topic modelling method that
+generates topics (a set of terms) in a corpus and assigns the relevance of each topic in each
+document. Categorizing tweets can show important insights about a flood event, such as incidents
+caused by floods and their impact on society. The \ac{LDA} model is initialized and trained using
+Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in the
 visualization. The second text analysis technique used is \ac{TF-IDF}, using
 scikit-learn\footnote{https://scikit-learn.org/stable/}, to extract interesting terms by checking
 their average weight and frequency in the corpus. Lastly, \ac{t-SNE} is a visualization method for
@@ -243,23 +238,24 @@ high-dimensional data by reducing their dimensions to two or three-dimensional m
 project, \ac{t-SNE} reduces the dimensions of a \ac{TF-IDF} matrix generated from the corpus to
 2-dimensional space while using the euclidean distance between tweets; afterwards, the tweets are
 presented on a scatter plot with clusters generated by \ac{DBSCAN}, a density-based clustering
-non-parametric algorithm. Applying dimensionality reduction on data reduces their information, so the
-clustering is done before applying \ac{t-SNE} on the tweets. Presenting the tweets using a clustered
-2-dimensional space makes it easier to explore tweets for insights about the discussed flood event, 
-such as accidents and infrastructure damages.
+non-parametric algorithm. Applying dimensionality reduction on data reduces their information, so
+the clustering is done before applying \ac{t-SNE} on the tweets. Presenting the tweets using a
+clustered 2-dimensional space makes it easier to explore tweets for insights about the discussed
+flood event, such as accidents and infrastructure damages.
 
 \section{Visualization} 
-Visualization is the final and most significant step of the pipeline since
-it provides a framework for domain experts to interpret the data and gain actionable insights. Given
-the nature of the problem the pipeline addresses, which is extracting information about disastrous
-events, it is crucial to have several plots representing the different aspects of the events. Most
-hazards impact certain regions during a time interval, so describing the spatio-temporal information
-of the events is needed to analyze them. Also, since the tweets are mainly text, this allows them to
-be portrayed visually after applying text analysis techniques. Another direct and beneficial use for
-visualizing the data is to validate that the pipeline is functioning as intended by navigating
-through the plots and checking for any suspicious results. The web application proposed in this
-thesis is made by Dash\footnote{https://dash.plotly.com/} and
-Plotly\footnote{https://plotly.com/python/} python packages. Dash Bootstrap
+
+Visualization is the final and most significant step of the pipeline since it provides a framework
+for domain experts to interpret the data and gain actionable insights. Given the nature of the
+problem the pipeline addresses, which is extracting information about disastrous events, it is
+crucial to have several plots representing the different aspects of the events. Most hazards impact
+certain regions during a time interval, so describing the spatio-temporal information of the events
+is needed to analyze them. Also, the tweets being mainly text allows them to be portrayed visually
+after applying text analysis techniques. Another direct and beneficial use for visualizing the data
+is to validate that the pipeline is functioning as intended by navigating through the plots and
+checking for suspicious results. The web application proposed in this thesis is made by
+Dash\footnote{https://dash.plotly.com/} and Plotly\footnote{https://plotly.com/python/} python
+packages. Dash Bootstrap
 Components\footnote{https://dash-bootstrap-components.opensource.faculty.ai/} is used as well for an
 easier way to use Bootstrap components for Plotly Dash, such as buttons, input, and tables.
 
@@ -290,12 +286,12 @@ adhere to five of the seven tasks mentioned in the same paper:
   \item Relate: Viewing the connections among entries.
 \end{itemize}
 
-The metadata in Figure~\ref{fig:meta_data}, which are displayed in the interface between the map
-Fig. 3.4B and the histogram Fig. 3.4E, handles the overview task for the entire dataset. It
-contains the total number of tweets, the number of selected tweets, the oldest and newest tweet
-creation dates, the total number of locations, the number of selected locations, and a list of
-locations' names with the number of their occurrence with an ``etc.'' button to show a pop-over
-with the rest of the locations.
+The metadata in Figure~\ref{fig:meta_data}, which are displayed in the interface between the map (B)
+and histogram (E) in Fig. \ref{fig:visual_interface}, handles the overview task for the entire
+dataset. It contains the total number of tweets, the number of selected tweets, the oldest and
+newest tweet creation dates, the total number of locations, the number of selected locations, and a
+list of locations' names with the number of their occurrence with an ``etc.'' button to show a
+pop-over with the rest of the locations.
 
 \begin{figure}[H]
     \begin{center}
@@ -306,11 +302,7 @@ with the rest of the locations.
 \end{figure}
 
 
-Zooming helps the users to focus on the portion of tweets they are interested in, and Plotly
-supports it using the cursor for the map, histogram, and scatter plots. All plots retain the
-filtering done on each one of them, so the information of the selected tweets is presented after
-each filtering step, making the selected tweets easier to compare and explore; thus, satisfying the
-``Details-on-demand'' and ``Relate'' tasks.
+Zooming helps the users to focus on the portion of tweets they are interested in, and Plotly supports it using the cursor for the map, histogram, and scatter plots. All plots retain the filtering done on each one of them, so the information of the selected tweets is presented after each filtering step, making the selected tweets easier to compare and explore; thus, satisfying the ``Details-on-demand'' and ``Relate'' tasks.
 
 Figure~\ref{fig:map} shows the spatial distribution of tweets using an interactive map containing
 clickable clustered pointers for the tweets. It makes finding locations mentioned in the tweets more
