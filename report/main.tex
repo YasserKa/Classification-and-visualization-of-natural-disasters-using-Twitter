@@ -41,7 +41,17 @@
  bottom=1.44in
  }
 
-\usepackage{biblatex}
+\usepackage[backend=biber]{biblatex} 
+
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map[overwrite]{
+      \step[fieldsource=doi, final]
+      \step[fieldset=url, null]
+      \step[fieldset=eprint, null]
+    }  
+  }
+}
 \addbibresource{bibliography.bib}
  
 \begin{document}
