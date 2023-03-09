@@ -250,7 +250,7 @@ for domain experts to interpret the data and gain actionable insights. Given the
 problem the pipeline addresses, which is extracting information about disastrous events, it is
 crucial to have several plots representing the different aspects of the events. Most hazards impact
 certain regions during a time interval, so describing the spatio-temporal information of the events
-is needed to analyze them. Also, the tweets being mainly text allows them to be portrayed visually
+is needed to analyse them. Also, the tweets being mainly text allows them to be portrayed visually
 after applying text analysis techniques. Another direct and beneficial use for visualizing the data
 is to validate that the pipeline is functioning as intended by navigating through the plots and
 checking for suspicious results. The web application proposed in this thesis is made by
@@ -302,7 +302,11 @@ pop-over with the rest of the locations.
 \end{figure}
 
 
-Zooming helps the users to focus on the portion of tweets they are interested in, and Plotly supports it using the cursor for the map, histogram, and scatter plots. All plots retain the filtering done on each one of them, so the information of the selected tweets is presented after each filtering step, making the selected tweets easier to compare and explore; thus, satisfying the ``Details-on-demand'' and ``Relate'' tasks.
+Zooming helps the users to focus on the portion of tweets they are interested in, and Plotly
+supports it using the cursor for the map, histogram, and scatter plots. All plots retain the
+filtering done on each one of them, so the information of the selected tweets is presented after
+each filtering step, making the selected tweets easier to compare and explore; thus, satisfying the
+``Details-on-demand'' and ``Relate'' tasks.
 
 Figure~\ref{fig:map} shows the spatial distribution of tweets using an interactive map containing
 clickable clustered pointers for the tweets. It makes finding locations mentioned in the tweets more
@@ -398,3 +402,65 @@ clicking the button.
     \caption{Tables showing terms with respect their frequency and their weights}
     \label{fig:tables_lda_tfidf}
 \end{figure}
+
+\section{Reliability, Validity and Ethics}
+
+Any quantitative search project has to state certain aspects of the methods used: reliability,
+validity, and ethics \cite{woodrowReliabilityValidityEthics2014}. ``Reliability'' dictates that the
+results should be similar if done in the same environment. ``Validity'' shows how credible the
+research is (i.e., internal) and how it generalizes to other situations (i.e., external). ``Ethics''
+makes sure that the methods don't impact society negatively. 
+
+The methods used in the pipeline return the same results if applied to a specific dataset, making
+them reliable. Data extraction depends on a query that returns a set of tweets from the \ac{API};
+the users who created these tweets can edit, remove, or make them private, altering the request's
+results. The pipeline mitigates this problem by retrieving and storing the tweets once in files,
+keeping them out of reach from external effects. Tweet's classification depends on an artificial
+neural network which relies on randomly initialized tweets that are adjusted using a stochastic
+procedure during the training process to categorize the tweets. In other words,  some tweets are
+categorized differently after each training attempt. Unless there is a reason to re-train the model,
+such as improving data quality, the classification task will use the same trained model, resulting
+in the tweets to be always categorized the same. Location identification uses an \ac{NER} model and
+a gazetteer (i.e., a geographical dictionary), which are deterministic by nature if used on tweets
+containing one toponym that refers to one geographical location. Given tweets containing more than
+one toponym that refers to more than one location, the Swedish location containing the smallest
+parameter is used. All the plots in the visual interface except for the scatter plot don't depend on
+any randomness, making them reliable; the scatter plot will differ very slightly since it depends on
+a dimensionality reduction method that returns the same overall structure intact with different
+representations.
+
+Validation is done by applying the pipeline to several use cases on different flood events and
+checking the visual interface afterwards. If the methods are working as intended, the tweets table
+should contain tweets discussing the concerned flood event, the map should have a spatial
+distribution concentrated on the location of the event, the histogram representing the tweets'
+creation date should spike at the time when the event started, dissipating afterwards, and the plots
+presenting the text analysis techniques results should highlight some insights about the event. If
+these indications are present for all the use cases, then the pipeline can be applied in other flood
+events, given that they have sufficient coverage from Twitter users. If a flood event has too few to
+no mentions on Twitter, this pipeline will not be able to identify it. The evaluation metrics in
+Section~\ref{sec:text_classification_section} is another method to validate the classifier's
+performance. This pipeline has the potential to generalize to other events besides floods in other
+countries besides Sweden by doing minor tweaks; for the lack of time, the experiments done do not
+validate these scenarios. As for the visual interface, exposing it to a variety of users, such as
+college students and experts in \ac{SMHI} and getting feedback from them can assist in improving the
+interface.
+
+Using social media for research can be debated if it is ethical since the data sources are
+individuals who most likely don't provide consent and are unaware that their content is used for
+research \cite{zimmerItEthicalHarvest2010}. These social media users announce their ideas publicly,
+yet they might not intend to contribute to something else. However, these users should be aware that
+they are giving consent by agreeing to Twitter's terms of service which addresses the usage of the
+content they create. \citeauth{kamockiLegalIssuesRelated2022} address the legal issues related to
+intellectual property and personal data protection for reusing and sharing tweets. Depending on the
+researcher's opinion on this matter, they might need to request the consent of countless individuals
+before conducting research, which is a near-impossible task. Collecting a user's tweets might be
+seen as invasive and harmful since it can generate a persona for malicious activities. This project
+doesn't focus on individuals but on the flood-relevant content they generate, which can not harm the
+users. Altering the methods in a way to focus on information outside the context of flood events,
+such as sensitive data about individuals, can harm society. Fake messages posted for malicious
+reasons are another ethical concern, and they can be handled by adding a fake news detection step to
+the pipeline. Some tweets contain exaggerated content, which can make authorities distribute the
+resources inappropriately during a hazard; to this end, decision-makers should take the information
+provided by social media with a grain of salt and incorporate other sources before making a
+decision. This project should is not a standalone tool for analyzing a disaster;  it only provides a
+magnifying glass on social media regarding the relevant details of critical situations.
