@@ -5,6 +5,7 @@ additional_query ?= ""
 setup_env:
 	poetry install
 	poetry run pre-commit install
+	pip install .
 
 test:
 	python -m pytest
@@ -19,7 +20,7 @@ pull_data:
 	python -m dvc pull
 
 train_flood_classifier:
-	dvc exp run train --set-param 'datasets=$${supervisor.processed}' -f
+	dvc exp run train --set-param 'datasets=./data/processed/supervisor_annotated_tweets.csv' -f
 
 evaluation:
 	dvc exp show --drop '.*' --keep "(Experiment|Created|eval_accuracy|eval_f1|eval_precision|eval_recall)" -n 2

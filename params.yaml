@@ -1,7 +1,7 @@
-env: ${envs.sagemaker}
+env: sagemaker
 model: distilbert-base-uncased
-label: ${labels.flood_detection}
-datasets: ${supervisor.processed}
+label: relevant
+datasets: ./data/processed/supervisor_annotated_tweets.csv
 models_dir:
   flood_detection: ./models/flood_detection
 envs:
@@ -10,6 +10,8 @@ envs:
 labels:
   flood_detection: relevant
   mentions_impact: mentions_impact
+models:
+  distilbert: distilbert-base-uncased
 paths:
   tweets: data/tweets
 twitter_api:

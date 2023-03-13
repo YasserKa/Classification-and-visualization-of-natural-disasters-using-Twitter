@@ -25,7 +25,7 @@ floods in 11 major languages in the query to fetch tweets.
 In addition to textual data, some researchers use other data types to enhance their pipelines. Some
 tweets contain media attachments, such as images and videos that potentially provide additional
 visual information for the concerned research topic
-\cite{alamFloodDetectionTwitter2020}\cite{saidFloodsDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020};
+\cite{alamFloodDetectionTwitter2020}\cite{ningPrototypingSocialMedia2020}\cite{saidFloodsDetectionTwitter2020};
 search engines are another resourceful source for images as well
 \cite{fengExtractionPluvialFlood2018}. For flooding events, hydrological information can be a
 valuable source of information, which can be extracted from a global precipitation dataset based on
@@ -73,7 +73,7 @@ irrelevant content.
 
 Most classifiers use supervised \ac{ML} algorithms requiring labelled data for training. A
 straightforward approach is to manually label a sample of the tweets
-\cite{debruijnGlobalDatabaseHistoric2019b}\cite{barkerDevelopmentNationalscaleRealtime2019}.
+\cite{barkerDevelopmentNationalscaleRealtime2019}\cite{debruijnGlobalDatabaseHistoric2019b}.
 \citeauth{petersenIdentificationExplorationExtreme2021} use CrisisLex6
 \cite{olteanuCrisisLexLexiconCollecting2014}, a crowdsourced collection of labelled tweets, for
 training their classifiers that get evaluated on 88 million unlabelled tweets containing
@@ -137,7 +137,7 @@ translating the English statement ``Transformers are great!'' to German.
 \begin{center}
   \includegraphics[width=12cm, trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn.png}
 \end{center}
-\caption{Two \ac{RNN}s making an encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
+\caption{Two RNNs making an encoder-decoder architecture \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:rnn_encoder_decoder}
 \end{figure}
 
@@ -157,7 +157,7 @@ related ones.
 \begin{center}
   \includegraphics[width=12cm,trim={0.1cm 0.1cm 0.1cm 0.1cm},clip]{./images/encoder-decoder_rnn_attention.png}
 \end{center}
-\caption{Two \ac{RNN}s making an encoder-decoder architecture with attention mechanism \cite{tunstallNaturalLanguageProcessing2022}}
+\caption{Two RNNs making an encoder-decoder architecture with attention mechanism \cite{tunstallNaturalLanguageProcessing2022}}
 \label{fig:rnn_encoder_decoder_attention}
 \end{figure}
 
@@ -207,10 +207,10 @@ prepare for it. During the event, the rescue teams' task becomes easier if they 
 endangered people \cite{singhEventClassificationLocation2019}. When the event wanes, assessing the
 most impacted spots can enable the authority to make informed decisions on a recovery plan.
 
-Twitter users can assign an accessible property to their tweets, called ``geotag'', a geographical
-identification metadata. Adding ``has:geo'' to the query sent to the API will return geotagged
-tweets with metadata about the location, such as a display name, geo polygon, and a geo lat-log
-coordinate. The geotag is the most straightforward method to identify the locations 
+Twitter users can assign an accessible property to their tweets, called \texttt{geotag}, a geographical
+identification metadata. Adding \texttt{has:geo} to the query sent to the \ac{API} will return geotagged
+tweets with metadata about the location, such as its display name, geographical polygon,
+latitude, and longitude. The geotag is the most straightforward method to identify the locations 
 \cite{fengExtractionPluvialFlood2018}, but unfortunately, only 1\% of the tweets are geotagged
 \cite{middletonLocationExtractionSocial2018}.
 
@@ -283,12 +283,12 @@ straightforward.
 
 \citeauth{debruijnGlobalDatabaseHistoric2019b} use historical and real-time data to show flooding
 events on different levels (countries, administrative areas, and settlements). It is powered using a
-JavaScript library, leaflet\footnote{https://leafletjs.com/}. The application, seen in figure
+JavaScript library, leaflet\footnote{https://leafletjs.com/}. The application, seen in Figure
 \ref{fig:global}, contains a map showing the flooding events with an adjustable timeline and a list
 of tweets for the selected location.
 
 
-\begin{figure}[H]
+\begin{figure}[ht!]
 \begin{center}
   \includegraphics[width=\columnwidth]{images/global.png}
 \end{center}

@@ -37,16 +37,16 @@ stages:
       size: 6658
   train:
     cmd: ./flood_detection/train/train_flood_classifier.py --env sagemaker --model
-      distilbert-base-uncased --label relevant --download_model -- data/processed/supervisor_annotated_tweets.csv
+      distilbert-base-uncased --label relevant --download_model -- ./data/processed/supervisor_annotated_tweets.csv
     deps:
     - path: flood_detection/train/train_flood_classifier.py
-      md5: c3a47bcb7686b95c67cef4cf1e523a4d
-      size: 9618
+      md5: 3281b941cc7f8ee3236f1bcdbc6d8114
+      size: 9726
       isexec: true
     outs:
     - path: eval.json
-      md5: 852d6163e3c0639ade56d1c1408bacc6
-      size: 279
+      md5: b3815911bb0d4fa9bdcbd6a61939c48e
+      size: 312
   preprocess@data/raw/crisis_nlp_task_dmg.tsv:
     cmd: flood_detection/data/preprocess.py data/raw/crisis_nlp_task_dmg.tsv
     deps:

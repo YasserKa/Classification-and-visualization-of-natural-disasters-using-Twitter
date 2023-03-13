@@ -87,9 +87,9 @@ Twitter's \ac{API} provides an extensive list of information about the
 tweets\footnote{https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet}.
 It shares the engagement metrics of the tweet, including like count, reply count, and retweet count;
 as well as, an \ac{NLP} analysis of its own, such as the language used, and entities parsed from the
-text. Table~\ref{tab:tweet_attr} shows the tweet's attributes used in this project for the following reasons: the id to
-generate the \ac{URL} of the tweet, the text for \ac{NLP} tasks, the created date for temporal
-analysis, and author's id to reduce spam.
+text. Table~\ref{tab:tweet_attr} shows the tweet's attributes used in this project for the following
+reasons: the ID to generate the \ac{URL} of the tweet, the text for \ac{NLP} tasks, the created date
+for temporal analysis, and author's id to reduce spam.
 
 \begin{table}
   \center
@@ -112,7 +112,7 @@ analysis, and author's id to reduce spam.
 
 \section{Text Classification}\label{sec:text_classification_section}
 
-This project uses the DistilBERT transformer\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for
+This project uses the DistilBERT transformer~\cite{Sanh2019DistilBERTAD}, a variant of \ac{BERT}, for
 text classification. The main advantage of this model is that it achieves comparable performance to
 BERT while being significantly smaller than BERT and more efficient. The used DistilBERT pre-trained
 model is provided by Hugging Face\footnote{https://huggingface.co/}, a framework that provides a
@@ -127,12 +127,13 @@ training is done using Amazon SageMaker\footnote{https://aws.amazon.com/sagemake
 covers tools to build, train, and deploy \ac{ML} models, to accelerate the process. The data is
 uploaded to Amazon Simple Storage Service (Amazon S3) to make it accessible for the Hugging Face
 training script, which gets executed in an instance available in the cloud. After completing the
-training, the fine-tuned model and the evaluation metrics are downloaded. The evaluation metrics
-consist of the following:
+training, the fine-tuned model and the evaluation metrics are downloaded. The evaluation
+metrics~\cite{sokolovaSystematicAnalysisPerformance2009} consist of the following:
 
 \begin{itemize}
   \item Confusion matrix: a matrix showing the classifier's predictions for a labelled dataset
     corresponding to its actual values (Table~\ref{tab:confusion_matrix}).
+    
 
     \begin{table}
       \center
@@ -196,7 +197,7 @@ geocoding web services. Nominatim retrieves different fields about the location 
 An output example is available in Appendix \ref{appendix:examples}. The descriptions for the
 attributes are available in the
 documentation\footnote{https://nominatim.org/release-docs/develop/api/Output/}. The project uses the
-lat, lon, and display\_name to represent the location on a map. In some cases, the text might
+\texttt{lat}, \texttt{lon}, and \texttt{display\_name} to represent the location on a map. In some cases, the text might
 contain two locations, the one with the smaller bounding box (area of corner coordinates) is used,
 which is, in most cases, a more specific place located in the bigger one (e.g. a street within a
 municipality). The geocoder services provide the ability to limit the search of locations within a
@@ -224,24 +225,25 @@ Bigrams that occur more than 20 times in the corpus are included, such as traffi
 change. To reduce the impact of spambots, tweets created by the same user who tweeted about the same location the past
 week are discarded.
 
-The text analysis used in the project are \ac{LDA} \cite{pritchardInferencePopulationStructure2000}
-\cite{falushInferencePopulationStructure2003}, \ac{TF-IDF}, and \ac{t-SNE}
-\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a topic modelling method that
-generates topics (a set of terms) in a corpus and assigns the relevance of each topic in each
-document. Categorizing tweets can show important insights about a flood event, such as incidents
-caused by floods and their impact on society. The \ac{LDA} model is initialized and trained using
-Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in the
-visualization. The second text analysis technique used is \ac{TF-IDF}, using
+The text analysis techniques used in this project are \ac{LDA}
+\cite{falushInferencePopulationStructure2003}\cite{pritchardInferencePopulationStructure2000},
+\ac{TF-IDF}~\cite{enwiki:1143165699}, and \ac{t-SNE}~\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a
+topic modelling method that generates topics (a set of terms) in a corpus and assigns the relevance
+of each topic in each document. Categorizing tweets can show important insights about a flood event,
+such as incidents caused by floods and their impact on society. The \ac{LDA} model is initialized
+and trained using Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in
+the visualization. The second text analysis technique used is \ac{TF-IDF}, using
 scikit-learn\footnote{https://scikit-learn.org/stable/}, to extract interesting terms by checking
 their average weight and frequency in the corpus. Lastly, \ac{t-SNE} is a visualization method for
 high-dimensional data by reducing their dimensions to two or three-dimensional maps. In this
 project, \ac{t-SNE} reduces the dimensions of a \ac{TF-IDF} matrix generated from the corpus to
 2-dimensional space while using the euclidean distance between tweets; afterwards, the tweets are
-presented on a scatter plot with clusters generated by \ac{DBSCAN}, a density-based clustering
-non-parametric algorithm. Applying dimensionality reduction on data reduces their information, so
-the clustering is done before applying \ac{t-SNE} on the tweets. Presenting the tweets using a
-clustered 2-dimensional space makes it easier to explore tweets for insights about the discussed
-flood event, such as accidents and infrastructure damages.
+presented on a scatter plot with clusters generated by \ac{DBSCAN}
+\cite{esterDensitybasedAlgorithmDiscovering1996}, a density-based clustering non-parametric
+algorithm. Applying dimensionality reduction on data reduces their information, so the clustering is
+done before applying \ac{t-SNE} on the tweets. Presenting the tweets using a clustered 2-dimensional
+space makes it easier to explore tweets for insights about the discussed flood event, such as
+accidents and infrastructure damages.
 
 \section{Visualization} 
 
@@ -270,13 +272,12 @@ dates, location, and textual properties.
 \begin{center}
   \includegraphics[width=\columnwidth]{./images/visual_interface.png}
 \end{center}
-\caption{The proposed visual interface with 5 plots: (A) tweets table, (B) map for extracted locations, (C)
-\ac{t-SNE} scatter plot, (D) tables for \ac{LDA} and \ac{TF-IDF} terms, and (E) histogram for tweets' creation dates}
+\caption{The proposed visual interface}
 \label{fig:visual_interface}
 \end{figure}
 
 The visual interface is designed to fulfil the basic principles for the Visual Information Seeking
-Mantra: ``Overview first, zoom and filter, then details-on-demand''\cite{shneidermanEyesHaveIt1996}; most of the plots
+Mantra: ``Overview first, zoom and filter, then details-on-demand'' \cite{shneidermanEyesHaveIt1996}; most of the plots
 adhere to five of the seven tasks mentioned in the same paper:
 \begin{itemize}
   \item Overview: Having an overview of the whole dataset.
@@ -350,7 +351,7 @@ text, the processed text, the hashtags used, the location extracted, the softmax
 prediction, and the creation date. The table is sortable and paginated, yet it lacks the features to
 satisfy the ``Filtering'' task.
 
-\begin{figure}[H]
+\begin{figure}[ht!]
 \begin{center}
   \includegraphics[width=\columnwidth]{./images/tweets_table.png}
 \end{center}
@@ -373,7 +374,7 @@ and the points can be selected using a box or lasso selection, meeting the ``Fil
 \begin{center}
   \includegraphics[width=0.5\columnwidth]{./images/scatter.png}
 \end{center}
-\caption{Scatter plot for \ac{t-SNE}'s space}
+\caption{Scatter plot for t-SNE's space}
 \label{fig:scatter}
 \end{figure}
 
@@ -403,7 +404,7 @@ clicking the button.
     \label{fig:tables_lda_tfidf}
 \end{figure}
 
-\section{Reliability, Validity and Ethics}
+\section{Reliability, Validity, and Ethics}
 
 Any quantitative search project has to state certain aspects of the methods used: reliability,
 validity, and ethics \cite{woodrowReliabilityValidityEthics2014}. ``Reliability'' dictates that the
@@ -462,5 +463,5 @@ reasons are another ethical concern, and they can be handled by adding a fake ne
 the pipeline. Some tweets contain exaggerated content, which can make authorities distribute the
 resources inappropriately during a hazard; to this end, decision-makers should take the information
 provided by social media with a grain of salt and incorporate other sources before making a
-decision. This project should is not a standalone tool for analyzing a disaster;  it only provides a
+decision. This project should is not a standalone tool for analysing a disaster;  it only provides a
 magnifying glass on social media regarding the relevant details of critical situations.

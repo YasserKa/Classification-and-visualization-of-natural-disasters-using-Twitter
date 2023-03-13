@@ -10,7 +10,7 @@ techniques, and (4) interactively visualizing the results.
 
 Table~\ref{tab:metrics} shows the evaluation metrics mentioned in
 Section~\ref{sec:text_classification_section} for the trained DistilBERT model on the dataset and a
-balanced version by doing undersampling using imbalanced-learn's RandomUnderSampler
+balanced version by doing undersampling using imbalanced-learn's \texttt{RandomUnderSampler}
 method\footnote{https://imbalanced-learn.org/stable/}. The metrics show that the classifier is
 performing well with the trained data. Table~\ref{tab:tweets_missclassified} shows
 falsely classified tweets from the Swedish dataset translated to English.
@@ -49,9 +49,9 @@ falsely classified tweets from the Swedish dataset translated to English.
 % Left aligned row
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
-\begin{table}
+\begin{table}[ht!]
   \center
-  \caption{Miss-classified tweets}
+  \caption{Misclassified tweets}
   \begin{tabular}{|L{0.35\textwidth}|L{0.35\textwidth}|l|l|}
     \hline
     Translated tweet & Processed tweet & Predicted & Actual \\
@@ -92,7 +92,7 @@ falsely classified tweets from the Swedish dataset translated to English.
 
 This section presents the results by applying the pipeline to three unlabelled collections and
 showing the most noteworthy results from the visualizations. One week's worth of tweets are
-extracted from Twitter's API starting from the date of the beginning of the events using a query of
+extracted from Twitter's \ac{API} starting from the date of the beginning of the events using a query of
 Swedish flood-relevant terms, defined by the researchers of the AI4CA project with input from
 experts from SMHI:
 
@@ -123,14 +123,14 @@ provided as well:
 
 Gävleborg and Dalarna counties had flood events on 18 August
 2021\footnote{https://floodlist.com/europe/central-sweden-floods-august-2021}, damaging their
-infrastructure, such as houses and roads. After extracting 1589 tweets from Twitter's API and
+infrastructure, such as houses and roads. After extracting 1589 tweets from Twitter's \ac{API} and
 processing them, 910 were left, of which 700 were classified as flood-relevant, and the classifier
 did a reasonable job at labelling the tweets with few misclassifications.
 Table~\ref{tab:tweets_missclassified_gavle} shows some of the false negatives.
 
-\begin{table}[H]
+\begin{table}[ht!]
   \center
-  \caption{Miss-classified tweets for floods in Gävleborg and Dalarna}
+  \caption{Misclassified tweets for floods in Gävleborg and Dalarna}
   \begin{tabular}{|L{7.5cm}|L{7.5cm}|}
     \hline
     Translated tweet & Processed tweet\\
@@ -190,7 +190,7 @@ countries or spots, such as:
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=14cm]{./images/gavle_map.png}
+    \includegraphics[width=13cm]{./images/gavle_map.png}
   \end{center}
   \caption{Map showing tweets about flood event in Gävleborg}
   \label{fig:gavle_map}
@@ -198,7 +198,7 @@ countries or spots, such as:
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=12cm]{./images/gavle_histogram.png}
+    \includegraphics[width=14cm]{./images/gavle_histogram.png}
   \end{center}
   \caption{Histogram showing tweets about flood event in Gävleborg}
   \label{fig:gavle_histogram}
@@ -216,7 +216,7 @@ because the number of selected tweets is too small.
   \begin{center}
     \includegraphics[width=\columnwidth, trim={0cm 0cm 0cm 14.5cm},clip]{./images/gavle_text_analysis.png}
   \end{center}
-  \caption{Scatter plot, and \ac{LDA} table showing a cluster of tweets about flood event in Gävleborg}
+  \caption{Scatter plot and LDA table showing a cluster of tweets about flood event in Gävleborg}
   \label{fig:gavle_text_analysis_scatter_tables}
 \end{figure}
 
@@ -245,7 +245,7 @@ composed of other elements besides text to capture their context.
 
 Heavy rain caused flooding in Gothenburg on 11 September
 2019\footnote{https://floodlist.com/europe/sweden-flash-floods-gothenburg-september-2019}. After
-extracting 315 tweets from Twitter's API and processing them, 243 were left, of which 117 were
+extracting 315 tweets from Twitter's \ac{API} and processing them, 243 were left, of which 117 were
 classified as flood-relevant, of which 53 contained toponyms. The spatial and temporal distributions
 of the plots in Figure~\ref{fig:gothenburg_map} show the true location and starting date of the
 event, which is evident from the 18 flood-relevant tweets in Gothenburg county, of which 12 were
@@ -265,11 +265,11 @@ event.
   \label{fig:gothenburg_map}
 \end{figure}
 
-\subsection{Halland, Värmland and Västra Götaland on 18 and 19 August 2014}
+\subsection{Halland, Värmland, and Västra Götaland on 18 and 19 August 2014}
 
 On the 18 and 19 August 2014, Halland, Värmland and Västra Götaland counties had floods lasting four
 days caused by heavy rain\footnote{https://floodlist.com/europe/four-days-floods-sweden}. After
-extracting 1508 tweets from Twitter's API and processing them, 995 were left, of which 503 were
+extracting 1508 tweets from Twitter's \ac{API} and processing them, 995 were left, of which 503 were
 classified as flood-relevant, of which 226 contained locations in Sweden. The map in
 Figure~\ref{fig:4days_floods} shows that Halland, Värmland, and Västra Götaland counties have 74,
 41, and 27 tweets, respectively. The histogram shows 15 tweets created on the 18th, 67 on the 19th,
@@ -290,8 +290,8 @@ warnings which is evident from the text in the tweets table and topic 1 in the \
   \begin{center}
     \includegraphics[width=\columnwidth]{./images/4days_text_analysis.png}
   \end{center}
-  \caption{Tweet table, scatter plot, and \ac{LDA} table showing a selected cluster of tweets
-  talking about \ac{SMHI} warnings}
+  \caption{Tweet table, scatter plot, and LDA table showing a selected cluster of tweets
+  talking about SMHI warnings}
   \label{fig:4days_text_analysis}
 \end{figure}
 
@@ -302,7 +302,7 @@ Figure~\ref{fig:4days_text_analysis_traffic_disruption_map} shows the locations 
   \begin{center}
     \includegraphics[width=\columnwidth]{./images/4days_text_analysis_traffic_disruption.png}
   \end{center}
-  \caption{Tweet table, scatter plot, and \ac{LDA} table showing a selected cluster of tweets
+  \caption{Tweet table, scatter plot, and LDA table showing a selected cluster of tweets
   talking about traffic disruptions}
   \label{fig:4days_text_analysis_traffic_disruption}
 \end{figure}
