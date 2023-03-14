@@ -10,6 +10,8 @@ The project focuses on the following tasks:
 
 **Install python packages** with `pip` or any virtual environment using `requirements.txt`
 
+**Install package** using `pip install .`
+
 **Install corpora** from spacy and nltk for NLP tasks `make install_corpora`
 
 To **get the data** used, execute `dvc pull`. A web page will open that will require you
