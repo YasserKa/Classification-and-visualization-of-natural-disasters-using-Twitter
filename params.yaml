@@ -1,7 +1,7 @@
 env: sagemaker
 model: distilbert-base-uncased
 label: relevant
-datasets: data/processed/supervisor_annotated_tweets.csv
+datasets: ./data/processed/supervisor_annotated_tweets.csv
 models_dir:
   flood_detection: ./models/flood_detection
 envs:
@@ -10,19 +10,23 @@ envs:
 labels:
   flood_detection: relevant
   mentions_impact: mentions_impact
+models:
+  distilbert: distilbert-base-uncased
 paths:
   tweets: data/tweets
 twitter_api:
-  tweets: data/tweets/twitter_api.json
-  processed: data/processed/twitter_api.csv
-  processed_flood: data/processed_flood/twitter_api.csv
-  processed_geo: data/processed_geo/twitter_api.csv
+  tweets: data/tweets/twitter_api
+  processed: data/processed/twitter_api
+  processed_flood: data/processed_flood/twitter_api
+  processed_geo: data/processed_geo/twitter_api
+  text_analysis: data/text_analysis/twitter_api
 supervisor:
   raw: data/raw/supervisor_annotated_tweets.csv
   tweets: data/tweets/supervisor_annotated_tweets.json
   processed: data/processed/supervisor_annotated_tweets.csv
   processed_flood: data/processed_flood/supervisor_annotated_tweets.csv
   processed_geo: data/processed_geo/supervisor_annotated_tweets.csv
+  text_analysis: data/text_analysis/supervisor_annotated_tweets.csv
 crisis:
   raw: data/raw/crisis_nlp_task_dmg.tsv
   processed: data/processed/crisis_nlp_task_dmg.csv

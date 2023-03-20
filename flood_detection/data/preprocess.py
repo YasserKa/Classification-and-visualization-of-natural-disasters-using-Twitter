@@ -134,8 +134,6 @@ class Preprocess(object):
         :param df pd.DataFrame
         """
         print("Cleaning dataframe")
-        # Drop tweets that has same text
-        df = df[~df["text"].duplicated()]
         # Remove retweets
         df = df.drop(df[df["text"].str.startswith("RT")].index)
 
@@ -144,12 +142,14 @@ class Preprocess(object):
             print("Translating text")
             df["text_translated"] = self.translate_text_list(df["text"].tolist())
         else:
-            df["text_translated"] = self.clean_text(df["text"].tolist())
+            df["text_translated"] = df["text"]
 
-        print("Cleaning text")
         # Clean text
         df["text"] = self.clean_text(df["text_translated"].tolist())
         df = df[(df["text"] != "") & df["text"].notnull()]
+
+        # Drop tweets that has same text
+        df = df[~df["text"].duplicated()]
 
         return df
 
@@ -306,6 +306,7 @@ def main() -> None:
 
     preprocess = Preprocess()
     df = preprocess.clean_dataframe(df)
+
     df.to_csv(output, index=False)
 
 

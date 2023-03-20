@@ -1,9 +1,28 @@
-\documentclass[a4paper, 12pt]{article}
+% vim: spell spelllang=en_gb
+\documentclass[a4paper, 12pt]{report}
 \usepackage[toc,page]{appendix} 
-\usepackage[colorlinks]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+% For hyperlinks
+\usepackage{hyperref}
+\usepackage{rotating,multirow}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{float}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=black,        % color of links to bibliography
+    filecolor=magenta,      
+    urlcolor=blue,
+}
 \usepackage[printonlyused,withpage]{acronym}
+\usepackage{amsmath}
 \usepackage{geometry}
+\newcommand{\citeauth}[1] {\citeauthor{#1} \cite{#1}}
 \usepackage{scrlayer} % Needed for left blank page
+\emergencystretch=1em % Resolves bibliography overflow
+\usepackage{verbatimbox}
 
 \DeclareNewLayer[
     foreground,
@@ -23,22 +42,28 @@
  bottom=1.44in
  }
 
-\usepackage{biblatex}
+\usepackage[backend=biber]{biblatex} 
+
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map[overwrite]{
+      \step[fieldsource=doi, final]
+      \step[fieldset=url, null]
+      \step[fieldset=eprint, null]
+    }  
+  }
+}
 \addbibresource{bibliography.bib}
  
 \begin{document}
- \pagenumbering{roman}
+\pagenumbering{roman}
 
 \thispagestyle{empty}
 \section*{Title page}
 
-\textsc{\large Thesis title }
+\textsc{\large Extracting and Exploring Information about Flood Events from Twitter}
 
 \textsc{\large Yaser Kaddoura}
-
-Note: When reviewer/examiner decides that the report is close to be finished,
-contact coordinator for a report number and instructions to produce a title and
-abstract page.
 
 \newpage\null\thispagestyle{blank}\newpage
 
@@ -60,11 +85,7 @@ abstract page.
 
 \input{sections/acronyms.tex}
 
-
 \newpage
-\newpage\null(Might be needed to make introduction starts at odd page number)
-\thispagestyle{blank}\newpage
-
 
 \pagenumbering{arabic}
 
@@ -72,11 +93,30 @@ abstract page.
 
 \newpage
 
-\printbibliography[heading=bibintoc, title={References}]
+\input{sections/literature_review}
+
+\newpage
+
+\input{sections/methods}
+
+\newpage
+
+\input{sections/results}
+
+\newpage
+
+\input{sections/discussion_and_further_work}
+
+\newpage
+
+\input{sections/conclusion}
 
 \newpage
 
 \input{sections/appendix}
 
+\newpage
+
+\printbibliography[heading=bibintoc, title={References}]
 
 \end{document}

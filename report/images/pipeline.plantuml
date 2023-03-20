@@ -1,0 +1,41 @@
+@startuml
+!theme carbon-gray
+
+partition "Data collection" {
+  (*) -right-> "Retrieve data from Twitter API"
+  -right-> "Preprocess the data" as pd2
+  (*) -up-> "Labelled data"
+  -right-> "Preprocess the data" as pd1
+}
+
+partition "Text classifiation" {
+  pd1 -right-> "Train classifier"
+  pd2 -right-> "Classify tweets"
+  "Train classifier" -down-> "Classify tweets" 
+  "Classify tweets" -right-> if ===is on-topic? then 
+  -down->[false] "Discard tweets" as dt1
+}
+
+partition "Location extraction" {
+  else
+  -right->[true] "Extract location terms"
+  endif
+  "Extract location terms" -right-> if ===Has terms? then 
+  -right->[true] "Identify geographic locations"
+  else
+  -down->[false] "Discard tweets" as dt2
+  endif
+  "Identify geographic locations" -right-> if ===Has relevant locations? then 
+  -down->[false] "Discard tweets" as dt3
+}
+
+partition "Text Analysis" {
+  else
+    -right->[true] "Add text analysis"
+  endif
+}
+
+partition "Visualization" {
+  -right-> "Generate plots"
+}
+@enduml

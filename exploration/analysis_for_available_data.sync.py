@@ -14,6 +14,26 @@ with initialize(version_base=None, config_path="conf"):
     cfg: DictConfig = compose(config_name="config")
 
 
+tweets_path: str = abspath(
+    "./"
+    + cfg.twitter_api.processed_flood
+    + "_2014-08-18_to_2014-08-25__2023-02-15_20:14:38.csv"
+)
+
+# with open(tweets_path, "r") as file:
+#     tweets_json = json.load(file)
+# df = pd.json_normalize(list(tweets_json.values()))
+df = pd.read_csv(tweets_path)
+
+len(df)
+
+
+# %%
+
+with initialize(version_base=None, config_path="conf"):
+    cfg: DictConfig = compose(config_name="config")
+
+
 supervisor_tweets_path: str = abspath(
     "./" + cfg.supervisor.tweets,
 )

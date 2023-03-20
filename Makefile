@@ -5,6 +5,7 @@ additional_query ?= ""
 setup_env:
 	poetry install
 	poetry run pre-commit install
+	pip install .
 
 test:
 	python -m pytest
@@ -19,7 +20,7 @@ pull_data:
 	python -m dvc pull
 
 train_flood_classifier:
-	dvc exp run train --set-param 'datasets=${supervisor.processed}' -f
+	dvc exp run train --set-param 'datasets=./data/processed/supervisor_annotated_tweets.csv' -f
 
 evaluation:
 	dvc exp show --drop '.*' --keep "(Experiment|Created|eval_accuracy|eval_f1|eval_precision|eval_recall)" -n 2
@@ -31,7 +32,7 @@ push_data:
 pipeline_for_supervisor:
 	python ./flood_detection/data/preprocess.py "./data/tweets/supervisor_annotated_tweets.json"
 	python ./flood_detection/predict/predict_floods.py --dataset_path "./data/processed/supervisor_annotated_tweets.csv"
-	python ./flood_detection/predict/extract_location.py "./data/processed_geo/supervisor_annotated_tweets.csv" 
+	python ./flood_detection/predict/extract_location.py "./data/processed_flood/supervisor_annotated_tweets.csv" 
 	python ./flood_detection/visualize/dash_app.py "./data/processed_geo/supervisor_annotated_tweets.csv" 
 
 pipeline_from_api:

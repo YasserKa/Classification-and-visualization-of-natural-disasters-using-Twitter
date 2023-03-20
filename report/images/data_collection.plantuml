@@ -1,0 +1,11 @@
+@startuml
+!theme carbon-gray
+
+partition "Data collection" {
+  (*) -right-> "Retrieve data from Twitter API"
+  -right-> "Preprocess the data" as pd2
+  (*) -up-> "Labelled data"
+  -right-> "Preprocess the data" as pd1
+}
+
+@enduml

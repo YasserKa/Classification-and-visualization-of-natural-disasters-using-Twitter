@@ -26,7 +26,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 
 from flood_detection.data.preprocess import Language, Preprocess
-from flood_detection.predict.text_analysis import LDA_model, get_preprocessed_docs
+from flood_detection.predict.text_analysis import (LDA_model,
+                                                   get_preprocessed_docs)
 
 # OPTIMIZE: Use global state instead of calculating the repatitive values
 # (e.g. length of dataframe )
@@ -250,7 +251,7 @@ radio_region_levels = html.Div(
         dbc.Label("Regions level"),
         dbc.RadioItems(
             options=[
-                {"label": "Counties", "value": Region_level.COUNTIES.value},
+                {"label": "counties", "value": Region_level.COUNTIES.value},
                 {"label": "municipalities", "value": Region_level.MUNICIPALITIES.value},
             ],
             value=selected_region_type,
@@ -1224,7 +1225,7 @@ def main(path_to_data):
 
     print("Plotting")
     plot(df_user_week_uniq, app)
-    app.run_server(debug=True)
+    app.run_server()
 
 
 if __name__ == "__main__":

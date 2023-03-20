@@ -1,26 +1,53 @@
-\section{Introduction}
+% vim: spell spelllang=en_gb
+\chapter{Introduction}\label{sec:introduction}
 
-Some text \ac{ML}
+Earlier this century, floods around Lake Vänern and Arvika have costed Sweden an estimated 11.1
+billion Swedish Krona for damages and repairs \cite{RiverFloodsSweden2022}. Counties of Dalarna and
+Gävleborg suffered from flash floods in 2021, disturbing the daily life of their citizens and
+damaging public and private properties \cite{daviesSwedenFlashFloods2021}. Flooding is a devastating
+natural disaster that threatens the livelihood of people and the infrastructure of communities
+around the world \cite{Floodlist2021}.
 
-Dummy citation~\cite{barkerDevelopmentNationalscaleRealtime2019}
+To facilitate the process of emergency management during these hazardous events, early warning
+systems analyse their risk, monitor and warn the public while ensuring their readiness
+\cite{contributorsEarlyWarningSystem2022}. Traditionally, meteorologists forecast the weather by
+relying on tools such as gauges, satellites, and radars for data extraction. The emergence of social
+media platforms such as Twitter provide individuals with a public space to share their experience,
+effectively creating another potential data source.
 
- \begin{figure}[ht]
-    \centering
-    \caption{Dummy figure} 
-\end{figure}
+Researchers started harnessing this new wealth of information to aid the disaster management
+procedure. Twitter streaming \ac{API} makes it possible to create a monitoring system for early
+event detection on a global \cite{debruijnGlobalDatabaseHistoric2019b} and local
+\cite{barkerDevelopmentNationalscaleRealtime2019} scales. Another use for it would be identifying
+victims in real-time, locating their physical location, and communicating the information to rescue
+teams \cite{singhEventClassificationLocation2019}. After the threat subsides, emergency managers can
+use relevant tweets to assess the impact and plan the recovery phase
+\cite{barkerDevelopmentNationalscaleRealtime2019}. To prepare for future floods, authoritative
+entities can make informed actions by analysing historical data and determining the locations
+suffering from recurrent calamities. This newly acquired knowledge can augment weather warning
+systems' pipelines improving their accuracies such as \ac{SMHI}, a Swedish expert authority with a
+global perspective and a vital task in predicting changes in weather, water, and climate
+\cite{SMHI2021}.
 
-\begin{table}[h!]
-\centering
-\begin{tabular}{||c c c c||} 
- \hline
- Col1 & Col2 & Col2 & Col3 \\ [0.5ex] 
- \hline\hline
- 1 & 6 & 87837 & 787 \\ 
- 2 & 7 & 78 & 5415 \\
- 3 & 545 & 778 & 7507 \\
- 4 & 545 & 18744 & 7560 \\
- 5 & 88 & 788 & 6344 \\ [1ex] 
- \hline
-\end{tabular}
-\caption{Dummy table}
-\end{table}
+Most research addresses the problem on a global or national scale, yet none has addressed Sweden
+specifically. This thesis project covers this gap by using Swedish tweets to extract relevant
+knowledge about flood events in Sweden with the focus on answering the following questions:
+\begin{enumerate} 
+  \item What methods can be used to classify Swedish tweets related to flood events?
+  \item How to extract the locations mentioned in the tweets? 
+  \item What insights can be extracted by using text analysis on the tweets?
+  \item What visualizations can be used to represent the results? 
+\end{enumerate}
+
+The project focuses on providing a proof of concept for addressing the questions above, and it will
+not design a solution to make a production-ready product; i.e., the engineering challenges, such as
+automation, scalability, and ease of deployment are out of the focus of this thesis. 
+
+This thesis project is part of a research project, AI for Climate Adaptation
+\cite{nesetAI4ClimateAdaptation} at \ac{LiU} in collaboration with the \ac{SMHI}. It implements a
+pipeline that provides a visual representation of tweets related to flood events in Sweden. First,
+relevant tweets are pulled, processed, and classified from the Twitter \ac{API} using data mining
+techniques. Second, geographical locations are identified from tweets mentioning flood events employing
+\ac{NER} and gazetteers. Third, various text analysis techniques are applied to tweets. Finally, the
+results are presented using a visual interface. For verification purposes, the pipeline is applied
+on a week's worth of tweets after past flood events.

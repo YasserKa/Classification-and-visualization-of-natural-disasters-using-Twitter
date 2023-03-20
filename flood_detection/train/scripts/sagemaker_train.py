@@ -1,18 +1,22 @@
+import argparse
+import json
+import logging
+import os
+import sys
+
+import torch
+from datasets import load_from_disk
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    precision_recall_fscore_support,
+)
 from transformers import (
     AutoModelForSequenceClassification,
+    AutoTokenizer,
     Trainer,
     TrainingArguments,
-    AutoTokenizer,
 )
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from datasets import load_from_disk
-import random
-import logging
-import sys
-import json
-import argparse
-import os
-import torch
 
 # flake8: noqa
 
@@ -65,7 +69,14 @@ if __name__ == "__main__":
             labels, preds, average="binary"
         )
         acc = accuracy_score(labels, preds)
-        return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
+        conf_matrix = confusion_matrix(labels, preds).tolist()
+        return {
+            "confusion_matrix": conf_matrix,
+            "accuracy": acc,
+            "f1": f1,
+            "precision": precision,
+            "recall": recall,
+        }
 
     # download model from model hub
     model = AutoModelForSequenceClassification.from_pretrained(args.model_name)

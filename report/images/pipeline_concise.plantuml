@@ -1,0 +1,10 @@
+@startuml
+!theme carbon-gray
+
+(*) -> "Data collection"
+-> "Text classifiation"
+-> "Location extraction"
+-> "Text Analysis"
+-> "Visualization"
+
+@enduml
