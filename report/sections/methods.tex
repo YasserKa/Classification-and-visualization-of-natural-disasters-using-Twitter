@@ -227,12 +227,13 @@ week are discarded.
 
 The text analysis techniques used in this project are \ac{LDA}
 \cite{falushInferencePopulationStructure2003}\cite{pritchardInferencePopulationStructure2000},
-\ac{TF-IDF}~\cite{enwiki:1143165699}, and \ac{t-SNE}~\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a
-topic modelling method that generates topics (a set of terms) in a corpus and assigns the relevance
-of each topic in each document. Categorizing tweets can show important insights about a flood event,
-such as incidents caused by floods and their impact on society. The \ac{LDA} model is initialized
-and trained using Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in
-the visualization. The second text analysis technique used is \ac{TF-IDF}, using
+\ac{TF-IDF}~\cite{saltonTermweightingApproachesAutomatic1988}, and
+\ac{t-SNE}~\cite{vandermaatenVisualizingHighDimensionalData2008}. \ac{LDA} is a topic modelling
+method that generates topics (a set of terms) in a corpus and assigns the relevance of each topic in
+each document. Categorizing tweets can show important insights about a flood event, such as
+incidents caused by floods and their impact on society. The \ac{LDA} model is initialized and
+trained using Gensim \cite{rehurek_lrec}, where the number of discovered topics is adjustable in the
+visualization. The second text analysis technique used is \ac{TF-IDF}, using
 scikit-learn\footnote{https://scikit-learn.org/stable/}, to extract interesting terms by checking
 their average weight and frequency in the corpus. Lastly, \ac{t-SNE} is a visualization method for
 high-dimensional data by reducing their dimensions to two or three-dimensional maps. In this
