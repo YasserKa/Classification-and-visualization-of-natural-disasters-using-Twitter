@@ -18,7 +18,7 @@ Install 3rd party packages using two options:
 python -m venv .flood-classification-env
 # Activate it
 # On Linux
-source flood-classification-env/bin/activate
+source .flood-classification-env/bin/activate
 # On Windows
 # .flood-classification-env\Scripts\activate.bat
 pip install .
