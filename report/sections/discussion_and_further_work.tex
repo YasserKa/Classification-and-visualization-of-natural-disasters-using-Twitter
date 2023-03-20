@@ -35,7 +35,9 @@ using an image classifier and a web scraper. The language of the text is another
 that impacts the model's accuracy, since the classifier works only on English text, forcing the
 translation step on the data, reducing their quality, and ultimately impacting the performance of
 the trained model. One way to mitigate this problem is to remove the translation step and use a
-classifier that accepts Swedish text.
+classifier that accepts Swedish text; unfortunately, at the moment, the most effective transformers
+are pre-trained on English corpus, so using a model pre-trained on a Swedish text will be less
+performant.
 
 The pipeline identifies the locations of the events used in the experiments by showing a high
 frequency of tweets mentioning the location using the plots. Yet, it failed to identify the correct
