@@ -1225,7 +1225,7 @@ def main(path_to_data):
 
     print("Plotting")
     plot(df_user_week_uniq, app)
-    app.run_server()
+    app.run_server(host="0.0.0.0")
 
 
 if __name__ == "__main__":
