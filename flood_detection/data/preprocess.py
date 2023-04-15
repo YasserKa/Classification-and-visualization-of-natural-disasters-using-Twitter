@@ -75,7 +75,14 @@ class Preprocess(object):
         return " ".join([self.stemmer.stem(word) for word in text.split(" ")])
 
     def lemmatize(self, text: str) -> str:
-        return " ".join([word.lemma_ for word in self.nlp(text)])
+        # Spacy lemmatizatin for flooding is flooding, so the conditional uses
+        # flood instead
+        return " ".join(
+            [
+                word.lemma_ if word.lemma_ != "flooding" else "flood"
+                for word in self.nlp(text)
+            ]
+        )
 
     def clean_text(self, text_list: Union[list, str], not_needed_words=[]) -> list[str]:
         """
