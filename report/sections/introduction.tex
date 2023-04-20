@@ -31,7 +31,13 @@ global perspective and a vital task in predicting changes in weather, water, and
 
 Most research addresses the problem on a global or national scale, yet none has addressed Sweden
 specifically. This thesis project covers this gap by using Swedish tweets to extract relevant
-knowledge about flood events in Sweden with the focus on answering the following questions:
+knowledge about flood events in Sweden. The motivation behind choosing Twitter as a data source is
+because its \ac{API} provides querying posts made by all users with a single query, making it more
+convenient than the other popular platforms in Sweden (Facebook and Instagram) since they only
+support per-user querying.
+
+Th following questions will guide the implementation of the pipeline that will extract and explore
+information about flood events from Twitter:
 \begin{enumerate} 
   \item What methods can be used to classify Swedish tweets related to flood events?
   \item How to extract the locations mentioned in the tweets? 
