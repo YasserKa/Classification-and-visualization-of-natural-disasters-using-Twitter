@@ -22,7 +22,7 @@ integrity of the data. Another approach is to blacklist user accounts with suspi
 their past tweets and network. 
 
 The evaluation metrics for the classifier based on the DistilBERT transformer seem promising on the
-training datasets, with an accuracy of 92.31\% and F$_{1}$ score of 91.81\%; yet, the experiments
+training datasets, with an accuracy of 92.31\% and an F$_{1}$ score of 91.81\%; yet, the experiments
 show that the model has high precision and low recall. The nature of the text in tweets makes it
 more difficult for them to get classified. The tweets are microblogs (i.e. small text documents),
 where there is not enough context in the tweets to classify them correctly (e.g. ``It's wet in
@@ -43,7 +43,7 @@ The pipeline identifies the locations of the events used in the experiments by s
 frequency of tweets mentioning the location using the plots. Yet, it failed to identify the correct
 geographical locations for some keywords, such as Spain and Turkey; this is because some terms can
 refer to multiple locations existing in the world, and one method to identify the intended location
-within the tweet is by generating a confidence score using several factors, such as the
+within the tweet by generating a confidence score using several factors, such as the
 ``importance''\footnote{https://nominatim.org/release-docs/develop/customize/Importance/} attribute
 obtained from the Nominatim package. Another improvement to the location extraction step would be
 using a better way to handle the existence of several locations in one tweet instead of picking the
@@ -74,7 +74,7 @@ of the event.
 
 Further work can include the following:
 \begin{itemize}
-  \item Applying the pipeline to other type of events, such as earthquakes, by changing the query
+  \item Applying the pipeline to other types of events, such as earthquakes, by changing the query
     and the training dataset for the classifier.
   \item Applying the pipeline to other countries by changing the map used in the visualization.
   \item Using streaming for live event detection to identify flood events by using some criterion,

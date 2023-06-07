@@ -4,7 +4,7 @@
 The massive and accessible volume of data produced by social media has attracted the attention of
 many researchers as a valuable data source for their research topic; however, collecting and
 processing data of this nature pose many challenges to extracting useful information. This section
-mentions what other researchers focusing on disaster management topics did to address these
+mentions what other researchers focusing on disaster management topics to address these
 challenges while using Twitter; it also discusses the different approaches used for identifying
 relevant tweets, extracting geographical location from them, making text analysis on the text, and visualizing the results.
 
@@ -84,7 +84,7 @@ rainfall, the tweet is labelled positive, otherwise negative.
 
 A classifier needs a numerical representation of the textual data for training. Text is often
 represented in a real-valued vector by encoding words and their context. There are different word
-embedding techniques, such as \ac{TF-IDF}, which reflect on how important a word is to a document in a
+embedding techniques, such as \ac{TF-IDF}, which reflects how important a word is to a document in a
 corpus, Word2vec \cite{mikolovEfficientEstimationWord2013}, and its extension doc2Vec
 \cite{leDistributedRepresentationsSentences2014}, which capture the semantic and syntactic qualities
 of words via a vector space with several hundred dimensions, where each unique word in the corpus
@@ -103,7 +103,7 @@ can be used by training a naive Bayes classifier on labelled and unlabelled data
 \cite{liDisasterResponseAided2018}. \citeauth{fengExtractionPluvialFlood2018} use naive Bayes,
 random forest, logistic regression, \ac{SVM} (RBF Kernel), and \ac{SVM} (Linear Kernel) on labelled
 data transformed using \ac{TF-IDF} with accuracies of 0.7109, 0.7582, 0.7705, 0.7712, and 0.7739,
-respectively. \citeauth{petersenIdentificationExplorationExtreme2021} results are more promising,
+respectively. The results provided by \citeauth{petersenIdentificationExplorationExtreme2021} are more promising,
 where they train a logistic regression and random forest classifiers with 0.939 and 0.9253
 accuracies, respectively. Deep learning approaches generally outperform classical algorithms; one
 example is \ac{CNN} trained on word embeddings for sentence classification.
@@ -146,7 +146,7 @@ since the encoder might lose the information at the start while forming the repr
 \ac{RNN}'s weak memory can be addressed by using the attention mechanism that allows the decoder to
 access all the hidden states of the encoder. The main goal of attention is to enable the decoder to
 prioritize the states using weights it assigns at every decoding timestamp.
-Figure~\ref{fig:rnn_encoder_decoder_attention} shows an example for predicting the third token in
+Figure~\ref{fig:rnn_encoder_decoder_attention} shows an example of predicting the third token in
 the output sequence. Even though attention improves the accuracy of the translations, the
 computations are sequential and cannot be parallelized. In addition, most \ac{NLP} tasks require
 training models using a large amount of labelled text data that might not be available. Transfer
@@ -167,19 +167,19 @@ are pre-trained on massive datasets, such as Imagenet
 \cite{zhouLearningDeepFeatures2014} to learn the basic features of images, such as edges and
 colours; then, they are fine-tuned on downstream tasks with a smaller dataset.
 \citeauth{fengExtractionPluvialFlood2018} use GoogLeNet (Inception-V3 model) \cite{7780677}
-pre-trained on ImageNet to train multilayer perceptron, random forest, gradient boosted trees, and
+pre-trained on ImageNet to train multilayer perceptron, random forest, gradient-boosted trees, and
 XGBoost with accuracies of 0.8907, 0.9133, 0.9252, and 0.9295, respectively.
-\citeauth{ningPrototypingSocialMedia2020} uses VGGNet \cite{simonyanVeryDeepConvolutional2015},
+\citeauth{ningPrototypingSocialMedia2020} use VGGNet \cite{simonyanVeryDeepConvolutional2015},
 Inception V3, ResNet \cite{heDeepResidualLearning2015}, and DenseNet201
-\cite{huangDenselyConnectedConvolutional2018} with 0.91 accuracy.
+\cite{huangDenselyConnectedConvolutional2018} with 0.91 accuracies.
 
-In 2017 and 2018, several research groups proposed new approaches to use transfer learning for
+In 2017 and 2018, several research groups proposed new approaches to using transfer learning for
 \ac{NLP}. \ac{ULMFit} \cite{howardUniversalLanguageModel2018} introduced a general framework by
 pre-training \ac{LSTM} models for various tasks.
 \citeauth{petersenIdentificationExplorationExtreme2021} fine-tune a pre-trained \ac{ULMFit} model
 to classify flood-relevant tweets with an accuracy of 0.9499. 
 
-Transformers with transfer learning and their self-attention architecture, proposed by google
+Transformers with transfer learning and their self-attention architecture, proposed by Google
 researchers \cite{vaswaniAttentionAllYou2017}, made the training process much faster. The idea is to
 use attention on all states in the same neural network's layer.
 Figure~\ref{fig:encoder_decoder_transformer} shows the self-attention mechanism on both the encoder
@@ -199,7 +199,7 @@ and \citeauth{debruijnGlobalDatabaseHistoric2019b} use a multilingual model with
 
 \section{Location Extraction} 
 Identifying the locations of disasters is helpful for the disaster
-management cycle. Social media enables people to generate \ac{VGI}, which is more advantageous over
+management cycle. Social media enables people to generate \ac{VGI}, which is more advantageous than
 the more expensive accuracy testing done by official agencies because contributors have unique local
 knowledge.  Detecting a disastrous event and its location as soon as possible can reduce its impact
 on society \cite{debruijnGlobalDatabaseHistoric2019b} by informing the citizens and the authority to
@@ -230,7 +230,7 @@ tweet's coordinates, and mentions of nearby locations. Then, the average score o
 mentioning the same toponym within a 24-hour is calculated. Finally, the groups of tweets with the
 location that has the highest score are assigned.
 \citeauth{petersenIdentificationExplorationExtreme2021} use geotag property, geoparsing using
-\ac{NER} on text, and user's profile location to extract toponyms. If the text contains two
+\ac{NER} on text, and the user's profile location to extract toponyms. If the text contains two
 toponyms, they pick one randomly if the locations are close with a distance threshold of 1500km.
 They use GeoPy\footnote{https://geopy.readthedocs.io/en/stable/} to assign geographical locations to
 toponyms, a Python package that is a client for several popular geocoding web services (e.g.,
@@ -247,7 +247,7 @@ situation and act accordingly.
 
 \citeauth{grunder-fahrerHowSocialMedia2018} extract multiple relevant pieces of information from
 social media and present them to disaster managers via a searchable application. They extract the
-following: topics using HDP-CRF algorithm \cite{tehHierarchicalBayesianNonparametric2010}, locations
+following: topics using the HDP-CRF algorithm \cite{tehHierarchicalBayesianNonparametric2010}, locations
 using Openstreetmap\footnote{https://www.openstreetmap.org/} location markers, time using the social
 media metadata, and names of organizations using \ac{NER}. They present the information using
 several interactive graphs such as pie charts, word clouds and line graphs.
@@ -279,7 +279,7 @@ given tasks. Extracting relevant information for the right time and occasion fro
 and massive data sources is challenging. Information visualization provides users with an
 opportunity to analyse the data by showing different aspects of it. Yet, it does not solve the
 information explosion by itself; this is where visual analytics comes in by placing the focus on
-the particular information relevant for the target audience by combining different disciplines, such as
+the particular information relevant to the target audience by combining different disciplines, such as
 information visualization, data mining, human-computer interaction, and perception and
 cognition. It uses multiple disciplines and distributes the work between humans and machines to
 improve problem-solving and decision-making \cite{keimVisualAnalyticsDefinition2008}.
@@ -303,7 +303,7 @@ interface containing 440 categorized text visualization techniques by
 \end{figure}
 
 \citeauth{petersenIdentificationExplorationExtreme2021} provide multiple plots with sophisticated
-methods to configure the interface and filter the tweets. Their visualization is powered using the python
+methods to configure the interface and filter the tweets. Their visualization is powered using the Python
 libraries, Plotly\footnote{https://plotly.com/python/} and Dash\footnote{https://dash.plotly.com/}.
 The app, shown in Figure~\ref{fig:peter}, provides an interface to showcase the different aspects of the
 data: spatial via a map, temporal via a histogram, and textual via a list of tweets and word cloud.
@@ -326,7 +326,7 @@ drop-down to change the map graph type and the algorithm used to classify the tw
 \label{fig:peter}
 \end{figure}
 
-\citeauth{fengExtractionPluvialFlood2018} use leaflet to plot a map showing flooding events as
+\citeauth{fengExtractionPluvialFlood2018} use leaflet\footnote{https://leafletjs.com/} to plot a map showing flooding events as
 observed in Figure~\ref{fig:feng}. They use $\text{Getis-Ord Gi}^{\ast}$ \cite{ordLocalSpatialAutocorrelation2010}
 to detect statistical hot spots and present them as a choropleth map. The light blue circles
 represent the spatio-temporal clusters of events, and the circles with numbers at the centre
@@ -348,7 +348,7 @@ with a pop-up containing information about it.
 \begin{center}
   \includegraphics[width=13cm]{images/baker_marker.png}
 \end{center}
-\caption{Map with tweet markers in by \citeauth{barkerDevelopmentNationalscaleRealtime2019}}
+\caption{Map with tweet markers by \citeauth{barkerDevelopmentNationalscaleRealtime2019}}
 \label{fig:baker_marker}
 \end{figure}
 
