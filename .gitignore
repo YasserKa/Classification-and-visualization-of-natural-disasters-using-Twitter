@@ -98,3 +98,4 @@ outputs
 !/report/tex_output/*.pdf
 /eval.json
 /nltk_data
+/.flood-classification-env/
