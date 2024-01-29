@@ -33,7 +33,8 @@ from flood_detection.predict.text_analysis import (LDA_model,
 # (e.g. length of dataframe )
 # WARN: This script is highly unfactorized
 
-app = Dash(external_stylesheets=[dbc.themes.YETI], prevent_initial_callbacks=True)
+app = Dash(external_stylesheets=[dbc.themes.YETI, dbc.icons.FONT_AWESOME],
+           prevent_initial_callbacks=True)
 
 
 class Region_level(Enum):
@@ -276,6 +277,24 @@ reset_button = html.Div(
         "position": "absolute",
         "top": "160px",
         "right": "10px",
+        "zIndex": "1000",
+    },
+)
+github_link_button = html.Div(
+    [
+        dbc.Button(
+            html.I(className="fa-brands fa-github"),
+            color="light",
+            href="https://github.com/YasserKa/Classification-and-visualization-of-natural-disasters-using-Twitter/tree/main",
+            external_link=True,
+            className="me-0",
+            id="github_button",
+        ),
+    ],
+    style={
+        "position": "absolute",
+        "top": "10px",
+        "left": "47px",
         "zIndex": "1000",
         "padding": "2px",
     },
@@ -605,6 +624,7 @@ def get_map(choropleth, cluster):
             selected_info,
             radio_region_levels,
             reset_button,
+            github_link_button,
         ],
     )
 
