@@ -8,11 +8,13 @@ The project focuses on the following tasks:
 
 ### Setting up the environment
 
-You will need python 3.10 
+You will need python 3.10
 
 Install 3rd party packages using two options:
+
 - `pip install .`
 - virtual environment (recommended):
+
 ```bash
 # Create virtual env
 python -m venv .flood-classification-env
@@ -31,7 +33,6 @@ python -m spacy download en_core_web_sm
 python -m spacy download sv_core_news_sm
 python -m nltk.downloader omw-1.4 -d ./nltk_data
 python -m nltk.downloader wordnet -d ./nltk_data
-
 ```
 
 To **get the data and trained model** used, execute `dvc pull`. A web page will open that will require you
@@ -53,22 +54,21 @@ To use twitter's API, create `.env` to store the credentials with a similar form
 To **run the pipeline** that extracts Swedish tweets from Twitter API between two dates, classify them, extract locations,
 and show the visualization `make pipeline_from_api from="$FROM" to="$TO"`
 
-
 There are already processed datasets that can be used for the visual interface:
 
 `python ./flood_detection/visualize/dash_app.py ./data/processed_geo/<dataset>`
 
 E.g. Gavle's flood event (i.e. tweets between 2021-08-17 and 2021-08-23)
 
-`python ./flood_detection/predict/predict_floods.py --dataset_path "./data/processed/twitter_api_2021-08-17_to_2021-08-23__2023-02-02_22:34:09.csv" `
+`python ./flood_detection/visualize/dash_app.py ./data/processed_geo/twitter_api_2021-08-17_to_2021-08-23__2023-02-02_22:34:09.csv`
 
 There's a Dockerfile to test the visual interface for the dataset and open http://localhost:8050
 (it takes around 20 seconds for the server to go up):
 
 ```bash
-docker build -t flood_classification . -f docker/Dockerfile 
+docker build -t flood_classification . -f docker/Dockerfile
 docker run -dp 8050:8050 flood_classification
- ```
+```
 
 ### Visual interface
 

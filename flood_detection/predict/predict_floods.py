@@ -45,7 +45,7 @@ def main(dataset_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = DistilBertForSequenceClassification.from_pretrained(
-        f"{path_to_model}/pytorch_model.bin",
+        pretrained_model_name_or_path=f"{path_to_model}",
         config=f"{path_to_model}/config.json",
         local_files_only=True,
     ).to(device)

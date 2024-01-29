@@ -54,23 +54,18 @@ flake8 = "^5.0.4"
 setuptools = "^65.5.0"
 visidata = "^2.10.2"
 
-
 [tool.pdm]
 [tool.pdm.build]
 includes = ["flood_detection"]
 
 [tool.pdm.dev-dependencies]
-test = [
-    "pytest>=7.4.2",
-]
+test = ["pytest>=7.4.2"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-authors = [
-    {name = "Yasser Kaddoura", email = "yasser.kaddoura19@gmail.com"},
-]
+authors = [{ name = "Yasser Kaddoura", email = "yasser.kaddoura19@gmail.com" }]
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "tweepy<5.0.0,>=4.11.0",
@@ -93,8 +88,8 @@ dependencies = [
     "gensim<5.0.0,>=4.2.0",
     "dvc-gdrive<3.0.0,>=2.19.0",
     "sagemaker<3.0.0,>=2.116.0",
-    "datasets[s3]==2.5.2",
-    "torch<2.0.0,>=1.13.0",
+    "datasets[s3]==2.16.1",
+    "torch==2.1",
     "imblearn<1.0,>=0.0",
     "dash-leaflet<1.0.0,>=0.1.23",
     "dash-extensions<1.0.0,>=0.1.6",
@@ -109,12 +104,13 @@ dependencies = [
     "geopandas<1.0.0,>=0.12.1",
     "rtree<2.0.0,>=1.0.1",
     "scikit-learn<2.0.0,>=1.2.1",
+    "pip>=23.3.2",
 ]
 name = "flood-detection"
 version = "0.1.0"
 description = "Classify flood related text, extract locations, and visualize the results"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [project.group.dev.dependencies]
 pytest = "^7.2.0"
