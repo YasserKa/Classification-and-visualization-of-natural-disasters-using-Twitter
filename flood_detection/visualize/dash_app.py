@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-""" Visualize the output of location extraction model using a geomap and
+"""Visualize the output of location extraction model using a geomap and
 histogram
 """
-
 
 import ast
 import itertools
@@ -17,8 +16,8 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Dash, dash_table, dcc, html
-from dash.dependencies import Input, Output
+from dash import Dash, dash_table, dcc, html, ctx
+from dash.dependencies import Input, Output, State
 from dash_extensions.javascript import arrow_function
 from gensim import corpora, models
 from sklearn.cluster import DBSCAN
@@ -57,12 +56,6 @@ num_tweets_location = 0
 num_tweets_mentioning_sweden = 0
 tsne_object = None
 tfidf_object = None
-
-# Number of times reset button got clicked
-# Plotly only provides the number of times a button got clicked, so a global
-# state is needed to check if a button is clicked
-current_clicks = 0
-clustering_current_clicks = 0
 
 lda_model = None
 # Number of topics used on selected tweets
@@ -267,10 +260,7 @@ radio_region_levels = html.Div(
 reset_button = html.Div(
     [
         dbc.Button(
-            "Reset",
-            color="light",
-            className="me-1",
-            id="reset_button",
+            "Reset", color="light", className="me-1", id="reset_button", n_clicks=0
         ),
     ],
     style={
@@ -410,6 +400,7 @@ clustering_button = html.Div(
             color="light",
             className="me-1",
             id="clustering_button",
+            n_clicks=0,
         ),
     ],
     style={
@@ -1031,30 +1022,30 @@ def text_anlaysis_button(text_n_clicks):
 @app.callback(
     Output("selected_data", "data"),
     Output("selected_info", "children"),
+    State("choropleth", "click_feature"),
     [
-        Input("histo", "selectedData"),
         Input("scatter", "selectedData"),
-        Input("choropleth", "click_feature"),
         Input("cluster", "click_feature"),
+        Input("histo", "selectedData"),
+        Input("choropleth", "n_clicks"),
         Input("reset_button", "n_clicks"),
     ],
 )
 def display_selected_data(
-    histo_selection,
-    scatter_selection,
     choropleth_selection,
+    scatter_selection,
     cluster_selection,
+    histo_selection,
+    n_clicks_,
     n_clicks,
 ):
     global df_global
     global selected_data
-    global current_clicks
     global global_histo_selection
     selected_indices = df_global.index
 
-    if n_clicks is not None and n_clicks > current_clicks:
+    if "reset_button" == ctx.triggered_id:
         selected_data = df_global
-        current_clicks = n_clicks
     elif histo_selection not in [None, global_histo_selection]:
         for selected_data_fig in [histo_selection]:
             if selected_data_fig and selected_data_fig["points"]:
@@ -1103,11 +1094,9 @@ def display_selected_data(
 )
 def update_map(selected_data, n_clicks):
     global df_global
-    global clustering_current_clicks
 
-    if n_clicks is not None and n_clicks > clustering_current_clicks:
+    if "clustering_button" == ctx.triggered_id:
         tsne_object.update_clustering()
-        clustering_current_clicks = n_clicks
 
     if selected_data is not None:
         selected_data = pd.read_json(selected_data, orient="split")
