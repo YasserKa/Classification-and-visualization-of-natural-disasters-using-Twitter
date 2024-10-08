@@ -836,8 +836,52 @@ def plot(df, app):
 
     app.layout = html.Div(
         [
+            dcc.Store(id="modal-shown", storage_type='local'),
+            # Modal definition (will open automatically on page load)
+            dbc.Modal(
+                        size="lg",
+                children=[
+                    dbc.ModalBody(
+                        children=[
+                            html.P("This is an experiment showcasing the potential of social media as a data source for natural disaster analysis."),
+                            "The pipeline is applied on one week's worth of tweets after the ",
+                    dbc.Button(
+                        "floods",
+                        href="https://floodlist.com/europe/central-sweden-floods-august-2021https://floodlist.com/europe/central-sweden-floods-august-2021",
+                        external_link=True,
+                        className="me-1",
+                        color="link",
+                        style={"padding": "0px", "padding-bottom": "1px"},
+                    ), 
+                            """
+                            in Dalarna and Gävleborg Ausut 2021. 
+                            The tweets can be filtered on counties or municpilities (using map) or days (using histogram).""",
+                            html.Br(),
+                            html.P("Some insights taken from visualizations:"),
+                            html.Li("Table: Some users voice their concerns over Gävle's infastracture"),
+                            html.Li("Map: Gävle is the most mentioned municipility"),
+                            html.Li("Histogram: Flood dicussed mostly for two days after the event"),
+                            html.Li("LDA topics: indicate a road traffic disruption"),
+                            html.Br(),
+                            "You can find the source code ",
+                    dbc.Button(
+                        "here",
+                        href="https://github.com/YasserKa/Classification-and-visualization-of-natural-disasters-using-Twitter",
+                        external_link=True,
+                        className="me-1",
+                        color="link",
+                        style={"padding": "0px", "padding-bottom": "1px"},
+                    ), 
+                        ]
+                    ),
+
+                    dbc.ModalFooter(dbc.Button("Close", id="close-modal-btn", className="ml-auto"))
+                ],
+                id="modal",
+                is_open=False,  # Initially closed
+            ),
             html.Div(
-                [
+                [ 
                     html.Div(
                         [
                             dbc.Checklist(
@@ -917,13 +961,13 @@ def plot(df, app):
                                         },
                                     ),
                                 ],
-                                style={"display": "inline-flex", "width": "100%"},
-                            ),
+                            style={"display": "inline-flex", "width": "100%"},
+                        ),
                         ],
-                        style={
-                            "width": "50%",
-                        },
-                    ),
+                    style={
+                        "width": "50%",
+                    },
+                ),
                     html.Div(
                         [
                             html.Div(
@@ -957,14 +1001,37 @@ def plot(df, app):
                             "width": "50%",
                         },
                     ),
-                    dcc.Store(id="selected_data"),
-                ],
-                style={"display": "flex"},
-            ),
-        ],
-        style=CONTENT_STYLE,
+    dcc.Store(id="selected_data"),
+    ],
+    style={"display": "flex"},
+    ),
+    ],
+    style=CONTENT_STYLE,
     )
 
+# Callback to open the modal automatically on page load, but only once
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("close-modal-btn", "n_clicks"), Input("modal-shown", "data")],
+    [State("modal", "is_open")]
+)
+def open_modal_on_load(n_clicks, modal_shown, is_open):
+    # If modal hasn't been shown before (stored in local storage), open it
+    if modal_shown is None:
+        return True
+    # Otherwise, toggle the modal when the close button is clicked
+    elif n_clicks:
+        return not is_open
+    return is_open
+
+# Callback to mark the modal as shown after it is opened
+@app.callback(
+    Output("modal-shown", "data"),
+    [Input("modal", "is_open")]
+)
+def mark_modal_as_shown(is_open):
+    # Mark the modal as shown once it opens (this will persist across reloads)
+    return is_open
 
 @app.callback(
     Output("hovered_info", "children"), [Input("choropleth", "hover_feature")]
